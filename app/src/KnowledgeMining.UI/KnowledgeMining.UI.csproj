@@ -10,8 +10,6 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-		<PackageReference Include="Azure.Storage.Files.Shares" Version="12.1.0" />
-		<PackageReference Include="Azure.Storage.Queues" Version="12.2.0" />
 		<PackageReference Include="AzureMapsControl.Components" Version="1.11.0" />
 		<PackageReference Include="Microsoft.Azure.SignalR" Version="1.18.1" />
 		<PackageReference Include="MudBlazor" Version="6.0.11" />
