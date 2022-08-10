@@ -17,18 +17,42 @@
 
         </MudItem>
         <MudItem xs="12" md="2">
-            <MudAutocomplete T="string" @bind-Value="SearchText"
+            @if (Autocomplete)
+            {
+                <MudAutocomplete T="string" @bind-Value="SearchText"      
+                             Label="Search"
                              SearchFunc="@AutoComplete"
                              ResetValueOnEmptyText="true"
+                             Clearable="true"
                              CoerceText="true"
                              CoerceValue="true"
+                             OnClearButtonClick="@SearchIfClearClicked"
                              OnKeyUp="@SearchIfEnterPressed"
                              Immediate="true"
                              AdornmentIcon="@Icons.Material.Filled.Search"
                              AdornmentColor="Color.Primary"
                              OnAdornmentClick="@(() => SearchDocuments(new SearchDocumentsQuery(SearchText, _selectedPage, poligonString, _selectedFacets)))"
                              Variant="Variant.Outlined"
-                             Margin="Margin.None" />
+                             Margin="Margin.None"
+                             Disabled=@(!Autocomplete)
+                             />
+            } else {
+            <MudTextField   @bind-Value="SearchText" 
+                            Label="Search" 
+                            Clearable="true"
+                            Immediate="true"
+                            Adornment="Adornment.End" 
+                            AdornmentIcon="@Icons.Filled.Search"
+                            AdornmentColor="Color.Primary"
+                            OnClearButtonClick="@SearchIfClearClicked"
+                            OnKeyUp="@SearchIfEnterPressed"
+                            OnAdornmentClick="@(() => SearchDocuments(new SearchDocumentsQuery(SearchText, _selectedPage, poligonString, _selectedFacets)))" 
+                            Variant="Variant.Outlined" 
+                            Margin="Margin.None"
+                            Disabled="@Autocomplete"
+                            />
+            }
+            <MudCheckBox T="bool" CheckedChanged="ChangeAutocomplete" Color="Color.Primary" Label="Autocomplete" />
             <FacetsFilterComponent Facets="@_searchState.Facets" OnFacetSelectedChanged="UpdateSearchFacetsAndSearch"></FacetsFilterComponent>
         </MudItem>
         <MudItem xs="12" md="9">
@@ -60,6 +84,7 @@
     private bool _isSearching = true;
     private bool _showDocumentDetails = false;
     private DocumentMetadata? _documentMetadata;
+    private bool Autocomplete = false;
 
     private MudTabs? _mainBodyTabs;
     private MudTabPanel? _searchResultsPanel;
@@ -72,7 +97,11 @@
 
     private async Task<IEnumerable<string>> AutoComplete(string value)
     {
-        return await Mediator.Send(new GetAutocompleteSuggestionsQuery(value));
+        var results = await Mediator.Send(new GetAutocompleteSuggestionsQuery(value));
+        if(results.Count() > 0 && !results.Contains(value)) {
+            return results.Prepend(value);
+        }
+        return results;
     }
 
     private async Task SearchIfEnterPressed(KeyboardEventArgs e)
@@ -82,6 +111,12 @@
             var request = new SearchDocumentsQuery(SearchText, _selectedPage, poligonString, _selectedFacets);
             await SearchDocuments(request);
         }
+    }
+
+    private async Task SearchIfClearClicked(MouseEventArgs e)
+    {
+        var request = new SearchDocumentsQuery(SearchText, _selectedPage, poligonString, _selectedFacets);
+        await SearchDocuments(request);
     }
 
     private async Task UpdateSearchFacetsAndSearch(Facet facet)
@@ -175,5 +210,11 @@
         _documentMetadata = await Mediator.Send(new GetDocumentMetadataQuery(documentId));
 
         _showDocumentDetails = true;
-    }       
+    }    
+
+    private void ChangeAutocomplete()
+    {
+        Autocomplete = !Autocomplete;
+
+    }
 }

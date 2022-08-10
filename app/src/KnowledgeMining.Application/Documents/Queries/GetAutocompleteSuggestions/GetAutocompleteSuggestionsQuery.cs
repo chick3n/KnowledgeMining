@@ -21,7 +21,14 @@ namespace KnowledgeMining.Application.Documents.Queries.GetAutocompleteSuggestio
 
         public async Task<IEnumerable<string>> Handle(GetAutocompleteSuggestionsQuery request, CancellationToken cancellationToken)
         {
-            return await _searchService.Autocomplete(request.SearchQuery, true, cancellationToken);
+            try
+            {
+                return await _searchService.Autocomplete(request.SearchQuery, true, cancellationToken);
+            } catch(Exception)
+            {
+                return new List<string>();
+            }
+
         }
     }
 }
