@@ -11,14 +11,16 @@
         </MudText>
     </TitleContent>
     <DialogContent>
-        @if (Loading)
-        {
-            <MudProgressCircular Indeterminate="true"></MudProgressCircular>
-        }
-        else
-        {
-            <MudText Style="white-space: pre-wrap;">@Content</MudText>
-        }
+        <MudContainer Style="max-height: 600px; overflow-y: scroll">
+            @if (Loading)
+            {
+                <MudProgressCircular Indeterminate="true"></MudProgressCircular>
+            }
+            else
+            {
+                <MudText Style="white-space: pre-wrap;">@Content</MudText>
+            }
+        </MudContainer>
     </DialogContent>
     <DialogActions>
         <MudButton OnClick="Cancel">Close</MudButton>
