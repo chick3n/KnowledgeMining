@@ -1,0 +1,53 @@
+﻿@using KnowledgeMining.Application.Documents.Queries.GetDocumentContent
+@using KnowledgeMining.UI.Pages.Search.Components
+@using KnowledgeMining.UI.Services.Links
+@inject ILinkGenerator LinkGenerator;
+
+<MudDialog>
+    <TitleContent>
+        <MudText Typo="Typo.h6">
+            <MudIcon Icon="@Icons.Material.Filled.ReadMore" Class="mr-3 mb-n1"/>
+            @Document.Name
+        </MudText>
+    </TitleContent>
+    <DialogContent>
+        @if (Loading)
+        {
+            <MudProgressCircular Indeterminate="true"></MudProgressCircular>
+        }
+        else
+        {
+            <MudText Style="white-space: pre-wrap;">@Content</MudText>
+        }
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel">Close</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] MudDialogInstance MudDialog { get; set; }
+
+    [Inject] IMediator Mediator { get; set; }
+
+    [Parameter] public Application.Documents.Queries.GetDocuments.Document Document { get; set; } 
+        = new Application.Documents.Queries.GetDocuments.Document();
+
+    private bool Loading = false;
+    private string Content = string.Empty;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+        Loading = true;
+        var documentContent = await Mediator.Send(new GetDocumentContentQuery(Document.Name));
+        Content = documentContent.Document.Content;
+
+        Loading = false;
+    }
+
+    private void Cancel()
+    {
+        MudDialog.Cancel();
+    }
+}
