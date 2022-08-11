@@ -34,9 +34,12 @@
 
     private MudTheme Theme = new MudTheme();
 
-    private async Task<IEnumerable<string>> AutoComplete(string value)
+    private async Task<IEnumerable<string>?> AutoComplete(string value)
     {
-        return await Mediator.Send(new GetAutocompleteSuggestionsQuery(value));
+        var results = await Mediator.Send(new GetAutocompleteSuggestionsQuery(value));
+        if (results.Count() == 0)
+            return null;
+        return results.Prepend(value).Distinct(); 
     }
 
     private Task GoToSearchPageWhenEnterPressed(KeyboardEventArgs e)

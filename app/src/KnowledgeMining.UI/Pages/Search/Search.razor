@@ -17,18 +17,19 @@
 
         </MudItem>
         <MudItem xs="12" md="2">
-            <MudAutocomplete T="string" @bind-Value="SearchText"
-                             SearchFunc="@AutoComplete"
-                             ResetValueOnEmptyText="true"
-                             CoerceText="true"
-                             CoerceValue="true"
-                             OnKeyUp="@SearchIfEnterPressed"
-                             Immediate="true"
-                             AdornmentIcon="@Icons.Material.Filled.Search"
-                             AdornmentColor="Color.Primary"
-                             OnAdornmentClick="@(() => SearchDocuments(new SearchDocumentsQuery(SearchText, _selectedPage, poligonString, _selectedFacets)))"
-                             Variant="Variant.Outlined"
-                             Margin="Margin.None" />
+            <MudTextField   @bind-Value="SearchText" 
+                            Label="Search" 
+                            Clearable="true"
+                            Immediate="true"
+                            Adornment="Adornment.End" 
+                            AdornmentIcon="@Icons.Filled.Search"
+                            AdornmentColor="Color.Primary"
+                            OnClearButtonClick="@SearchIfClearClicked"
+                            OnKeyUp="@SearchIfEnterPressed"
+                            OnAdornmentClick="@(() => SearchDocuments(new SearchDocumentsQuery(SearchText, _selectedPage, poligonString, _selectedFacets)))" 
+                            Variant="Variant.Outlined" 
+                            Margin="Margin.None"
+                            />
             <FacetsFilterComponent Facets="@_searchState.Facets" OnFacetSelectedChanged="UpdateSearchFacetsAndSearch"></FacetsFilterComponent>
         </MudItem>
         <MudItem xs="12" md="9">
@@ -70,11 +71,6 @@
         await SearchDocuments(request);
     }
 
-    private async Task<IEnumerable<string>> AutoComplete(string value)
-    {
-        return await Mediator.Send(new GetAutocompleteSuggestionsQuery(value));
-    }
-
     private async Task SearchIfEnterPressed(KeyboardEventArgs e)
     {
         if (e.Code == "Enter" || e.Code == "NumpadEnter")
@@ -82,6 +78,12 @@
             var request = new SearchDocumentsQuery(SearchText, _selectedPage, poligonString, _selectedFacets);
             await SearchDocuments(request);
         }
+    }
+
+    private async Task SearchIfClearClicked(MouseEventArgs e)
+    {
+        var request = new SearchDocumentsQuery(SearchText, _selectedPage, poligonString, _selectedFacets);
+        await SearchDocuments(request);
     }
 
     private async Task UpdateSearchFacetsAndSearch(Facet facet)
@@ -175,5 +177,5 @@
         _documentMetadata = await Mediator.Send(new GetDocumentMetadataQuery(documentId));
 
         _showDocumentDetails = true;
-    }       
+    }    
 }
