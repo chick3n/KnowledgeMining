@@ -34,6 +34,8 @@ namespace KnowledgeMining.Domain.Entities
         public string? DocumentType { get; set; }
         [JsonPropertyName("merged_content")]
         public string? MergedContent { get; set; }
+        [JsonPropertyName("summary")]
+        public string? Summary { get; set; }
 
         public IDictionary<string, object?> ToDictionary()
         {
@@ -45,6 +47,7 @@ namespace KnowledgeMining.Domain.Entities
                 { ToLowerFirstChar(nameof(Locations)), Locations },
                 { ToLowerFirstChar(nameof(Topics)), Topics },
                 { ToLowerFirstChar(nameof(Text)), Text },
+                { ToLowerFirstChar(nameof(Summary)), Summary },
                 { ToLowerFirstChar(nameof(Date)), Date },
                 { ToLowerFirstChar(nameof(Mission)), Mission },
                 { ToLowerFirstChar(nameof(DocumentType)), DocumentType },
