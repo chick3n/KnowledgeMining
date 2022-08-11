@@ -27,7 +27,7 @@ namespace KnowledgeMining.Application.Documents.Commands.DeleteDocument
 
         public async Task<Unit> Handle(DeleteDocumentCommand request, CancellationToken cancellationToken)
         {
-            await _storageService.DownloadDocument(request.DocumentName, cancellationToken);
+            await _storageService.DeleteDocument(request.DocumentName, cancellationToken);
             await _searchService.QueueIndexerJob(cancellationToken);
 
             return Unit.Value;

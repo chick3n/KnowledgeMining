@@ -86,7 +86,7 @@ namespace KnowledgeMining.UI.Pages.Documents
             try
             {
                 await Mediator.Send(new DeleteDocumentCommand(document.Name));
-                _documents = _documents.Where(x => x.Name.Equals(document.Name));
+                _documents = _documents.Where(x => !x.Name.Equals(document.Name));
                 MemoryCache.Set(Constants.DOCUMENT_FILTER_CACHE, _documents);
                 Search(_searchText);
 
