@@ -315,7 +315,20 @@ namespace KnowledgeMining.Infrastructure.Services.Search
 
         private IEnumerable<SummarizedFacet> SummarizeFacets(IDictionary<string, IList<FacetResult>> facets)
         {
-            return facets.Select(f => new SummarizedFacet()
+            var validKeys = new string[]
+            {
+                "keyPhrases",
+                "organizations",
+                "persons",
+                "locations",
+                "topics",
+                "date",
+                "mission",
+                "documentType"
+            };
+
+            return facets.Where(x => validKeys.Contains(x.Key))
+                .Select(f => new SummarizedFacet()
             {
                 Name = f.Key,
                 Count = f.Value.Count,
