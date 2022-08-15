@@ -388,22 +388,35 @@ namespace KnowledgeMining.Infrastructure.Services.Search
                     string? clause = default;
                     string clausePrefix = filterInitialized ? " and " : string.Empty;
 
-                    if (facet?.Type == typeof(string[]))
+                    var facetType = facet?.Type;
+
+                    if (facetType == typeof(string[]))
                     {
                         filterInitialized = true;
                         clause = $"{clausePrefix}{facetFilter.Name}/any(t: search.in(t, '{facetValues}', ','))";
                     }
-                    else if (facet?.Type == typeof(string))
+                    else if (facetType == typeof(string))
                     {
                         filterInitialized = true;
-                        clause = $"{clausePrefix}{facetFilter.Name} eq '{facetValues}'";
+
+                        if(facetFilter.Values.Count > 1)
+                        {
+                            var orFilters = facetFilter.Values.Select(x => $"{facetFilter.Name} eq '{x}'");
+                            var query = string.Join(" or ", orFilters);
+                            clause = $"{clausePrefix}({query})";
+                        }
+                        else
+                        {
+                            clause = $"{clausePrefix}{facetFilter.Name} eq '{facetValues}'";
+                        }
+                        
                     }
-                    else if (facet?.Type == typeof(DateTime))
+                    else if (facetType == typeof(DateTime))
                     {
                         filterInitialized = true;
                         clause = $"{clausePrefix}{facetFilter.Name} {facetValues}";
                     }
-                    else if(facet?.Type == typeof(DateTimeOffset))
+                    else if(facetType == typeof(DateTimeOffset))
                     {
                         filterInitialized = true;
                         clause = $"{clausePrefix}{facetFilter.Name} {facetValues}";

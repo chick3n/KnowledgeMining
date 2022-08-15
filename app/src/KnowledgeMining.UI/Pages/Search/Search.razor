@@ -47,7 +47,10 @@
             </MudToolBar>
         </MudItem>
         <MudItem xs="12" md="2">            
-            <FacetsFilterComponent Facets="@_searchState.Facets" OnFacetSelectedChanged="UpdateSearchFacetsAndSearch"></FacetsFilterComponent>
+            <FacetsFilterComponent 
+                Facets="@_searchState.Facets"
+                MissionFacet="@_missionFacet"
+                OnFacetSelectedChanged="UpdateSearchFacetsAndSearch"></FacetsFilterComponent>
         </MudItem>
         <MudItem xs="12" md="10">
             <MudTabs @ref="_mainBodyTabs" Elevation="0" Outlined="true" Rounded="true" ApplyEffectsToContainer="true" PanelClass="pa-6" Class="mt-1">
@@ -74,6 +77,7 @@
     private MudDateRangePicker? _timespanPicker;
 
     private SearchState _searchState = new();
+    private SummarizedFacet _missionFacet;
 
     private int _selectedPage;
     private List<FacetFilter> _selectedFacets = new();
@@ -86,6 +90,7 @@
         Custom
     };
 
+    private string[] excludeFacets = new string[] { "mission" };
     private TimeSpanType _timeSpanSelectedType = TimeSpanType.Any;
     private string _timespanLabel = "Any";
     private string _searchResultsLabel = "Search Results";
@@ -126,16 +131,30 @@
         await SearchDocuments(request);
     }
 
+    private FacetFilter GenerateFacetFilter(Facet facet)
+    {
+        var facetFilter = new FacetFilter()
+            {
+                Name = facet.Name
+            };
+
+        switch(facet.Name)
+        {
+            case "mission":
+                facetFilter.OverrideType = typeof(string[]);
+                break;
+        }
+
+        return facetFilter;
+    }
+
     private async Task UpdateSearchFacetsAndSearch(Facet facet)
     {
         FacetFilter searchFacet;
 
         if (!_selectedFacets.Any(f => f.Name == facet.Name))
         {
-            searchFacet = new FacetFilter()
-                {
-                    Name = facet.Name
-                };
+            searchFacet = GenerateFacetFilter(facet);
             _selectedFacets.Add(searchFacet);
         }
         else
@@ -169,6 +188,31 @@
         await SearchDocuments(request);
     }
 
+    /// <summary>
+    /// Mission drives Date
+    /// </summary>
+    /// <param name="request"></param>
+    /// <returns></returns>
+    private async Task SearchDocumentsFixedFacets(SearchDocumentsQuery request)
+    {
+        await SearchDocumentsMissionFacets(request);
+    }
+
+    private async Task SearchDocumentsMissionFacets(SearchDocumentsQuery request) 
+    {
+        var facetFilters = request.FacetFilters.Where(x => !x.Name.Equals("mission") && !x.Name.Equals("date"));
+
+        //Override String -> StringCollection facets
+        var topResponse = await Mediator.Send(new SearchDocumentsQuery(
+            request.SearchText,
+            request.Page,
+            request.PolygonString,
+            facetFilters
+        ));
+
+        _missionFacet = topResponse.Facets.Where(x => x.Name.Equals("mission")).FirstOrDefault();
+    }
+
     private async Task SearchDocuments(SearchDocumentsQuery request)
     {
         SwitchToSearchResultsTab();
@@ -181,9 +225,11 @@
 
         _searchState.Documents = response.Documents;
         _searchState.FacetableFields = response.FacetableFields;
-        _searchState.Facets = response.Facets;
         _searchState.TotalCount = response.TotalCount;
-        _searchState.TotalPages = (int)response.TotalPages;
+        _searchState.TotalPages = (int)response.TotalPages;        
+        _searchState.Facets = response.Facets.Where(x => !excludeFacets.Contains(x.Name));
+
+        await SearchDocumentsFixedFacets(request);
 
         UpdateSearchResultsLabelWithDocumentCount(_searchState.TotalCount);
 

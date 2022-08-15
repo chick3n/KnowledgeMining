@@ -1,4 +1,51 @@
 ﻿@using KnowledgeMining.Application.Documents.Queries.SearchDocuments
+
+@foreach (var aggregateFacet in new SummarizedFacet[] { MissionFacet })
+{
+    if (aggregateFacet == null) continue;
+    var selectedAggregateFacets = aggregateFacet.Values?.Where(x => IsSelected(x)).ToList() 
+        ?? new List<Facet>();
+
+    <MudExpansionPanels Class="mt-6">
+        <MudExpansionPanel Text="@($"{aggregateFacet.Name.SplitCamelCase().ToTitleCase()} ({aggregateFacet.Values.Count()})")" 
+            Disabled="@(aggregateFacet.Values.Any() is false)">
+            @if (selectedAggregateFacets.Count > 0) 
+            {
+                @foreach (var facet in selectedAggregateFacets)
+                {
+                    <MudCheckBox T="bool" Label="@($"{facet.Value} ({facet.Count})")" 
+                        Checked="true" 
+                        CheckedChanged="@(isSelected => HandleCheckedChanged(facet, isSelected))"></MudCheckBox>
+                }
+                
+                @if(aggregateFacet.Count - selectedAggregateFacets.Count > 0)
+                {
+                    <MudDivider Light="true" />
+                }
+            }
+
+            @foreach (var facet in aggregateFacet.Values.Except(selectedAggregateFacets))
+            {
+                @if(selectedAggregateFacets.Count == 0)
+                {
+                    <MudCheckBox T="bool" Label="@($"{facet.Value} ({facet.Count})")" 
+                        Checked="false" 
+                        CheckedChanged="@(isSelected => HandleCheckedChanged(facet, isSelected))"></MudCheckBox>
+                }
+                else
+                {
+                    <MudCheckBox T="bool" Label="@($"{facet.Value}")" 
+                        Checked="false" 
+                        CheckedChanged="@(isSelected => HandleCheckedChanged(facet, isSelected))"></MudCheckBox>
+                }
+
+            }
+        </MudExpansionPanel>
+    </MudExpansionPanels>
+}
+
+<hr />
+
 @foreach (var aggregateFacet in Facets)
 {
     var selectedAggregateFacets = aggregateFacet.Values?.Where(x => IsSelected(x)).ToList() 
@@ -37,6 +84,12 @@
 
     [Parameter]
     public IEnumerable<SummarizedFacet>? Facets { get; set; }
+
+    [Parameter]
+    public SummarizedFacet MissionFacet { get; set; }
+
+    [Parameter]
+    public SummarizedFacet DateFacet { get; set; }
 
     [Parameter]
     public EventCallback<Facet> OnFacetSelectedChanged { get; set; }
