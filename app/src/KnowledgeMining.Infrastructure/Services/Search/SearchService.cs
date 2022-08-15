@@ -386,34 +386,27 @@ namespace KnowledgeMining.Infrastructure.Services.Search
                     var facetValues = string.Join(",", facetFilter.Values);
 
                     string? clause = default;
+                    string clausePrefix = filterInitialized ? " and " : string.Empty;
 
                     if (facet?.Type == typeof(string[]))
                     {
-                        if (filterInitialized is false)
-                        {
-                            clause = $"{facetFilter.Name}/any(t: search.in(t, '{facetValues}', ','))";
-                            filterInitialized = true;
-                        }
-                        else
-                        {
-                            clause = $" and {facetFilter.Name}/any(t: search.in(t, '{facetValues}', ','))";
-                        }
+                        filterInitialized = true;
+                        clause = $"{clausePrefix}{facetFilter.Name}/any(t: search.in(t, '{facetValues}', ','))";
                     }
                     else if (facet?.Type == typeof(string))
                     {
-                        if(filterInitialized is false)
-                        {
-                            clause = $"{facetFilter.Name} eq '{facetValues}'";
-                            filterInitialized = true;
-                        }
-                        else
-                        {
-                            clause = $" and {facetFilter.Name} eq '{facetValues}'";
-                        }
+                        filterInitialized = true;
+                        clause = $"{clausePrefix}{facetFilter.Name} eq '{facetValues}'";
                     }
                     else if (facet?.Type == typeof(DateTime))
                     {
-                        // TODO: Construct DateTime facet query
+                        filterInitialized = true;
+                        clause = $"{clausePrefix}{facetFilter.Name} {facetValues}";
+                    }
+                    else if(facet?.Type == typeof(DateTimeOffset))
+                    {
+                        filterInitialized = true;
+                        clause = $"{clausePrefix}{facetFilter.Name} {facetValues}";
                     }
 
                     filterBuilder.Append(clause);
