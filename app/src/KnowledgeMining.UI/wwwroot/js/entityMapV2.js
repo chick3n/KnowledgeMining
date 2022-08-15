@@ -23,7 +23,7 @@ export function renderEntityGraph(containerId, data, maxLevels) {
     svg
         .attr('width', config.width)
         .attr('height', config.height)
-        .attr("viewBox", [-config.width / 2, 0, config.width, config.height])
+        .attr("viewBox", [-config.width / 2, 0, (config.width + (config.width / 2)), config.height])
         .attr("style", "max-width: 100%; height: auto; height: intrinsic;")
         .append('defs')
         .append('marker')
@@ -154,8 +154,8 @@ function drag(simulation) {
     function dragended(event) {
         if (!event.active)
             simulation.alphaTarget(0);
-        event.subject.fx = null;
-        event.subject.fy = null;
+        event.subject.fx = event.x;
+        event.subject.fy = event.y;
     }
     return d3.drag()
         .on("start", dragstarted)
