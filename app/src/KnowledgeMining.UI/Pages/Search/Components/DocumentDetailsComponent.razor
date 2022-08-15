@@ -1,7 +1,7 @@
 ﻿@using System.ComponentModel
 @inject ILinkGenerator LinkGenerator;
 
-<MudOverlay Visible="@IsVisible" DarkBackground="true" AutoClose="true">
+<MudOverlay Visible="@IsVisible" DarkBackground="true" AutoClose="true" VisibleChanged="IsVisibleChanged">
     <MudContainer>
         <MudPopover Open="@IsVisible" Class="px-4 pt-4" AnchorOrigin="Origin.CenterCenter" TransformOrigin="Origin.CenterCenter">
             <div class="d-flex flex-column">
@@ -94,4 +94,6 @@
     {
         return IsVisibleChanged.InvokeAsync(false);
     }
+
+
 }
