@@ -1,11 +1,32 @@
 ﻿@using KnowledgeMining.Application.Documents.Queries.SearchDocuments
 @foreach (var aggregateFacet in Facets)
 {
+    var selectedAggregateFacets = aggregateFacet.Values?.Where(x => IsSelected(x)).ToList() 
+        ?? new List<Facet>();
+
     <MudExpansionPanels Class="mt-6">
-        <MudExpansionPanel Text="@($"{aggregateFacet.Name.SplitCamelCase().ToTitleCase()} ({aggregateFacet.Values.Count()})")" Disabled="@(aggregateFacet.Values.Any() is false)">
-            @foreach (var facet in aggregateFacet.Values)
+        <MudExpansionPanel Text="@($"{aggregateFacet.Name.SplitCamelCase().ToTitleCase()} ({aggregateFacet.Values.Count()})")" 
+            Disabled="@(aggregateFacet.Values.Any() is false)">
+            @if (selectedAggregateFacets.Count > 0) 
             {
-                <MudCheckBox T="bool" Label="@($"{facet.Value} ({facet.Count})")" Checked="@(IsSelected(facet))" CheckedChanged="@(isSelected => HandleCheckedChanged(facet, isSelected))"></MudCheckBox>
+                @foreach (var facet in selectedAggregateFacets)
+                {
+                    <MudCheckBox T="bool" Label="@($"{facet.Value} ({facet.Count})")" 
+                        Checked="true" 
+                        CheckedChanged="@(isSelected => HandleCheckedChanged(facet, isSelected))"></MudCheckBox>
+                }
+                
+                @if(aggregateFacet.Count - selectedAggregateFacets.Count > 0)
+                {
+                    <MudDivider Light="true" />
+                }
+            }
+
+            @foreach (var facet in aggregateFacet.Values.Except(selectedAggregateFacets))
+            {
+                <MudCheckBox T="bool" Label="@($"{facet.Value} ({facet.Count})")" 
+                    Checked="false" 
+                    CheckedChanged="@(isSelected => HandleCheckedChanged(facet, isSelected))"></MudCheckBox>
             }
         </MudExpansionPanel>
     </MudExpansionPanels>
