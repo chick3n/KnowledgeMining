@@ -9,14 +9,17 @@
 
 @inject IMediator Mediator
 
+<style>
+    .hide-input > .mud-input-control {
+        display: none;
+    }
+</style>
+
 <PageTitle>Search</PageTitle>
 
 <MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="mt-4">
     <MudGrid>
-        <MudItem xs="0" md="1">
-
-        </MudItem>
-        <MudItem xs="12" md="2">
+        <MudItem xs="12" md="12">
             <MudTextField   @bind-Value="SearchText" 
                             Label="Search" 
                             Clearable="true"
@@ -30,9 +33,17 @@
                             Variant="Variant.Outlined" 
                             Margin="Margin.None"
                             />
+        </MudItem>
+        <MudItem xs="12" md="12">
+            <MudToolBar>
+                <MudButton StartIcon="@Icons.Material.Outlined.CalendarMonth" Title="Time Span" OnClick="@(() => _timespanPicker.Open())">Time Span</MudButton>
+                
+            </MudToolBar>
+        </MudItem>
+        <MudItem xs="12" md="2">            
             <FacetsFilterComponent Facets="@_searchState.Facets" OnFacetSelectedChanged="UpdateSearchFacetsAndSearch"></FacetsFilterComponent>
         </MudItem>
-        <MudItem xs="12" md="9">
+        <MudItem xs="12" md="10">
             <MudTabs @ref="_mainBodyTabs" Elevation="0" Outlined="true" Rounded="true" ApplyEffectsToContainer="true" PanelClass="pa-6" Class="mt-1">
                 <div class="d-flex flex-column">
                     <MudTabPanel @ref="_searchResultsPanel" Text="@_searchResultsLabel">
@@ -46,10 +57,15 @@
         </MudItem>
     </MudGrid>
     <DocumentDetailsComponent @bind-IsVisible="_showDocumentDetails" Document="_documentMetadata"></DocumentDetailsComponent>
+    <MudDateRangePicker @ref="_timespanPicker" class="hide-input"
+                    PickerVariant="PickerVariant.Dialog" 
+                    Label="Time span" 
+                    DateRangeChanged="@TimeSpanCustomRangeChanged" />
 </MudContainer>
 
 @code {
     [Parameter, SupplyParameterFromQuery(Name = "q")] public string? SearchText { get; set; }
+    private MudDateRangePicker? _timespanPicker;
 
     private SearchState _searchState = new();
 
@@ -64,6 +80,7 @@
 
     private MudTabs? _mainBodyTabs;
     private MudTabPanel? _searchResultsPanel;
+
 
     protected override async Task OnInitializedAsync()
     {
@@ -177,5 +194,14 @@
         _documentMetadata = await Mediator.Send(new GetDocumentMetadataQuery(documentId));
 
         _showDocumentDetails = true;
-    }    
+    }  
+
+    private async Task TimeSpanCustomRangeChanged(DateRange dateRange)
+    {
+        if(!_selectedFacets.Any(x => x.Name.Equals("datetime")))
+
+        var request = new SearchDocumentsQuery(SearchText, _selectedPage, poligonString, _selectedFacets);
+
+        await SearchDocuments(request);
+    }
 }
