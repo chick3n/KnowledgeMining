@@ -19,7 +19,6 @@ namespace KnowledgeMining.UI.Pages.Documents
         [Inject] public ISnackbar Snackbar { get; set; }
         [Inject] public IDialogService DialogService { get; set; }
         [Inject] public DocumentCacheService DocumentCacheService { get; set; }
-
         [Inject] public IMediator Mediator { get; set; }
 
         private bool _isLoading;
@@ -154,6 +153,15 @@ namespace KnowledgeMining.UI.Pages.Documents
             _isLoading = false;
 
             Snackbar.Add("Refreshing Document Table Completed", Severity.Success);
+        }
+
+        public async Task OnFilesUploaded(IEnumerable<Document> documents)
+        {
+            if (documents.Count() > 0)
+            {
+                await DocumentCacheService.AddDocuments(documents);
+                await Search(_searchText);
+            }
         }
 
     }

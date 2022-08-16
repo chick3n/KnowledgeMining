@@ -41,6 +41,11 @@ namespace KnowledgeMining.UI
                 options.MinimumSameSitePolicy = SameSiteMode.None;
             });
 
+            builder.Services.Configure<HostOptions>(opt =>
+            {
+                opt.BackgroundServiceExceptionBehavior = BackgroundServiceExceptionBehavior.Ignore;
+            });
+
             builder.Services.AddApplicationServices(builder.Configuration);
             builder.Services.AddInfrastructureServices(builder.Configuration);
 

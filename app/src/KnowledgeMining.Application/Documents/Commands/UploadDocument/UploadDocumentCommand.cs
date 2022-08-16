@@ -1,11 +1,12 @@
 ﻿using KnowledgeMining.Application.Common.Interfaces;
+using SearchDocument = KnowledgeMining.Application.Documents.Queries.GetDocuments.Document;
 using MediatR;
 
 namespace KnowledgeMining.Application.Documents.Commands.UploadDocument
 {
-    public readonly record struct UploadDocumentCommand(IEnumerable<Document> Documents) : IRequest<Unit>;
+    public readonly record struct UploadDocumentCommand(IEnumerable<Document> Documents) : IRequest<IEnumerable<SearchDocument>>;
 
-    public class UploadDocumentCommandHandler : IRequestHandler<UploadDocumentCommand, Unit>
+    public class UploadDocumentCommandHandler : IRequestHandler<UploadDocumentCommand, IEnumerable<SearchDocument>>
     {
         private readonly IStorageService _storageService;
 
@@ -14,11 +15,11 @@ namespace KnowledgeMining.Application.Documents.Commands.UploadDocument
             _storageService = storageService;
         }
 
-        public async Task<Unit> Handle(UploadDocumentCommand request, CancellationToken cancellationToken)
+        public async Task<IEnumerable<SearchDocument>> Handle(UploadDocumentCommand request, CancellationToken cancellationToken)
         {
-            await _storageService.UploadDocuments(request.Documents, cancellationToken);
-
-            return Unit.Value;
+            var documents = await _storageService.UploadDocuments(request.Documents, cancellationToken);
+            
+            return documents;
         }
     }
 }

@@ -69,6 +69,8 @@
     public bool Visible { get; set; }
     [Parameter]
     public EventCallback<bool> VisibleChanged { get; set; }
+    [Parameter]
+    public EventCallback<IEnumerable<Application.Documents.Queries.GetDocuments.Document>> OnFilesUploaded { get; set; }
 
     public DocumentTag[]? DocumentTags { get; set; }
 
@@ -146,9 +148,16 @@
 
         try
         {
-            var documentToUpload = _files.Select(f => new Application.Documents.Commands.UploadDocument.Document(f.Name, f.ContentType, GetFileTags(f.Name), f.OpenReadStream(maxAllowedSize: 10485760)));
-            await Mediator.Send(new UploadDocumentCommand(documentToUpload));
-            Snackbar.Add("Files uploaded successfully!", Severity.Success);
+            var documentToUpload = 
+                _files.Select(f => 
+                    new Application.Documents.Commands.UploadDocument.Document(f.Name, f.ContentType, GetFileTags(f.Name), f.OpenReadStream(maxAllowedSize: 10485760)));
+            var results = await Mediator.Send(new UploadDocumentCommand(documentToUpload));
+
+            var missingUploads = _files.Select(x => x.Name).Except(results.Select(x => x.Name));
+            if (missingUploads.Count() > 0)
+                Snackbar.Add($"Some files failed to upload {string.Join(",", missingUploads)}.", Severity.Error);
+            Snackbar.Add($"Files {string.Join(",", results.Select(x => x.Name))} uploaded successfully!", Severity.Success);
+            await OnFilesUploaded.InvokeAsync(results);
             await Clear();
         }
         catch (Exception ex)

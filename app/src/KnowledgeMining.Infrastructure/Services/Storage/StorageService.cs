@@ -9,6 +9,7 @@ using System.Net;
 using SearchDocument = KnowledgeMining.Application.Documents.Queries.GetDocuments.Document;
 using UploadDocument = KnowledgeMining.Application.Documents.Commands.UploadDocument.Document;
 
+
 namespace KnowledgeMining.Infrastructure.Services.Storage
 {
     public class StorageService : IStorageService
@@ -59,8 +60,10 @@ namespace KnowledgeMining.Infrastructure.Services.Storage
             }
         }
 
-        public async Task UploadDocuments(IEnumerable<UploadDocument> documents, CancellationToken cancellationToken)
+        public async Task<IEnumerable<SearchDocument>> UploadDocuments(IEnumerable<UploadDocument> documents, CancellationToken cancellationToken)
         {
+            var result = new List<SearchDocument>();
+
             if (documents.Any())
             {
                 var container = GetBlobContainerClient();
@@ -78,7 +81,8 @@ namespace KnowledgeMining.Infrastructure.Services.Storage
                                 ContentType = file.ContentType
                             };
 
-                            await blob.UploadAsync(file.Content, httpHeaders: blobHttpHeader, cancellationToken: cancellationToken).ConfigureAwait(false);
+                            var uploadFileResult = 
+                                await blob.UploadAsync(file.Content, httpHeaders: blobHttpHeader, cancellationToken: cancellationToken).ConfigureAwait(false);
 
                             if (file.Tags?.Any() ?? false)
                             {
@@ -86,6 +90,16 @@ namespace KnowledgeMining.Infrastructure.Services.Storage
                                 await blob.SetTagsAsync(nonEmptyTags, cancellationToken: cancellationToken);
                                 await blob.SetMetadataAsync(nonEmptyTags, cancellationToken: cancellationToken);
                             }
+
+                            result.Add(new SearchDocument
+                            {
+                                Name = file.Name,
+                                Tags = file.Tags
+                            });
+                        }
+                        catch(Exception ex)
+                        {
+                            _logger.LogCritical(ex, "Failed to upload file {FileName}", file.Name);
                         }
                         finally
                         {
@@ -97,6 +111,8 @@ namespace KnowledgeMining.Infrastructure.Services.Storage
                     }
                 }
             }
+
+            return result;
         }
 
         private IDictionary<string, string> RemoveEmptyTags(IDictionary<string, string> tags)

@@ -55,6 +55,16 @@ namespace KnowledgeMining.UI.Services.Documents
             return documents;
         }
 
+        public async Task SetDocumnets(IEnumerable<Document> documents)
+        {
+            await _locker.WaitAsync();
+
+            _memoryCache.Set(DOCUMENT_FILTER_CACHE, documents);
+
+            _locker.Release();
+
+        }
+
         public IEnumerable<Document> GetDocuments()
         {
             _memoryCache.TryGetValue<IEnumerable<Document>>(DOCUMENT_FILTER_CACHE, out var documents);
@@ -62,6 +72,16 @@ namespace KnowledgeMining.UI.Services.Documents
                 documents = new List<Document>();
 
             return documents;
+        }
+
+        public async Task AddDocuments(IEnumerable<Document> documents)
+        {
+            _memoryCache.TryGetValue<List<Document>>(DOCUMENT_FILTER_CACHE, out var cachedDocuments);
+            if (cachedDocuments == null)
+                cachedDocuments = new List<Document>();
+
+            cachedDocuments.AddRange(documents);
+            await SetDocumnets(cachedDocuments);
         }
 
         public IEnumerable<Document> RemoveDocuments(Func<Document, bool> predicate)
