@@ -31,9 +31,21 @@ namespace KnowledgeMining.UI.Pages.Documents
 
         // Upload Document
         private bool _isUploadComponentVisible;
-        public void OpenUploadComponent()
+        public async Task OpenUploadComponent()
         {
-            _isUploadComponentVisible = true;
+            //_isUploadComponentVisible = true;
+            var options = new DialogOptions { CloseOnEscapeKey = true };
+            var dialog = DialogService.Show<UploadDocumentsComponent>("", options);
+            var result = await dialog.Result;
+
+            if(!result.Cancelled && result.Data != null)
+            {
+                if (result.DataType == typeof(IEnumerable<Document>))
+                {
+                    var results = result.Data as IEnumerable<Document>;
+                    await OnFilesUploaded(results!);
+                }
+            }
         }
 
         protected override async Task OnInitializedAsync()
@@ -101,19 +113,6 @@ namespace KnowledgeMining.UI.Pages.Documents
         {
             _searchText = searchText;
             await Search(searchText);
-        }
-
-        private void LoadPreviousPage()
-        {
-            if (_currentPage >= 1)
-                _currentPage -= 1;
-            UpdateTable(_documents.Skip(_currentPage).Take(_pageSize));
-        }
-
-        private void LoadNextPage()
-        {
-            UpdateTable(_documents.Skip(_currentPage).Take(_pageSize));
-            _currentPage += 1;
         }
 
         private async Task Search(string? searchText)
