@@ -44,6 +44,7 @@ namespace KnowledgeMining.UI
             builder.Services.AddApplicationServices(builder.Configuration);
             builder.Services.AddInfrastructureServices(builder.Configuration);
 
+            builder.Services.AddScoped<DocumentCacheService>();
             builder.Services.AddScoped<ILinkGenerator, DocumentPreviewLinkGenerator>();
             builder.Services.AddScoped<ILinkGenerator, DocumentPreviewLinkGenerator>();
             builder.Services.AddScoped<IScopedProcessingService, DocumentFilterScopedService>();

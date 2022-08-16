@@ -5,8 +5,10 @@ using KnowledgeMining.Application.Documents.Queries.GetDocuments;
 using KnowledgeMining.Application.Documents.Queries.SearchDocuments;
 using KnowledgeMining.Domain.Entities;
 using KnowledgeMining.UI.Pages.Documents.Componenents;
+using KnowledgeMining.UI.Services.Documents;
 using MediatR;
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Web;
 using Microsoft.Extensions.Caching.Memory;
 using MudBlazor;
 
@@ -16,10 +18,9 @@ namespace KnowledgeMining.UI.Pages.Documents
     {
         [Inject] public ISnackbar Snackbar { get; set; }
         [Inject] public IDialogService DialogService { get; set; }
+        [Inject] public DocumentCacheService DocumentCacheService { get; set; }
 
         [Inject] public IMediator Mediator { get; set; }
-
-        [Inject] public IMemoryCache MemoryCache { get; set; }
 
         private bool _isLoading;
         private string? _searchText;
@@ -38,7 +39,7 @@ namespace KnowledgeMining.UI.Pages.Documents
 
         protected override async Task OnInitializedAsync()
         {
-            Search(_searchText);
+            await Search(_searchText);
         }
 
         private void BackupDocument(Document item)
@@ -86,10 +87,8 @@ namespace KnowledgeMining.UI.Pages.Documents
             try
             {
                 await Mediator.Send(new DeleteDocumentCommand(document.Name));
-                MemoryCache.TryGetValue<IEnumerable<Document>>(Constants.DOCUMENT_FILTER_CACHE, out var cachedDocuments);
-                cachedDocuments = cachedDocuments.Where(x => !x.Name.Equals(document.Name));
-                MemoryCache.Set(Constants.DOCUMENT_FILTER_CACHE, cachedDocuments);
-                Search(_searchText);
+                DocumentCacheService.RemoveDocuments(x => !x.Name.Equals(document.Name));
+                await Search(_searchText);
 
                 Snackbar.Add("Document deleted", Severity.Success);
             }
@@ -102,7 +101,7 @@ namespace KnowledgeMining.UI.Pages.Documents
         private async Task OnSearch(string searchText)
         {
             _searchText = searchText;
-            Search(searchText);
+            await Search(searchText);
         }
 
         private void LoadPreviousPage()
@@ -118,18 +117,14 @@ namespace KnowledgeMining.UI.Pages.Documents
             _currentPage += 1;
         }
 
-        private void Search(string? searchText)
+        private async Task Search(string? searchText)
         {
             _currentPage = 0;
             _totalPages = 0;
 
             _isLoading = true;
 
-            MemoryCache.TryGetValue<IEnumerable<Document>>(Constants.DOCUMENT_FILTER_CACHE, out var cachedDocuments);
-
-            if (cachedDocuments == null)
-                cachedDocuments = new List<Document>();
-
+            var cachedDocuments = DocumentCacheService.GetDocuments();
             var query = cachedDocuments.Where(x => x.Name.Contains(searchText ?? string.Empty, StringComparison.OrdinalIgnoreCase));
             _totalPages = query.Count();
             _documents = query.ToList();
@@ -142,6 +137,23 @@ namespace KnowledgeMining.UI.Pages.Documents
         private void UpdateTable(IEnumerable<Document> documents)
         {
             _documents = documents;
+        }
+
+        private async Task RefreshCacheClicked(MouseEventArgs args)
+        {
+            _isLoading = true;
+
+            Snackbar.Add("Refreshing Document Table...", Severity.Warning);
+
+            UpdateTable(new List<Document>());
+
+            var documents = await DocumentCacheService.BuildCache(new CancellationToken());
+
+            UpdateTable(documents);
+
+            _isLoading = false;
+
+            Snackbar.Add("Refreshing Document Table Completed", Severity.Success);
         }
 
     }
