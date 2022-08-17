@@ -38,7 +38,7 @@
             <CellTemplate>
                 <MudIconButton Title="Metadata" Size="@Size.Small" Icon="@Icons.Outlined.Edit" OnClick="@(async (e) => await EditDocumentMetadata(context.Item))" />
                 @if(context.Item.Metadata != null) {
-                    @(string.Join(",", context.Item.Metadata.Select(x => $"{x.Key}: {x.Value}")))
+                    @DisplayAuthorizedFields(AuthorizedMetadataFields, context.Item.Metadata)
                 }
             </CellTemplate>
         </Column>

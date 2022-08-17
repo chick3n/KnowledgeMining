@@ -3,6 +3,7 @@ using KnowledgeMining.Application.Documents.Commands.EditDocument;
 using KnowledgeMining.Application.Documents.Queries.GetDocumentContent;
 using KnowledgeMining.Application.Documents.Queries.GetDocumentMetadata;
 using KnowledgeMining.Application.Documents.Queries.GetDocuments;
+using KnowledgeMining.Application.Documents.Queries.GetTags;
 using KnowledgeMining.Application.Documents.Queries.SearchDocuments;
 using KnowledgeMining.Domain.Entities;
 using KnowledgeMining.UI.Pages.Documents.Componenents;
@@ -28,6 +29,7 @@ namespace KnowledgeMining.UI.Pages.Documents
         private int _pageSize = 25;
         private Document _backupSelectedDocument;
         private IEnumerable<Document> _documents = new List<Document>();
+        private DocumentTag[] AuthorizedMetadataFields;
 
         public async Task OpenUploadComponent()
         {
@@ -48,6 +50,7 @@ namespace KnowledgeMining.UI.Pages.Documents
 
         protected override async Task OnInitializedAsync()
         {
+            AuthorizedMetadataFields = await Mediator.Send(new GetMetadataQuery()) ?? Array.Empty<DocumentTag>();
             await Search(_searchText);
         }
 
@@ -211,9 +214,24 @@ namespace KnowledgeMining.UI.Pages.Documents
         {
             if (documents.Count() > 0)
             {
-                await DocumentCacheService.AddDocuments(documents);
+                await DocumentCacheService.BuildCache(new CancellationToken());
                 await Search(_searchText);
             }
+        }
+
+
+        private string DisplayAuthorizedFields(DocumentTag[] documentTags, IDictionary<string, string> values)
+        {
+            if (documentTags == null)
+                documentTags = Array.Empty<DocumentTag>();
+
+            if (values == null)
+                return string.Empty;
+
+            var authorizedNames = documentTags.Select(x => x.Name);
+            var authorizedItems = values.Where(x => authorizedNames.Contains(x.Key)).Select(x => $"{x.Key}: {x.Value}");
+
+            return string.Join(",", authorizedItems);
         }
 
     }

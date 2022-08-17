@@ -136,7 +136,7 @@ namespace KnowledgeMining.Infrastructure.Services.Storage
                             if (file.Tags?.Any() ?? false)
                             {
                                 var nonEmptyTags = RemoveEmptyTags(file.Tags);
-                                //await blob.SetTagsAsync(nonEmptyTags, cancellationToken: cancellationToken);
+                                await blob.SetTagsAsync(nonEmptyTags, cancellationToken: cancellationToken);
                                 await blob.SetMetadataAsync(nonEmptyTags, cancellationToken: cancellationToken);
                             }
 

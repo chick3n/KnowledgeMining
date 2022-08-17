@@ -97,16 +97,6 @@ namespace KnowledgeMining.UI.Services.Documents
             return documents;
         }
 
-        public async Task AddDocuments(IEnumerable<Document> documents)
-        {
-            _memoryCache.TryGetValue<List<Document>>(DOCUMENT_FILTER_CACHE, out var cachedDocuments);
-            if (cachedDocuments == null)
-                cachedDocuments = new List<Document>();
-
-            cachedDocuments.AddRange(documents);
-            await SetDocumnets(cachedDocuments);
-        }
-
         public IEnumerable<Document> RemoveDocuments(Func<Document, bool> predicate)
         {
             var documents = GetDocuments()
