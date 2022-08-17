@@ -32,9 +32,11 @@ namespace KnowledgeMining.Functions.Skills
             responseRecord.RecordId = record.RecordId;
             record!.Data.TryGetValue("date", out var recordDate);
 
+            responseRecord.Data["datetime"] = null;
+
             if (string.IsNullOrWhiteSpace(recordDate?.ToString()))
             {
-                responseRecord.Errors.Add(new WebApiErrorWarning
+                responseRecord.Warnings.Add(new WebApiErrorWarning
                 {
                     Message = $"{nameof(DateParse)} - Error processing the request record {record.RecordId}: Date is null or empty."
                 });
@@ -51,7 +53,7 @@ namespace KnowledgeMining.Functions.Skills
                     } 
                     catch(Exception ex)
                     {
-                        responseRecord.Errors.Add(new WebApiErrorWarning
+                        responseRecord.Warnings.Add(new WebApiErrorWarning
                         {
                             Message = $"{nameof(DateParse)} - Error parsing date: {ex.Message}"
                         });
@@ -59,16 +61,12 @@ namespace KnowledgeMining.Functions.Skills
                 }
                 else
                 {
-                    responseRecord.Errors.Add(new WebApiErrorWarning
+                    responseRecord.Warnings.Add(new WebApiErrorWarning
                     {
                         Message = $"{nameof(DateParse)} - Error processing the request record {record.RecordId}: {stringDate} is not recognized."
                     });
                 }
             }
-
-            if(responseRecord.Errors.Count > 0)
-                log.LogError("{Function} - Invalid or missing request data. {req}",
-                    nameof(DateParse), req);
 
             response.Values.Add(responseRecord);
             return new OkObjectResult(response);
