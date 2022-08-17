@@ -40,14 +40,21 @@ else
                                     <MudIcon Icon="@Icons.Custom.FileFormats.FileDocument"></MudIcon>
                                 </div>
                                 <div class="d-flex flex-column">
-                                    <div>
-                                        <MudText>@document.Name</MudText>
+                                    <div class="d-flex justify-content-between">
+                                        <MudText>@DocumentHeader(document)</MudText>
+                                        <MudText>@(document.DateTime?.ToLongDateString() ?? string.Empty)</MudText>
                                     </div>
+                                    <p style="text-overflow: ellipsis; max-height: 60px; overflow: hidden;">
+                                        @DocumentSummary(document)
+                                    </p>
                                     <div class="d-flex flex-row flex-wrap pt-1 flex-shrink-0">
                                         @foreach (var keyPhrase in document.KeyPhrases.Take(4))
                                         {
                                             <MudChip Color="Color.Info"><MudText Typo="Typo.body2">@keyPhrase</MudText></MudChip>
                                         }
+                                    </div>
+                                    <div class="d-flex justify-content-end">
+                                        <small>@DocumentFooter(document)</small>
                                     </div>
                                 </div>
                             </div>
@@ -107,5 +114,31 @@ else
         {
             return Task.CompletedTask;
         }
+    }
+
+    private string DocumentHeader(DocumentMetadata document)
+    {
+        if (!string.IsNullOrWhiteSpace(document.Mission))
+            return document.Mission;
+
+        return document.Name;
+    }
+
+    private string DocumentSummary(DocumentMetadata document)
+    {
+        var summary = document.Summary ?? string.Empty;
+
+        if (summary.Length > 203)
+            summary = summary.Substring(0, 200) + "...";
+
+        return summary;
+    }
+
+    private string DocumentFooter(DocumentMetadata document)
+    {
+        if (!string.IsNullOrWhiteSpace(document.Name))
+            return document.Name;
+
+        return string.Empty;
     }
 }

@@ -36,6 +36,8 @@ namespace KnowledgeMining.Domain.Entities
         public string? MergedContent { get; set; }
         [JsonPropertyName("summary")]
         public string? Summary { get; set; }
+        [JsonPropertyName("datetime")]
+        public DateTime? DateTime { get; set; }
 
         public IDictionary<string, object?> ToDictionary()
         {

@@ -6,7 +6,7 @@
     var selectedAggregateFacets = aggregateFacet.Values?.Where(x => IsSelected(x)).ToList() 
         ?? new List<Facet>();
 
-    <MudExpansionPanels Class="mt-6">
+    <MudExpansionPanels Class="mt-1">
         <MudExpansionPanel Text="@($"{aggregateFacet.Name.SplitCamelCase().ToTitleCase()} ({aggregateFacet.Values.Count()})")" 
             Disabled="@(aggregateFacet.Values.Any() is false)">
             @if (selectedAggregateFacets.Count > 0) 
@@ -52,13 +52,13 @@
         ?? new List<Facet>();
 
     <MudExpansionPanels Class="mt-6">
-        <MudExpansionPanel Text="@($"{aggregateFacet.Name.SplitCamelCase().ToTitleCase()} ({aggregateFacet.Values.Count()})")" 
+        <MudExpansionPanel Text="@($"{OverrideFacetNames(aggregateFacet)} ({aggregateFacet.Values.Count()})")" 
             Disabled="@(aggregateFacet.Values.Any() is false)">
             @if (selectedAggregateFacets.Count > 0) 
             {
                 @foreach (var facet in selectedAggregateFacets)
                 {
-                    <MudCheckBox T="bool" Label="@($"{facet.Value} ({facet.Count})")" 
+                    <MudCheckBox T="bool" Label="@($"{OverrideFacetValues(facet)} ({facet.Count})")" 
                         Checked="true" 
                         CheckedChanged="@(isSelected => HandleCheckedChanged(facet, isSelected))"></MudCheckBox>
                 }
@@ -71,7 +71,7 @@
 
             @foreach (var facet in aggregateFacet.Values.Except(selectedAggregateFacets))
             {
-                <MudCheckBox T="bool" Label="@($"{facet.Value} ({facet.Count})")" 
+                <MudCheckBox T="bool" Label="@($"{OverrideFacetValues(facet)} ({facet.Count})")" 
                     Checked="false" 
                     CheckedChanged="@(isSelected => HandleCheckedChanged(facet, isSelected))"></MudCheckBox>
             }
@@ -102,6 +102,30 @@
         }
 
         return false;
+    }
+
+    private string OverrideFacetNames(SummarizedFacet facet)
+    {
+        var name = facet.Name?.ToLower();
+        switch(name)
+        {
+            case "date":
+                return "Dates";
+        }
+
+        return facet.Name?.SplitCamelCase().ToTitleCase() ?? string.Empty;
+    }
+
+    private string OverrideFacetValues(Facet facet)
+    {
+        var name = facet.Name?.ToLower();
+        switch(name)
+        {
+            case "date":
+                return facet.Value.Replace("--", "-");
+        }
+
+        return facet.Value;
     }
 
     private Task HandleCheckedChanged(Facet facet, bool isSelected)
