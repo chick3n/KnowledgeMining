@@ -1,0 +1,108 @@
+﻿@inject IMediator Mediator
+
+<MudDialog>
+    <DialogContent>
+        <MudTextField Value="@Document.Name" Label="Document Name" ReadOnly="true"/>
+        <MudSimpleTable Style="overflow-x: auto;">
+            <thead>
+                <tr>
+                    <th>Key</th>
+                    <th>Value</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+            @foreach(var approvedTags in AllowedValues)
+            {
+                var contextTag = Values?.FirstOrDefault(x => x.Key.Equals(approvedTags.Name)) ?? new KeyValuePair<string, string>(); 
+                <tr id="@approvedTags.Name">
+                    <td>@approvedTags.Name</td>
+                    <td>         
+                        @if(approvedTags.AllowedValues == null || approvedTags.AllowedValues.Length == 0)
+                        {
+                            <MudTextField T="string" Value="@(contextTag.Value ?? string.Empty)" ValueChanged="@(value => TagValueChanged(@approvedTags.Name, value))" />
+                        }
+                        else {
+                            <MudSelect T="string" Value="@(contextTag.Value ?? string.Empty)" ValueChanged="@(value => TagValueChanged(@approvedTags.Name, value))">
+                                <MudSelectItem T="string"></MudSelectItem>
+                                @foreach(var approvedValue in approvedTags.AllowedValues) 
+                                {
+                                    <MudSelectItem Value="@approvedValue"  />
+                                }
+                            </MudSelect>
+                        }
+                    </td>
+                </tr>
+            }
+            </tbody>
+        </MudSimpleTable>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel">Cancel</MudButton>
+        <MudButton Color="Color.Success" OnClick="SaveTags">Save</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] MudDialogInstance MudDialog { get; set; }
+
+    [Parameter] public Application.Documents.Queries.GetDocuments.Document Document { get; set; } = new Application.Documents.Queries.GetDocuments.Document();
+
+    public IDictionary<string, string> Values { get; set; } = new Dictionary<string, string>();
+
+    public DocumentTag[]? AllowedValues { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        AllowedValues = await Mediator.Send(new GetMetadataQuery()) ?? Array.Empty<DocumentTag>();
+        if (Document.Metadata != null)
+            Values = Document.Metadata.ToDictionary(x => x.Key, y => y.Value);
+    }
+
+    private void Cancel()
+    {
+        MudDialog.Cancel();
+    }
+
+    private void TagValueChanged(string key, string value)
+    {
+        if(string.IsNullOrWhiteSpace(value))
+        {
+            if (Values != null && Values.ContainsKey(key))
+                Values.Remove(key);
+            return;
+        }
+
+        Values[key] = value;
+    }
+
+    private bool HasChange()
+    {
+        if (Document.Metadata == null && Values.Count == 0)
+            return false;
+
+        if (Document.Metadata == null && Values.Count > 0)
+            return true;
+
+        if (Document.Metadata.Count != Values.Count)
+            return true;
+
+        if (Document.Metadata.Keys.Any(x => !Values.Keys.Contains(x)))
+            return true;
+
+        if (Document.Metadata.Keys.Any(x => !Document.Metadata[x].Equals(Values[x])))
+            return true;
+
+        return false;
+    }
+
+    private void SaveTags()
+    {
+        if (!HasChange())
+            MudDialog.Cancel();
+        else {
+            MudDialog.Close(DialogResult.Ok(Document with { Metadata = Values }, 
+                typeof(Application.Documents.Queries.GetDocuments.Document)));
+        }
+    }
+}

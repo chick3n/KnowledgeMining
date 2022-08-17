@@ -55,6 +55,29 @@ namespace KnowledgeMining.UI.Services.Documents
             return documents;
         }
 
+        public async Task UpdateDocument(Document updatedDocument)
+        {
+            if (!_memoryCache.TryGetValue<IList<Document>>(DOCUMENT_FILTER_CACHE, out var documents))
+                return;
+
+            for(var x=0; x<documents.Count; x++)
+            {
+                var document = documents[x];
+                if(document.Name.Equals(updatedDocument.Name))
+                {
+                    documents[x] = updatedDocument;
+
+                    await _locker.WaitAsync();
+
+                    _memoryCache.Set(DOCUMENT_FILTER_CACHE, documents);
+
+                    _locker.Release();
+
+                    break;
+                }                
+            }
+        }
+
         public async Task SetDocumnets(IEnumerable<Document> documents)
         {
             await _locker.WaitAsync();

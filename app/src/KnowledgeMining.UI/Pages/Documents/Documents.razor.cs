@@ -1,4 +1,5 @@
 using KnowledgeMining.Application.Documents.Commands.DeleteDocument;
+using KnowledgeMining.Application.Documents.Commands.EditDocument;
 using KnowledgeMining.Application.Documents.Queries.GetDocumentContent;
 using KnowledgeMining.Application.Documents.Queries.GetDocumentMetadata;
 using KnowledgeMining.Application.Documents.Queries.GetDocuments;
@@ -23,14 +24,11 @@ namespace KnowledgeMining.UI.Pages.Documents
 
         private bool _isLoading;
         private string? _searchText;
-        private int _currentPage = 0;
         private int _totalPages = 0;
         private int _pageSize = 25;
         private Document _backupSelectedDocument;
         private IEnumerable<Document> _documents = new List<Document>();
 
-        // Upload Document
-        private bool _isUploadComponentVisible;
         public async Task OpenUploadComponent()
         {
             //_isUploadComponentVisible = true;
@@ -85,6 +83,62 @@ namespace KnowledgeMining.UI.Pages.Documents
             }
         }
 
+        private async ValueTask EditDocumentTags(Document document)
+        {
+            var parameters = new DialogParameters { ["document"] = document };
+            var options = new DialogOptions { MaxWidth = MaxWidth.Medium, FullWidth = true, CloseOnEscapeKey = true };
+            var dialog = DialogService.Show<EditDocumentTagsComponent>("Edit Tags", parameters, options);
+            var result = await dialog.Result;
+            if (result.Cancelled)
+            {
+                return;
+            }
+
+            if (result.Data != null && result.DataType == typeof(Document))
+            {
+                var updatedDocument = (Document)result.Data;
+                var response = await Mediator.Send(new SetDocumentTraitsCommand(updatedDocument, Domain.Enums.DocumentTraits.Tags));
+
+                if (!response)
+                {
+                    Snackbar.Add("Failed to update document tags", Severity.Error);
+                }
+                else
+                {
+                    await DocumentCacheService.UpdateDocument(updatedDocument);
+                    await Search(_searchText);
+                }
+            }
+        }
+
+        private async ValueTask EditDocumentMetadata(Document document)
+        {
+            var parameters = new DialogParameters { ["document"] = document };
+            var options = new DialogOptions { MaxWidth = MaxWidth.Medium, FullWidth = true, CloseOnEscapeKey = true };
+            var dialog = DialogService.Show<EditDocumentMetadataComponent>("Edit Metadata", parameters, options);
+            var result = await dialog.Result;
+            if (result.Cancelled)
+            {
+                return;
+            }
+
+            if (result.Data != null && result.DataType == typeof(Document))
+            {
+                var updatedDocument = ((Document)result.Data);
+                var response = await Mediator.Send(new SetDocumentTraitsCommand(updatedDocument, Domain.Enums.DocumentTraits.Metadata));
+
+                if (!response)
+                {
+                    Snackbar.Add("Failed to update document metadata", Severity.Error);
+                }
+                else
+                {
+                    await DocumentCacheService.UpdateDocument(updatedDocument);
+                    await Search(_searchText);
+                }
+            }
+        }
+
         private async ValueTask DeleteDocument(Document document)
         {
             var parameters = new DialogParameters { ["document"] = document };
@@ -117,7 +171,6 @@ namespace KnowledgeMining.UI.Pages.Documents
 
         private async Task Search(string? searchText)
         {
-            _currentPage = 0;
             _totalPages = 0;
 
             _isLoading = true;

@@ -210,7 +210,7 @@
         finally
         {
             await Clear();
-            MudDialog.Close(DialogResult.Ok(results));
+            MudDialog.Close(DialogResult.Ok(results, typeof(KnowledgeMining.Application.Documents.Queries.GetDocuments.Document)));
         }
     }
 }

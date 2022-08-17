@@ -10,5 +10,7 @@ namespace KnowledgeMining.Application.Common.Options
         public string ContainerName { get; set; } = "documents";
 
         public DocumentTag[] Tags { get; set; } = Array.Empty<DocumentTag>();
+
+        public DocumentTag[] Metadata { get; set; } = Array.Empty<DocumentTag>();
     }
 }
