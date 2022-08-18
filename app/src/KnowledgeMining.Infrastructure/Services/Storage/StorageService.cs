@@ -84,7 +84,7 @@ namespace KnowledgeMining.Infrastructure.Services.Storage
 
             try
             {
-                await blob.SetMetadataAsync(tags, cancellationToken: cancellationToken);
+                await blob.SetTagsAsync(tags, cancellationToken: cancellationToken);
             }
             catch (Exception e)
             {
