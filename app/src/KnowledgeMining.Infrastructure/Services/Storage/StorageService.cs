@@ -61,36 +61,54 @@ namespace KnowledgeMining.Infrastructure.Services.Storage
             }
         }
 
-        private async Task SetDocumentMetadata(BlobClient? blob, IDictionary<string, string>? metaData, CancellationToken cancellationToken)
+        private async Task SetDocumentMetadata(BlobClient? blob, IDictionary<string, string>? metadata, CancellationToken cancellationToken)
         {
-            if (blob == null)
+            if (blob == null || metadata == null)
                 return;
 
             try
             {
-                await blob.SetMetadataAsync(metaData, cancellationToken: cancellationToken);
+                var response = await blob.GetPropertiesAsync(cancellationToken: cancellationToken);
+                UpdateKeyValueData(response.Value.Metadata, metadata);
+
+                await blob.SetMetadataAsync(metadata, cancellationToken: cancellationToken);
             }
             catch (Exception e)
             {
-                _logger.LogCritical(e, "Set {DocumentName} index tags {@Metadata} failed.", blob.Name, metaData);
+                _logger.LogCritical(e, "Set {DocumentName} index tags {@Metadata} failed.", blob.Name, metadata);
                 throw;
             }
         }
 
         private async Task SetDocumentTags(BlobClient? blob, IDictionary<string, string>? tags, CancellationToken cancellationToken)
         {
-            if (blob == null)
+            if (blob == null || tags == null)
                 return;
 
             try
             {
-                await blob.SetTagsAsync(tags, cancellationToken: cancellationToken);
+                var response = await blob.GetTagsAsync(cancellationToken: cancellationToken);
+                UpdateKeyValueData(response.Value.Tags, tags);
+
+                await blob.SetTagsAsync(response.Value.Tags, cancellationToken: cancellationToken);
             }
             catch (Exception e)
             {
                 _logger.LogCritical(e, "Set {DocumentName} index tags {@Tags} failed.", blob.Name, tags);
                 throw;
             }
+        }
+
+        private void UpdateKeyValueData(IDictionary<string, string> source, IDictionary<string, string> updates)
+        {
+            //add new tags
+            var newKeys = updates.Keys.Except(source.Keys);
+            foreach (var newKey in newKeys)
+                source.Add(newKey, updates[newKey]);
+
+            var existingKeys = updates.Keys.Intersect(source.Keys);
+            foreach (var existingKey in existingKeys)
+                source[existingKey] = updates[existingKey];
         }
 
         public async Task SetDocumentTraits(SearchDocument document, DocumentTraits blobTraits, CancellationToken cancellationToken)
