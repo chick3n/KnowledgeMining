@@ -1,4 +1,5 @@
-﻿@if (IsLoading)
+﻿@using KnowledgeMining.Application.Documents.Queries.SearchDocuments
+@if (IsLoading)
 {
     <MudGrid>
         <MudItem xs="12" sm="5">
@@ -29,6 +30,12 @@ else
 {
     @if (TotalCount > 0)
     {
+        <MudToolBar Class="d-flex; flex-row-reverse" DisableGutters="true">
+            <MudMenu StartIcon="@Icons.Filled.Check" Label="@_sortLabel">
+                <MudMenuItem OnClick="@SortBestMatchClicked">Best Match</MudMenuItem>
+                <MudMenuItem OnClick="@SortDateClicked">Date</MudMenuItem>
+            </MudMenu>
+        </MudToolBar>
         <MudGrid>
             @foreach (var document in Documents)
             {
@@ -50,7 +57,8 @@ else
                                             <MudChip Color="Color.Info"><MudText Typo="Typo.body2">@keyPhrase</MudText></MudChip>
                                         }
                                     </div>
-                                    <div class="d-flex flex-row justify-content-end">
+                                    <div class="d-flex flex-row justify-content-between mt-2">
+                                        <small>Score: @document.SearchScore</small>
                                         <small>@DocumentFooter(document)</small>
                                     </div>
                                 </div>
@@ -91,6 +99,13 @@ else
 
     [Parameter]
     public bool IsLoading { get; set; }
+
+    [Parameter]
+    public EventCallback<FacetFilter?> SortCallBack { get; set; }
+
+    private const string LABEL_ORDERBY_BEST_MATCH = "Best Match";
+    private const string LABEL_ORDERBY_DATE = "Date";
+    private string _sortLabel = LABEL_ORDERBY_BEST_MATCH;
 
     private int GetSelectedPage()
     {
@@ -137,5 +152,22 @@ else
             return document.Name;
 
         return string.Empty;
+    }
+
+    private async Task SortBestMatchClicked(MouseEventArgs args)
+    {
+        _sortLabel = LABEL_ORDERBY_BEST_MATCH;
+        await SortCallBack.InvokeAsync(OrderByFacetFilter.BestMatch());
+    }
+
+    private async Task SortDateClicked(MouseEventArgs args)
+    {
+        _sortLabel = LABEL_ORDERBY_DATE;
+        await SortCallBack.InvokeAsync(OrderByFacetFilter.Date());
+    }
+
+    public void ClearOrder()
+    {
+        _sortLabel = LABEL_ORDERBY_BEST_MATCH;
     }
 }

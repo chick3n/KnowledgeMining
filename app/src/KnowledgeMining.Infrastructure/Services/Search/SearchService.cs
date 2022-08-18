@@ -353,7 +353,7 @@ namespace KnowledgeMining.Infrastructure.Services.Search
                 IncludeTotalCount = true,
                 QueryType = SearchQueryType.Full,
                 HighlightPreTag = "<b>",
-                HighlightPostTag = "</b>"
+                HighlightPostTag = "</b>",
             };
 
             foreach (string s in schema.SelectFilter)
@@ -425,8 +425,21 @@ namespace KnowledgeMining.Infrastructure.Services.Search
                     filterBuilder.Append(clause);
                 }
             }
-
             options.Filter = filterBuilder.ToString();
+
+            if (request.FacetFilters != null && 
+                request.FacetFilters.Any(x => x.Name?.Equals("$orderby") ?? false))
+            {
+                var orderValues = request.FacetFilters
+                    .Where(x => x.Name?.Equals("$orderby") ?? false)
+                    .SelectMany(x => x.Values);
+                foreach (var orderValue in orderValues)
+                {
+                    if(!string.IsNullOrWhiteSpace(orderValue))
+                        options.OrderBy.Add(orderValue);
+                }
+            }
+
 
             // Add Filter based on geographic polygon if it is set.
             if (!string.IsNullOrWhiteSpace(request.PolygonString))

@@ -4,6 +4,8 @@ namespace KnowledgeMining.Domain.Entities
 {
     public class DocumentMetadata
     {
+        [JsonPropertyName("@search.score")]
+        public double SearchScore { get; set; }
         [JsonPropertyName("metadata_storage_path")]
         public string? Id { get; set; }
         [JsonPropertyName("metadata_storage_name")]

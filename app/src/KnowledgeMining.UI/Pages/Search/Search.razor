@@ -67,7 +67,11 @@
             <MudTabs @ref="_mainBodyTabs" Elevation="0" Outlined="true" Rounded="true" ApplyEffectsToContainer="true" PanelClass="pa-6" Class="mt-1">
                 <div class="d-flex flex-column">
                     <MudTabPanel @ref="_searchResultsPanel" Text="@_searchResultsLabel">
-                        <SearchResultsComponent Documents="@_searchState.Documents" IsLoading="@_isSearching" TotalCount="@_searchState.TotalCount" TotalPages="@_searchState.TotalPages" OnDocumentClicked="@GetDocumentDetails" OnPageSelectedChanged="@SearchPageSelected" PageSelected="@_selectedPage"></SearchResultsComponent>
+                        <SearchResultsComponent @ref="_searchResultsComponent"
+                            Documents="@_searchState.Documents" 
+                            IsLoading="@_isSearching" TotalCount="@_searchState.TotalCount" TotalPages="@_searchState.TotalPages" 
+                            OnDocumentClicked="@GetDocumentDetails" OnPageSelectedChanged="@SearchPageSelected" 
+                            PageSelected="@_selectedPage" SortCallBack="OrderByCallback"></SearchResultsComponent>
                     </MudTabPanel>
                     <MudTabPanel Text="Entity Map">
                         <EntityMapComponent FacetableFields="@_searchState.FacetableFields" SearchText="@SearchText" />
@@ -76,7 +80,8 @@
             </MudTabs>
         </MudItem>
     </MudGrid>
-    <DocumentDetailsComponent @bind-IsVisible="ShowDocumentDetails" Document="_documentMetadata"></DocumentDetailsComponent>
+    <DocumentDetailsComponent @bind-IsVisible="ShowDocumentDetails" 
+        Document="_documentMetadata"></DocumentDetailsComponent>
     <MudDateRangePicker @ref="_timespanPicker" class="hide-input"
                     PickerVariant="PickerVariant.Dialog" 
                     Label="Time span" 
@@ -87,6 +92,7 @@
     [Parameter, SupplyParameterFromQuery(Name = "q")] public string? SearchText { get; set; }
     private MudDateRangePicker? _timespanPicker;
     private FacetsFilterComponent? _facetsFilterComponent;
+    private SearchResultsComponent? _searchResultsComponent;
 
     private SearchState _searchState = new();
 
@@ -444,19 +450,28 @@
 
     private async Task ClearSearch(MouseEventArgs args)
     {
-        SearchText = string.Empty;
         _selectedPage = 0;
         poligonString = string.Empty;
         _selectedFacets.Clear();
         _timeSpanSelectedType = TimeSpanType.Any;
         _facetsFilterComponent?.ClearFacets();
+        _searchResultsComponent?.ClearOrder();
 
         UpdateTimeSpanMenu();
         await SearchDocuments(new SearchDocumentsQuery(SearchText, _selectedPage, poligonString, _selectedFacets));
     }
 
+    private async Task OrderByCallback(FacetFilter? facet)
+    {
+        if(facet != null) {
+            _selectedFacets.RemoveAll(x => x.Name.Equals(facet.Name));
+            _selectedFacets.Add(facet);
+            await SearchDocuments(new SearchDocumentsQuery(SearchText, _selectedPage, poligonString, _selectedFacets));
+        }
+    }
+
     private bool DisableClearFilter()
     {
-        return !string.IsNullOrWhiteSpace(SearchText) || (_selectedFacets != null && _selectedFacets.Count == 0);
+        return (_selectedFacets != null && _selectedFacets.Count == 0);
     }
 }
