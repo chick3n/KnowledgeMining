@@ -98,12 +98,12 @@ namespace KnowledgeMining.Infrastructure.Services.Storage
             var blob = GetBlobContainerClient()
                 .GetBlobClient(document.Name);
 
-            if(blobTraits.HasFlag(BlobTraits.Metadata))
+            if(blobTraits.HasFlag(DocumentTraits.Metadata))
             {
                 await SetDocumentMetadata(blob, document.Metadata, cancellationToken);
             }
 
-            if(blobTraits.HasFlag(BlobTraits.Tags) && document.Tags != null)
+            if(blobTraits.HasFlag(DocumentTraits.Tags) && document.Tags != null)
             {
                 await SetDocumentTags(blob, document.Tags, cancellationToken);
             }            
