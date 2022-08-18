@@ -2,6 +2,7 @@ using KnowledgeMining.Application.Common.Interfaces;
 using KnowledgeMining.UI.Api;
 using KnowledgeMining.UI.Services.Documents;
 using KnowledgeMining.UI.Services.Links;
+using KnowledgeMining.UI.Services.Metadata;
 using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.Extensions.Azure;
 using MudBlazor.Services;
@@ -50,6 +51,7 @@ namespace KnowledgeMining.UI
             builder.Services.AddInfrastructureServices(builder.Configuration);
 
             builder.Services.AddScoped<DocumentCacheService>();
+            builder.Services.AddScoped<MetadataService>();
             builder.Services.AddScoped<ILinkGenerator, DocumentPreviewLinkGenerator>();
             builder.Services.AddScoped<ILinkGenerator, DocumentPreviewLinkGenerator>();
             builder.Services.AddScoped<IScopedProcessingService, DocumentFilterScopedService>();

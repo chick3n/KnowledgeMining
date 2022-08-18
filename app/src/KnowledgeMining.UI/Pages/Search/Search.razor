@@ -5,9 +5,12 @@
 @using KnowledgeMining.Application.Documents.Queries.GetAutocompleteSuggestions
 @using KnowledgeMining.Application.Documents.Queries.GetDocumentMetadata
 @using KnowledgeMining.Domain.Entities
+@using KnowledgeMining.Infrastructure.Services.Storage
 @using KnowledgeMining.UI.Pages.Search.ViewModels
+@using KnowledgeMining.UI.Services.Metadata
 
 @inject IMediator Mediator
+@inject MetadataService MetadataService
 
 <style>
     .hide-input > .mud-input-control {
@@ -52,7 +55,7 @@
         <MudItem xs="12" md="2">            
             <FacetsFilterComponent 
                 Facets="@_searchState.Facets"
-                MissionFacet="@_missionFacet"
+                StaticFacets="@_searchState.StaticFacets"
                 OnFacetSelectedChanged="UpdateSearchFacetsAndSearch"></FacetsFilterComponent>
         </MudItem>
         <MudItem xs="12" md="10">
@@ -80,7 +83,6 @@
     private MudDateRangePicker? _timespanPicker;
 
     private SearchState _searchState = new();
-    private SummarizedFacet _missionFacet;
 
     private int _selectedPage;
     private List<FacetFilter> _selectedFacets = new();
@@ -93,7 +95,7 @@
         Custom
     };
 
-    private string[] excludeFacets = new string[] { "mission" };
+    private string[] excludeFacets = new string[] { BlobMetadata.Mission, BlobMetadata.DocumentType };
     private TimeSpanType _timeSpanSelectedType = TimeSpanType.Any;
     private string _timespanLabel = "Any";
     private string _searchResultsLabel = "Search Results";
@@ -143,7 +145,7 @@
 
         switch(facet.Name)
         {
-            case "mission":
+            case BlobMetadata.Mission:
                 facetFilter.OverrideType = typeof(string[]);
                 break;
         }
@@ -191,19 +193,19 @@
         await SearchDocuments(request);
     }
 
-    /// <summary>
-    /// Mission drives Date
-    /// </summary>
-    /// <param name="request"></param>
-    /// <returns></returns>
-    private async Task SearchDocumentsFixedFacets(SearchDocumentsQuery request)
+    private async Task<IEnumerable<SummarizedFacet>> SearchDocumentsStaticFacets(SearchDocumentsQuery request, SearchDocumentsResponse response)
     {
-        await SearchDocumentsMissionFacets(request);
+        var staticFacets = new List<SummarizedFacet>();
+
+        staticFacets.Add(await SearchDocumentsMissionFacets(request));
+        staticFacets.Add(await SearchDocumentsDocumentTypeFacet(response));
+
+        return staticFacets;
     }
 
-    private async Task SearchDocumentsMissionFacets(SearchDocumentsQuery request) 
+    private async Task<SummarizedFacet> SearchDocumentsMissionFacets(SearchDocumentsQuery request) 
     {
-        var facetFilters = request.FacetFilters.Where(x => !x.Name.Equals("mission") && !x.Name.Equals("date"));
+        var facetFilters = request.FacetFilters.Where(x => !x.Name?.Equals(BlobMetadata.Mission) ?? false);
 
         //Override String -> StringCollection facets
         var topResponse = await Mediator.Send(new SearchDocumentsQuery(
@@ -213,7 +215,31 @@
             facetFilters
         ));
 
-        _missionFacet = topResponse.Facets.Where(x => x.Name.Equals("mission")).FirstOrDefault();
+        var missionFacet = topResponse.Facets.Where(x => x.Name?.Equals(BlobMetadata.Mission) ?? false).FirstOrDefault()        
+            ?? new SummarizedFacet();
+
+        return missionFacet;
+    }
+
+    private async Task<SummarizedFacet> SearchDocumentsDocumentTypeFacet(SearchDocumentsResponse response)
+    {
+        var documentTypes = await MetadataService.DocumentTypes();
+        var dtSummarizedFacets = new SummarizedFacet();
+        var dtFacets = response.Facets.Where(x => x.Name?.Equals(BlobMetadata.DocumentType) ?? false).FirstOrDefault();
+
+        dtSummarizedFacets.Name = BlobMetadata.DocumentType;
+        dtSummarizedFacets.Count = dtFacets?.Count ?? 0;
+
+        var facetValues = documentTypes.Select(x => new Facet
+            {
+                Count = dtFacets?.Values?.FirstOrDefault(y => y.Value?.Equals(x) ?? false)?.Count ?? 0,
+                Name = BlobMetadata.DocumentType,
+                Value = x
+            });
+
+        dtSummarizedFacets.Values = facetValues.OrderByDescending(x => x.Count);
+
+        return dtSummarizedFacets;
     }
 
     private async Task SearchDocuments(SearchDocumentsQuery request)
@@ -231,8 +257,7 @@
         _searchState.TotalCount = response.TotalCount;
         _searchState.TotalPages = (int)response.TotalPages;        
         _searchState.Facets = response.Facets.Where(x => !excludeFacets.Contains(x.Name));
-
-        await SearchDocumentsFixedFacets(request);
+        _searchState.StaticFacets = await SearchDocumentsStaticFacets(request, response);
 
         UpdateSearchResultsLabelWithDocumentCount(_searchState.TotalCount);
 

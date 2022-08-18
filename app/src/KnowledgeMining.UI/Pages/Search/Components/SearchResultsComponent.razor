@@ -32,28 +32,25 @@ else
         <MudGrid>
             @foreach (var document in Documents)
             {
-                <MudItem xs="12" sm="5">
-                    <MudCard Outlined="true" @onclick="() => OnDocumentClicked.InvokeAsync(document.Id)">
+                <MudItem xs="12" sm="12">
+                    <MudCard Outlined="true" @onclick="() => OnDocumentClicked.InvokeAsync(document.Id)" Style="cursor: pointer;">
                         <MudCardContent Class="d-flex flex-column align-content-start">
                             <div class="d-flex flex-row flex-fill gap-2">
-                                <div>
-                                    <MudIcon Icon="@Icons.Custom.FileFormats.FileDocument"></MudIcon>
-                                </div>
-                                <div class="d-flex flex-column">
-                                    <div class="d-flex justify-content-between">
-                                        <MudText>@DocumentHeader(document)</MudText>
-                                        <MudText>@(document.DateTime?.ToLongDateString() ?? string.Empty)</MudText>
+                                <div class="d-flex flex-column flex-fill">
+                                    <div class="d-flex flex-row justify-content-between">
+                                        <h6><MudIcon Icon="@Icons.Custom.FileFormats.FileDocument"></MudIcon> @DocumentHeader(document)</h6>
+                                        <h6>@(document.DateTime?.ToLongDateString() ?? string.Empty)</h6>
                                     </div>
-                                    <p style="text-overflow: ellipsis; max-height: 60px; overflow: hidden;">
+                                    <div class="d-flex flex-row mt-2 mb-2" style="text-overflow: ellipsis; max-height: 60px; overflow: hidden;">
                                         @DocumentSummary(document)
-                                    </p>
+                                    </div>
                                     <div class="d-flex flex-row flex-wrap pt-1 flex-shrink-0">
-                                        @foreach (var keyPhrase in document.KeyPhrases.Take(4))
+                                        @foreach (var keyPhrase in document.KeyPhrases.Take(8))
                                         {
                                             <MudChip Color="Color.Info"><MudText Typo="Typo.body2">@keyPhrase</MudText></MudChip>
                                         }
                                     </div>
-                                    <div class="d-flex justify-content-end">
+                                    <div class="d-flex flex-row justify-content-end">
                                         <small>@DocumentFooter(document)</small>
                                     </div>
                                 </div>
