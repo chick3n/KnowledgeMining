@@ -22,7 +22,7 @@
 
 <MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="mt-4">
     <MudGrid>
-        <MudItem xs="12" md="9">
+        <MudItem xs="12" md="12">
             <MudTextField   @bind-Value="SearchText" 
                             Label="Search" 
                             Clearable="true"
@@ -37,7 +37,7 @@
                             Margin="Margin.None"
                             />
         </MudItem>
-        <MudItem xs="12" md="3">
+        <MudItem xs="12" md="12">
             <MudToolBar>
                 <MudText><MudIcon Icon="@Icons.Filled.CalendarMonth"></MudIcon> Time Span:</MudText>
                 <MudMenu Label="@_timespanLabel">
@@ -47,16 +47,21 @@
                     <MudMenuItem OnClick="@TimeSpanThisMonthOnClick">This Month</MudMenuItem>
                     <MudMenuItem OnClick="@TimeSpanCustomOnClick">Custom</MudMenuItem>
                 </MudMenu>
+                <MudSpacer />
+                <MudButton Disabled="@DisableClearFilter()"
+                    StartIcon="@Icons.Filled.Clear" 
+                    OnClick="ClearSearch">Clear Filters</MudButton>
             </MudToolBar>
         </MudItem>
         <MudItem xs="12">
         <MudDivider Light="true" />
         </MudItem>
-        <MudItem xs="12" md="2">            
-            <FacetsFilterComponent 
-                Facets="@_searchState.Facets"
-                StaticFacets="@_searchState.StaticFacets"
-                OnFacetSelectedChanged="UpdateSearchFacetsAndSearch"></FacetsFilterComponent>
+        <MudItem xs="12" md="2">    
+                <FacetsFilterComponent 
+                    @ref="_facetsFilterComponent"
+                    Facets="@_searchState.Facets"
+                    StaticFacets="@_searchState.StaticFacets"
+                    OnFacetSelectedChanged="UpdateSearchFacetsAndSearch"></FacetsFilterComponent>
         </MudItem>
         <MudItem xs="12" md="10">
             <MudTabs @ref="_mainBodyTabs" Elevation="0" Outlined="true" Rounded="true" ApplyEffectsToContainer="true" PanelClass="pa-6" Class="mt-1">
@@ -81,6 +86,7 @@
 @code {
     [Parameter, SupplyParameterFromQuery(Name = "q")] public string? SearchText { get; set; }
     private MudDateRangePicker? _timespanPicker;
+    private FacetsFilterComponent? _facetsFilterComponent;
 
     private SearchState _searchState = new();
 
@@ -434,5 +440,23 @@
         var request = new SearchDocumentsQuery(SearchText, _selectedPage, poligonString, _selectedFacets);
 
         await SearchDocuments(request);
+    }
+
+    private async Task ClearSearch(MouseEventArgs args)
+    {
+        SearchText = string.Empty;
+        _selectedPage = 0;
+        poligonString = string.Empty;
+        _selectedFacets.Clear();
+        _timeSpanSelectedType = TimeSpanType.Any;
+        _facetsFilterComponent?.ClearFacets();
+
+        UpdateTimeSpanMenu();
+        await SearchDocuments(new SearchDocumentsQuery(SearchText, _selectedPage, poligonString, _selectedFacets));
+    }
+
+    private bool DisableClearFilter()
+    {
+        return !string.IsNullOrWhiteSpace(SearchText) || (_selectedFacets != null && _selectedFacets.Count == 0);
     }
 }

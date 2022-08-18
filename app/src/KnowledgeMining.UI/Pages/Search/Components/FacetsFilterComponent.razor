@@ -92,6 +92,11 @@
     [Parameter]
     public EventCallback<Facet> OnFacetSelectedChanged { get; set; }
 
+    public void ClearFacets()
+    {
+        _selectedFacets = new Dictionary<Facet, bool>();
+    }
+
     private bool IsSelected(Facet facet)
     {
         if(_selectedFacets.TryGetValue(facet, out bool isSelected))
