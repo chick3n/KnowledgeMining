@@ -38,18 +38,25 @@
                             />
         </MudItem>
         <MudItem xs="12" md="12">
-            <MudToolBar>
-                <MudText><MudIcon Icon="@Icons.Filled.CalendarMonth"></MudIcon> Time Span:</MudText>
-                <MudMenu Label="@_timespanLabel">
+            <MudToolBar Style="height: 20px">
+                <MudText><MudIcon Icon="@Icons.Filled.CalendarMonth" Color="Color.Primary" Title="Time Span"></MudIcon> Time Span:</MudText>
+                <MudMenu EndIcon="@Icons.Filled.ArrowDropDown" Label="@_timespanLabel">
                     <MudMenuItem OnClick="@TimeSpanAnyOnClick">Any</MudMenuItem>
                     <MudMenuItem OnClick="@TimeSpanTodayOnClick">Today</MudMenuItem>
                     <MudMenuItem OnClick="@TimeSpanThisWeekOnClick">This Week</MudMenuItem>
                     <MudMenuItem OnClick="@TimeSpanThisMonthOnClick">This Month</MudMenuItem>
                     <MudMenuItem OnClick="@TimeSpanCustomOnClick">Custom</MudMenuItem>
                 </MudMenu>
+                <MudText Class="pl-6"><MudIcon Icon="@Icons.Filled.Sort" Color="Color.Primary" Title="Sort By"></MudIcon> Sort By:</MudText>
+                <MudMenu EndIcon="@Icons.Filled.ArrowDropDown" Label="@_sortLabel" Disabled="@(_searchState?.TotalCount == 0)">
+                    <MudMenuItem OnClick="@SortBestMatchClicked">Best Match</MudMenuItem>
+                    <MudMenuItem OnClick="@SortDateClicked">Date</MudMenuItem>
+                </MudMenu>
+
                 <MudSpacer />
                 <MudButton Disabled="@DisableClearFilter()"
-                    StartIcon="@Icons.Filled.Clear" 
+                    StartIcon="@Icons.Filled.Clear"
+                    Color="Color.Error"
                     OnClick="ClearSearch">Clear Filters</MudButton>
             </MudToolBar>
         </MudItem>
@@ -71,7 +78,7 @@
                             Documents="@_searchState.Documents" 
                             IsLoading="@_isSearching" TotalCount="@_searchState.TotalCount" TotalPages="@_searchState.TotalPages" 
                             OnDocumentClicked="@GetDocumentDetails" OnPageSelectedChanged="@SearchPageSelected" 
-                            PageSelected="@_selectedPage" SortCallBack="OrderByCallback"></SearchResultsComponent>
+                            PageSelected="@_selectedPage"></SearchResultsComponent>
                     </MudTabPanel>
                     <MudTabPanel Text="Entity Map">
                         <EntityMapComponent FacetableFields="@_searchState.FacetableFields" SearchText="@SearchText" />
@@ -122,6 +129,9 @@
         }
     }
     private DocumentMetadata? _documentMetadata;
+    private const string LABEL_ORDERBY_BEST_MATCH = "Best Match";
+    private const string LABEL_ORDERBY_DATE = "Date";
+    private string _sortLabel = LABEL_ORDERBY_BEST_MATCH;
 
     private MudTabs? _mainBodyTabs;
     private MudTabPanel? _searchResultsPanel;
@@ -455,7 +465,7 @@
         _selectedFacets.Clear();
         _timeSpanSelectedType = TimeSpanType.Any;
         _facetsFilterComponent?.ClearFacets();
-        _searchResultsComponent?.ClearOrder();
+        _sortLabel = LABEL_ORDERBY_BEST_MATCH;
 
         UpdateTimeSpanMenu();
         await SearchDocuments(new SearchDocumentsQuery(SearchText, _selectedPage, poligonString, _selectedFacets));
@@ -473,5 +483,17 @@
     private bool DisableClearFilter()
     {
         return (_selectedFacets != null && _selectedFacets.Count == 0);
+    }
+
+    private async Task SortBestMatchClicked(MouseEventArgs args)
+    {
+        _sortLabel = LABEL_ORDERBY_BEST_MATCH;
+        await OrderByCallback(OrderByFacetFilter.BestMatch());
+    }
+
+    private async Task SortDateClicked(MouseEventArgs args)
+    {
+        _sortLabel = LABEL_ORDERBY_DATE;
+        await OrderByCallback(OrderByFacetFilter.Date());
     }
 }
