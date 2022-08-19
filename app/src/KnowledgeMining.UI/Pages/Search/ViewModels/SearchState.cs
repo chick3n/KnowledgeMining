@@ -7,6 +7,7 @@ namespace KnowledgeMining.UI.Pages.Search.ViewModels
     {
         public IEnumerable<DocumentMetadata> Documents { get; set; } = Enumerable.Empty<DocumentMetadata>();
         public IEnumerable<SummarizedFacet> Facets { get; set; } = Enumerable.Empty<SummarizedFacet>();
+        public IEnumerable<SummarizedFacet> StaticFacets { get; set; } = Enumerable.Empty<SummarizedFacet>();
         public int TotalPages { get; set; } = 0;
         public IEnumerable<string?> FacetableFields { get; set; } = Enumerable.Empty<string>();
         public long TotalCount { get; set; } = 0;
@@ -16,6 +17,7 @@ namespace KnowledgeMining.UI.Pages.Search.ViewModels
         {
             Documents = Enumerable.Empty<DocumentMetadata>();
             Facets = Enumerable.Empty<SummarizedFacet>();
+            StaticFacets = Enumerable.Empty<SummarizedFacet>();
             TotalPages = 0;
             FacetableFields = Enumerable.Empty<string?>();
             TotalCount = 0;

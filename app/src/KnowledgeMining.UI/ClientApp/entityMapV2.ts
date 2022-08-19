@@ -7,6 +7,8 @@ interface EntityNode extends d3.SimulationNodeDatum {
     cornerStone: number
     radius: number
     id: number
+    width: number
+    height: number
 }
 
 interface EntityLink extends d3.SimulationLinkDatum<EntityNode> {
@@ -64,7 +66,7 @@ export function renderEntityGraph(containerId: string, data: EntityMapData, maxL
     svg
         .attr('width', config.width)
         .attr('height', config.height)
-        .attr("viewBox", [-config.width / 2, 0, config.width, config.height])
+        .attr("viewBox", [-config.width / 2, 0, (config.width + (config.width / 2)), config.height])
         .attr("style", "max-width: 100%; height: auto; height: intrinsic;")
         .append('defs')
             .append('marker')
@@ -201,7 +203,7 @@ function settleSimulation(simulation: d3.Simulation<d3.SimulationNodeDatum, unde
 
 function ticked() {
     entityMap.nodes
-                    .attr("transform", function (d : EntityNode) { return `translate(${d.x as number},${d.y as number})` })
+        .attr("transform", function (d: EntityNode) { return `translate(${d.x as number},${d.y as number})` })
 
     entityMap.links
                     .attr("x1", function (d : EntityLink) { return (d.source as EntityNode).x as number })
@@ -224,8 +226,8 @@ function drag(simulation: any) {
     
     function dragended(event: any) {
       if (!event.active) simulation.alphaTarget(0);
-      event.subject.fx = null;
-      event.subject.fy = null;
+        event.subject.fx = event.x;
+        event.subject.fy = event.y;
     }
     
     return d3.drag()

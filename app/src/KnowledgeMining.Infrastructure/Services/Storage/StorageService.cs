@@ -3,11 +3,13 @@ using Azure.Storage.Blobs.Models;
 using KnowledgeMining.Application.Common.Interfaces;
 using KnowledgeMining.Application.Common.Options;
 using KnowledgeMining.Application.Documents.Queries.GetDocuments;
+using KnowledgeMining.Domain.Enums;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using System.Net;
 using SearchDocument = KnowledgeMining.Application.Documents.Queries.GetDocuments.Document;
 using UploadDocument = KnowledgeMining.Application.Documents.Commands.UploadDocument.Document;
+
 
 namespace KnowledgeMining.Infrastructure.Services.Storage
 {
@@ -36,7 +38,7 @@ namespace KnowledgeMining.Infrastructure.Services.Storage
             pageSize = pageSize is > 0 and <= MAX_ITEMS_PER_REQUEST ? pageSize : DEFAULT_PAGE_SIZE;
 
             var pages = GetBlobContainerClient()
-                            .GetBlobsAsync(prefix: searchPrefix, cancellationToken: cancellationToken)
+                            .GetBlobsAsync(traits: BlobTraits.Metadata | BlobTraits.Tags, prefix: searchPrefix, cancellationToken: cancellationToken)
                             .AsPages(continuationToken, pageSize);
 
             var iterator = pages.GetAsyncEnumerator(cancellationToken);
@@ -49,7 +51,7 @@ namespace KnowledgeMining.Infrastructure.Services.Storage
 
                 return new GetDocumentsResponse()
                 {
-                    Documents = page?.Values?.Select(b => new SearchDocument(b.Name, b.Tags)) ?? Enumerable.Empty<SearchDocument>(),
+                    Documents = page?.Values?.Select(b => new SearchDocument(b.Name, b.Tags, b.Metadata)) ?? Enumerable.Empty<SearchDocument>(),
                     NextPage = page?.ContinuationToken
                 };
             }
@@ -59,8 +61,76 @@ namespace KnowledgeMining.Infrastructure.Services.Storage
             }
         }
 
-        public async Task UploadDocuments(IEnumerable<UploadDocument> documents, CancellationToken cancellationToken)
+        private async Task SetDocumentMetadata(BlobClient? blob, IDictionary<string, string>? metadata, CancellationToken cancellationToken)
         {
+            if (blob == null || metadata == null)
+                return;
+
+            try
+            {
+                var response = await blob.GetPropertiesAsync(cancellationToken: cancellationToken);
+                UpdateKeyValueData(response.Value.Metadata, metadata);
+
+                await blob.SetMetadataAsync(metadata, cancellationToken: cancellationToken);
+            }
+            catch (Exception e)
+            {
+                _logger.LogCritical(e, "Set {DocumentName} index tags {@Metadata} failed.", blob.Name, metadata);
+                throw;
+            }
+        }
+
+        private async Task SetDocumentTags(BlobClient? blob, IDictionary<string, string>? tags, CancellationToken cancellationToken)
+        {
+            if (blob == null || tags == null)
+                return;
+
+            try
+            {
+                var response = await blob.GetTagsAsync(cancellationToken: cancellationToken);
+                UpdateKeyValueData(response.Value.Tags, tags);
+
+                await blob.SetTagsAsync(response.Value.Tags, cancellationToken: cancellationToken);
+            }
+            catch (Exception e)
+            {
+                _logger.LogCritical(e, "Set {DocumentName} index tags {@Tags} failed.", blob.Name, tags);
+                throw;
+            }
+        }
+
+        private void UpdateKeyValueData(IDictionary<string, string> source, IDictionary<string, string> updates)
+        {
+            //add new tags
+            var newKeys = updates.Keys.Except(source.Keys);
+            foreach (var newKey in newKeys)
+                source.Add(newKey, updates[newKey]);
+
+            var existingKeys = updates.Keys.Intersect(source.Keys);
+            foreach (var existingKey in existingKeys)
+                source[existingKey] = updates[existingKey];
+        }
+
+        public async Task SetDocumentTraits(SearchDocument document, DocumentTraits blobTraits, CancellationToken cancellationToken)
+        {
+            var blob = GetBlobContainerClient()
+                .GetBlobClient(document.Name);
+
+            if(blobTraits.HasFlag(DocumentTraits.Metadata))
+            {
+                await SetDocumentMetadata(blob, document.Metadata, cancellationToken);
+            }
+
+            if(blobTraits.HasFlag(DocumentTraits.Tags) && document.Tags != null)
+            {
+                await SetDocumentTags(blob, document.Tags, cancellationToken);
+            }            
+        }
+
+        public async Task<IEnumerable<SearchDocument>> UploadDocuments(IEnumerable<UploadDocument> documents, CancellationToken cancellationToken)
+        {
+            var result = new List<SearchDocument>();
+
             if (documents.Any())
             {
                 var container = GetBlobContainerClient();
@@ -78,7 +148,8 @@ namespace KnowledgeMining.Infrastructure.Services.Storage
                                 ContentType = file.ContentType
                             };
 
-                            await blob.UploadAsync(file.Content, httpHeaders: blobHttpHeader, cancellationToken: cancellationToken).ConfigureAwait(false);
+                            var uploadFileResult = 
+                                await blob.UploadAsync(file.Content, httpHeaders: blobHttpHeader, cancellationToken: cancellationToken).ConfigureAwait(false);
 
                             if (file.Tags?.Any() ?? false)
                             {
@@ -86,6 +157,16 @@ namespace KnowledgeMining.Infrastructure.Services.Storage
                                 await blob.SetTagsAsync(nonEmptyTags, cancellationToken: cancellationToken);
                                 await blob.SetMetadataAsync(nonEmptyTags, cancellationToken: cancellationToken);
                             }
+
+                            result.Add(new SearchDocument
+                            {
+                                Name = file.Name,
+                                Tags = file.Tags
+                            });
+                        }
+                        catch(Exception ex)
+                        {
+                            _logger.LogCritical(ex, "Failed to upload file {FileName}", file.Name);
                         }
                         finally
                         {
@@ -97,6 +178,8 @@ namespace KnowledgeMining.Infrastructure.Services.Storage
                     }
                 }
             }
+
+            return result;
         }
 
         private IDictionary<string, string> RemoveEmptyTags(IDictionary<string, string> tags)

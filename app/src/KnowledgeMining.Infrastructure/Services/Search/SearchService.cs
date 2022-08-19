@@ -315,7 +315,20 @@ namespace KnowledgeMining.Infrastructure.Services.Search
 
         private IEnumerable<SummarizedFacet> SummarizeFacets(IDictionary<string, IList<FacetResult>> facets)
         {
-            return facets.Select(f => new SummarizedFacet()
+            var validKeys = new string[]
+            {
+                "keyPhrases",
+                "organizations",
+                "persons",
+                "locations",
+                "topics",
+                "date",
+                "mission",
+                "documentType"
+            };
+
+            return facets.Where(x => validKeys.Contains(x.Key))
+                .Select(f => new SummarizedFacet()
             {
                 Name = f.Key,
                 Count = f.Value.Count,
@@ -340,7 +353,7 @@ namespace KnowledgeMining.Infrastructure.Services.Search
                 IncludeTotalCount = true,
                 QueryType = SearchQueryType.Full,
                 HighlightPreTag = "<b>",
-                HighlightPostTag = "</b>"
+                HighlightPostTag = "</b>",
             };
 
             foreach (string s in schema.SelectFilter)
@@ -373,41 +386,60 @@ namespace KnowledgeMining.Infrastructure.Services.Search
                     var facetValues = string.Join(",", facetFilter.Values);
 
                     string? clause = default;
+                    string clausePrefix = filterInitialized ? " and " : string.Empty;
 
-                    if (facet?.Type == typeof(string[]))
+                    var facetType = facet?.Type;
+
+                    if (facetType == typeof(string[]))
                     {
-                        if (filterInitialized is false)
+                        filterInitialized = true;
+                        clause = $"{clausePrefix}{facetFilter.Name}/any(t: search.in(t, '{facetValues}', ','))";
+                    }
+                    else if (facetType == typeof(string))
+                    {
+                        filterInitialized = true;
+
+                        if(facetFilter.Values.Count > 1)
                         {
-                            clause = $"{facetFilter.Name}/any(t: search.in(t, '{facetValues}', ','))";
-                            filterInitialized = true;
+                            var orFilters = facetFilter.Values.Select(x => $"{facetFilter.Name} eq '{x}'");
+                            var query = string.Join(" or ", orFilters);
+                            clause = $"{clausePrefix}({query})";
                         }
                         else
                         {
-                            clause = $" and {facetFilter.Name}/any(t: search.in(t, '{facetValues}', ','))";
+                            clause = $"{clausePrefix}{facetFilter.Name} eq '{facetValues}'";
                         }
+                        
                     }
-                    else if (facet?.Type == typeof(string))
+                    else if (facetType == typeof(DateTime))
                     {
-                        if(filterInitialized is false)
-                        {
-                            clause = $"{facetFilter.Name} eq '{facetValues}'";
-                            filterInitialized = true;
-                        }
-                        else
-                        {
-                            clause = $" and {facetFilter.Name} eq '{facetValues}'";
-                        }
+                        filterInitialized = true;
+                        clause = $"{clausePrefix}{facetFilter.Name} {facetValues}";
                     }
-                    else if (facet?.Type == typeof(DateTime))
+                    else if(facetType == typeof(DateTimeOffset))
                     {
-                        // TODO: Construct DateTime facet query
+                        filterInitialized = true;
+                        clause = $"{clausePrefix}{facetFilter.Name} {facetValues}";
                     }
 
                     filterBuilder.Append(clause);
                 }
             }
-
             options.Filter = filterBuilder.ToString();
+
+            if (request.FacetFilters != null && 
+                request.FacetFilters.Any(x => x.Name?.Equals("$orderby") ?? false))
+            {
+                var orderValues = request.FacetFilters
+                    .Where(x => x.Name?.Equals("$orderby") ?? false)
+                    .SelectMany(x => x.Values);
+                foreach (var orderValue in orderValues)
+                {
+                    if(!string.IsNullOrWhiteSpace(orderValue))
+                        options.OrderBy.Add(orderValue);
+                }
+            }
+
 
             // Add Filter based on geographic polygon if it is set.
             if (!string.IsNullOrWhiteSpace(request.PolygonString))

@@ -4,6 +4,8 @@ namespace KnowledgeMining.Domain.Entities
 {
     public class DocumentMetadata
     {
+        [JsonPropertyName("@search.score")]
+        public double SearchScore { get; set; }
         [JsonPropertyName("metadata_storage_path")]
         public string? Id { get; set; }
         [JsonPropertyName("metadata_storage_name")]
@@ -36,6 +38,8 @@ namespace KnowledgeMining.Domain.Entities
         public string? MergedContent { get; set; }
         [JsonPropertyName("summary")]
         public string? Summary { get; set; }
+        [JsonPropertyName("datetime")]
+        public DateTime? DateTime { get; set; }
 
         public IDictionary<string, object?> ToDictionary()
         {

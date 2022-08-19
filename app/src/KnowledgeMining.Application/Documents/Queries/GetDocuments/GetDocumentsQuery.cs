@@ -4,7 +4,7 @@ using MediatR;
 
 namespace KnowledgeMining.Application.Documents.Queries.GetDocuments
 {
-    public record struct Document(string Name, IDictionary<string, string>? Tags);
+    public record struct Document(string Name, IDictionary<string, string>? Tags, IDictionary<string, string>? Metadata = null);
 
     public readonly record struct GetDocumentsResponse(IEnumerable<Document> Documents, string? NextPage);
 

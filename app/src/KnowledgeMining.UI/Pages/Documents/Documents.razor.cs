@@ -1,12 +1,16 @@
 using KnowledgeMining.Application.Documents.Commands.DeleteDocument;
+using KnowledgeMining.Application.Documents.Commands.EditDocument;
 using KnowledgeMining.Application.Documents.Queries.GetDocumentContent;
 using KnowledgeMining.Application.Documents.Queries.GetDocumentMetadata;
 using KnowledgeMining.Application.Documents.Queries.GetDocuments;
+using KnowledgeMining.Application.Documents.Queries.GetTags;
 using KnowledgeMining.Application.Documents.Queries.SearchDocuments;
 using KnowledgeMining.Domain.Entities;
 using KnowledgeMining.UI.Pages.Documents.Componenents;
+using KnowledgeMining.UI.Services.Documents;
 using MediatR;
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Web;
 using Microsoft.Extensions.Caching.Memory;
 using MudBlazor;
 
@@ -16,29 +20,38 @@ namespace KnowledgeMining.UI.Pages.Documents
     {
         [Inject] public ISnackbar Snackbar { get; set; }
         [Inject] public IDialogService DialogService { get; set; }
-
+        [Inject] public DocumentCacheService DocumentCacheService { get; set; }
         [Inject] public IMediator Mediator { get; set; }
-
-        [Inject] public IMemoryCache MemoryCache { get; set; }
 
         private bool _isLoading;
         private string? _searchText;
-        private int _currentPage = 0;
         private int _totalPages = 0;
         private int _pageSize = 25;
         private Document _backupSelectedDocument;
         private IEnumerable<Document> _documents = new List<Document>();
+        private DocumentTag[] AuthorizedMetadataFields;
 
-        // Upload Document
-        private bool _isUploadComponentVisible;
-        public void OpenUploadComponent()
+        public async Task OpenUploadComponent()
         {
-            _isUploadComponentVisible = true;
+            //_isUploadComponentVisible = true;
+            var options = new DialogOptions { CloseOnEscapeKey = true };
+            var dialog = DialogService.Show<UploadDocumentsComponent>("", options);
+            var result = await dialog.Result;
+
+            if(!result.Cancelled && result.Data != null)
+            {
+                if (result.DataType == typeof(IEnumerable<Document>))
+                {
+                    var results = result.Data as IEnumerable<Document>;
+                    await OnFilesUploaded(results!);
+                }
+            }
         }
 
         protected override async Task OnInitializedAsync()
         {
-            Search(_searchText);
+            AuthorizedMetadataFields = await Mediator.Send(new GetMetadataQuery()) ?? Array.Empty<DocumentTag>();
+            await Search(_searchText);
         }
 
         private void BackupDocument(Document item)
@@ -73,6 +86,62 @@ namespace KnowledgeMining.UI.Pages.Documents
             }
         }
 
+        private async ValueTask EditDocumentTags(Document document)
+        {
+            var parameters = new DialogParameters { ["document"] = document };
+            var options = new DialogOptions { MaxWidth = MaxWidth.Medium, FullWidth = true, CloseOnEscapeKey = true };
+            var dialog = DialogService.Show<EditDocumentTagsComponent>("Edit Tags", parameters, options);
+            var result = await dialog.Result;
+            if (result.Cancelled)
+            {
+                return;
+            }
+
+            if (result.Data != null && result.DataType == typeof(Document))
+            {
+                var updatedDocument = (Document)result.Data;
+                var response = await Mediator.Send(new SetDocumentTraitsCommand(updatedDocument, Domain.Enums.DocumentTraits.Tags));
+
+                if (!response)
+                {
+                    Snackbar.Add("Failed to update document tags", Severity.Error);
+                }
+                else
+                {
+                    await DocumentCacheService.UpdateDocument(updatedDocument);
+                    await Search(_searchText);
+                }
+            }
+        }
+
+        private async ValueTask EditDocumentMetadata(Document document)
+        {
+            var parameters = new DialogParameters { ["document"] = document };
+            var options = new DialogOptions { MaxWidth = MaxWidth.Medium, FullWidth = true, CloseOnEscapeKey = true };
+            var dialog = DialogService.Show<EditDocumentMetadataComponent>("Edit Metadata", parameters, options);
+            var result = await dialog.Result;
+            if (result.Cancelled)
+            {
+                return;
+            }
+
+            if (result.Data != null && result.DataType == typeof(Document))
+            {
+                var updatedDocument = ((Document)result.Data);
+                var response = await Mediator.Send(new SetDocumentTraitsCommand(updatedDocument, Domain.Enums.DocumentTraits.Metadata));
+
+                if (!response)
+                {
+                    Snackbar.Add("Failed to update document metadata", Severity.Error);
+                }
+                else
+                {
+                    await DocumentCacheService.UpdateDocument(updatedDocument);
+                    await Search(_searchText);
+                }
+            }
+        }
+
         private async ValueTask DeleteDocument(Document document)
         {
             var parameters = new DialogParameters { ["document"] = document };
@@ -86,9 +155,8 @@ namespace KnowledgeMining.UI.Pages.Documents
             try
             {
                 await Mediator.Send(new DeleteDocumentCommand(document.Name));
-                _documents = _documents.Where(x => !x.Name.Equals(document.Name));
-                MemoryCache.Set(Constants.DOCUMENT_FILTER_CACHE, _documents);
-                Search(_searchText);
+                DocumentCacheService.RemoveDocuments(x => !x.Name.Equals(document.Name));
+                await Search(_searchText);
 
                 Snackbar.Add("Document deleted", Severity.Success);
             }
@@ -101,34 +169,16 @@ namespace KnowledgeMining.UI.Pages.Documents
         private async Task OnSearch(string searchText)
         {
             _searchText = searchText;
-            Search(searchText);
+            await Search(searchText);
         }
 
-        private void LoadPreviousPage()
+        private async Task Search(string? searchText)
         {
-            if (_currentPage >= 1)
-                _currentPage -= 1;
-            UpdateTable(_documents.Skip(_currentPage).Take(_pageSize));
-        }
-
-        private void LoadNextPage()
-        {
-            UpdateTable(_documents.Skip(_currentPage).Take(_pageSize));
-            _currentPage += 1;
-        }
-
-        private void Search(string? searchText)
-        {
-            _currentPage = 0;
             _totalPages = 0;
 
             _isLoading = true;
 
-            MemoryCache.TryGetValue<IEnumerable<Document>>(Constants.DOCUMENT_FILTER_CACHE, out var cachedDocuments);
-
-            if (cachedDocuments == null)
-                cachedDocuments = new List<Document>();
-
+            var cachedDocuments = DocumentCacheService.GetDocuments();
             var query = cachedDocuments.Where(x => x.Name.Contains(searchText ?? string.Empty, StringComparison.OrdinalIgnoreCase));
             _totalPages = query.Count();
             _documents = query.ToList();
@@ -141,6 +191,47 @@ namespace KnowledgeMining.UI.Pages.Documents
         private void UpdateTable(IEnumerable<Document> documents)
         {
             _documents = documents;
+        }
+
+        private async Task RefreshCacheClicked(MouseEventArgs args)
+        {
+            _isLoading = true;
+
+            Snackbar.Add("Refreshing Document Table...", Severity.Warning);
+
+            UpdateTable(new List<Document>());
+
+            var documents = await DocumentCacheService.BuildCache(new CancellationToken());
+
+            UpdateTable(documents);
+
+            _isLoading = false;
+
+            Snackbar.Add("Refreshing Document Table Completed", Severity.Success);
+        }
+
+        public async Task OnFilesUploaded(IEnumerable<Document> documents)
+        {
+            if (documents.Count() > 0)
+            {
+                await DocumentCacheService.BuildCache(new CancellationToken());
+                await Search(_searchText);
+            }
+        }
+
+
+        private string DisplayAuthorizedFields(DocumentTag[] documentTags, IDictionary<string, string> values)
+        {
+            if (documentTags == null)
+                documentTags = Array.Empty<DocumentTag>();
+
+            if (values == null)
+                return string.Empty;
+
+            var authorizedNames = documentTags.Select(x => x.Name);
+            var authorizedItems = values.Where(x => authorizedNames.Contains(x.Key)).Select(x => $"{x.Key}: {x.Value}");
+
+            return string.Join(",", authorizedItems);
         }
 
     }

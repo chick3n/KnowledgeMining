@@ -13,19 +13,15 @@ namespace KnowledgeMining.UI.Services.Documents
     public class DocumentFilterScopedService : IScopedProcessingService
     {
         private int executionCount = 0;
-        private int pageSize = 100;
         private readonly ILogger _logger;
-        private readonly IMediator _mediator;
-        private readonly IMemoryCache _memoryCache;
+        private readonly DocumentCacheService _documentCachingService;
 
 
         public DocumentFilterScopedService(ILogger<DocumentFilterScopedService> logger,
-            IMediator mediator,
-            IMemoryCache memoryCache)
+            DocumentCacheService documentCachingService)
         {
             _logger = logger;
-            _mediator = mediator;
-            _memoryCache = memoryCache;
+            _documentCachingService = documentCachingService;
         }
 
         public async Task DoWork(CancellationToken stoppingToken)
@@ -37,17 +33,7 @@ namespace KnowledgeMining.UI.Services.Documents
                 _logger.LogInformation(
                     "Scoped Processing Service is working. Count: {Count}", executionCount);
 
-                List<Document> documents = new List<Document>();
-                string? nextPage = default;
-                do
-                {
-                    var response = await _mediator.Send(new GetDocumentsQuery(null, pageSize, nextPage));
-                    nextPage = response.NextPage;
-                    documents.AddRange(response.Documents);
-                } while (!string.IsNullOrWhiteSpace(nextPage));
-
-                _logger.LogInformation("Processed {Count} storage blobs", documents.Count);
-                _memoryCache.Set(Constants.DOCUMENT_FILTER_CACHE, documents);
+                await _documentCachingService.BuildCache(stoppingToken);
 
                 await Task.Delay(TimeSpan.FromMinutes(30), stoppingToken);
             }
