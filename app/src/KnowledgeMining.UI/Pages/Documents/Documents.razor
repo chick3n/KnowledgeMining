@@ -13,43 +13,35 @@
     <MudButton StartIcon="@Icons.Filled.CloudUpload" Variant="Variant.Filled" Color="Color.Info" 
         OnClick="OpenUploadComponent" style="margin-right: 20px">Upload Documents</MudButton> 
 </div>
-<MudDataGrid T="Document" Items="@_documents" Hover="true" Loading="@_isLoading"
+<MudTable T="Document" Items="@_documents" Hover="true" Loading="@_isLoading" Style="table-layout: fixed;"
              ReadOnly="true"
-             StartedEditingItem="@BackupDocument" CancelledEditingItem="@RestoreDocument" CommittedItemChanges="@SaveDocument"
-             Bordered="true" EditMode="DataGridEditMode.Form" 
-             EditTrigger="DataGridEditTrigger.Manual" RowsPerPage="@_pageSize" Virtualize="true">
+             Bordered="true"
+             RowsPerPage="@_pageSize" Virtualize="true">
     <ToolBarContent>
         <MudText Typo="Typo.h6">Documents (@_totalPages)</MudText>
         <MudSpacer />
         <MudTextField T="string" ValueChanged="OnSearch" Placeholder="Search" Adornment="Adornment.Start" 
             AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
     </ToolBarContent>
-    <Columns>
-        <Column T="Document" Field="Name" Title="Name" IsEditable="false" ></Column>
-        <Column T="Document" Field="Tags" Title="Tags" IsEditable="false">
-            <CellTemplate>
-                <MudIconButton Title="Tags" Size="@Size.Small" Icon="@Icons.Outlined.Edit" OnClick="@(async (e) => await EditDocumentTags(context.Item))" />
-                @if(context.Item.Tags != null) {
-                    @(string.Join(",", context.Item.Tags.Select(x => $"{x.Key}: {x.Value}")))
+    <HeaderContent>
+        <MudTh>Name</MudTh>
+        <MudTh>Metadata</MudTh>
+        <MudTh style="width: 6%;">Actions</MudTh>
+    </HeaderContent>
+    <RowTemplate>
+        <MudTd DataLabel="Name">@context.Name</MudTd>
+        <MudTd DataLabel="Metadata" 
+            Style="max-width: 200px; white-space:nowrap; overflow: hidden; text-overflow: ellipsis;">
+            <MudIconButton Title="Metadata" Size="@Size.Small" Icon="@Icons.Outlined.Edit" OnClick="@(async (e) => await EditDocumentMetadata(context))" />
+                @if(context.Metadata != null) {
+                    @DisplayAuthorizedFields(AuthorizedMetadataFields, context.Metadata)
                 }
-            </CellTemplate>
-        </Column>
-        <Column T="Document" Field="Metadata" Title="Metadata" IsEditable="false" Hideable="true" CellStyle="max-width: 200px; white-space:nowrap; overflow: hidden; text-overflow: ellipsis;">
-            <CellTemplate>
-                <MudIconButton Title="Metadata" Size="@Size.Small" Icon="@Icons.Outlined.Edit" OnClick="@(async (e) => await EditDocumentMetadata(context.Item))" />
-                @if(context.Item.Metadata != null) {
-                    @DisplayAuthorizedFields(AuthorizedMetadataFields, context.Item.Metadata)
-                }
-            </CellTemplate>
-        </Column>
-        <Column T="Document" Title="Actions" CellClass="d-flex justify-end">
-            <CellTemplate>
-                <MudIconButton Title="Read More" Size="@Size.Small" Icon="@Icons.Outlined.ReadMore" OnClick="@(async (e) => await ReadMoreDocument(context.Item))" />
-                <MudIconButton Title="Delete" Size="@Size.Small" Icon="@Icons.Outlined.DeleteForever" OnClick="@(async (e) => await DeleteDocument(context.Item))" />
-                @*<MudIconButton Title="Edit" Size="@Size.Small" Icon="@Icons.Outlined.Edit" OnClick="@context.Actions.StartEditingItem" />*@
-            </CellTemplate>
-        </Column>
-    </Columns>
+        </MudTd>
+        <MudTd DataLabel="Actions" >
+            <MudIconButton Title="Read More" Size="@Size.Small" Icon="@Icons.Outlined.ReadMore" OnClick="@(async (e) => await ReadMoreDocument(context))" />
+            <MudIconButton Title="Delete" Size="@Size.Small" Icon="@Icons.Outlined.DeleteForever" OnClick="@(async (e) => await DeleteDocument(context))" />
+        </MudTd>
+    </RowTemplate>
     <NoRecordsContent>
         <MudText>No documents found</MudText>
     </NoRecordsContent>
@@ -57,15 +49,6 @@
         <MudText>Loading...</MudText>
     </LoadingContent>
     <PagerContent>
-        @*@if (_totalPages > 0 && _currentPage > 0)
-        {
-            <MudIconButton Icon="@Icons.Filled.NavigateBefore" OnClick="LoadPreviousPage"></MudIconButton>
-        }
-        
-        @if (_totalPages > 0 && _currentPage < _totalPages)
-        {
-            <MudIconButton Icon="@Icons.Filled.NavigateNext" OnClick="LoadNextPage"></MudIconButton>
-        }*@
-        <MudDataGridPager T="Document" />
+        <MudTablePager />
     </PagerContent>
-</MudDataGrid>
+</MudTable>

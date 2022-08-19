@@ -231,7 +231,7 @@ namespace KnowledgeMining.UI.Pages.Documents
             var authorizedNames = documentTags.Select(x => x.Name);
             var authorizedItems = values.Where(x => authorizedNames.Contains(x.Key)).Select(x => $"{x.Key}: {x.Value}");
 
-            return string.Join(",", authorizedItems);
+            return string.Join(", ", authorizedItems.OrderBy(x => x));
         }
 
     }
