@@ -41,7 +41,7 @@ else
                             </CardHeaderAvatar>
                             <CardHeaderContent>
                                 <MudText Typo="Typo.body1">@DocumentHeader(document)</MudText>
-                                <MudText Typo="Typo.body2">@(document.DateTime?.ToLongDateString() ?? string.Empty)</MudText>
+                                <MudText Typo="Typo.body2">@DocumentSubHeader(document)</MudText>
                             </CardHeaderContent>
                             <CardHeaderActions>
                                 <MudMenu Icon="@Icons.Material.Outlined.Info">
@@ -71,10 +71,6 @@ else
                                 </div>
                             </div>
                         </MudCardContent>
-                        <MudCardActions>
-                            <small>Score: @document.SearchScore</small>
-                            <small>@DocumentFooter(document)</small>
-                        </MudCardActions>
                     </MudCard>
                 </MudItem>
             }
@@ -145,8 +141,7 @@ else
         {
             if (!string.IsNullOrWhiteSpace(document.Mission))
             {
-                if (!document.Title.StartsWith(document.Mission, StringComparison.CurrentCultureIgnoreCase))
-                    return $"{document.Mission} - {document.Title}";
+                return $"{document.Mission} ⮞ {document.Title}";
             }
 
             return document.Title;
@@ -158,6 +153,11 @@ else
         }
 
         return document.Name ?? string.Empty;
+    }
+
+    private string DocumentSubHeader(DocumentMetadata document)
+    {
+        return document.DateTime?.ToLongDateString() ?? string.Empty;
     }
 
     private string DocumentSummary(DocumentMetadata document)
