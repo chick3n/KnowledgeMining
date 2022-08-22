@@ -40,6 +40,12 @@ namespace KnowledgeMining.Domain.Entities
         public string? Summary { get; set; }
         [JsonPropertyName("datetime")]
         public DateTime? DateTime { get; set; }
+        [JsonPropertyName("title")]
+        public string? Title { get; set; }
+        [JsonPropertyName("sourceType")]
+        public string? SourceType { get; set; }
+        [JsonPropertyName("sourcePath")]
+        public string? SourcePath { get; set; }
 
         public IDictionary<string, object?> ToDictionary()
         {
@@ -55,7 +61,10 @@ namespace KnowledgeMining.Domain.Entities
                 { ToLowerFirstChar(nameof(Date)), Date },
                 { ToLowerFirstChar(nameof(Mission)), Mission },
                 { ToLowerFirstChar(nameof(DocumentType)), DocumentType },
-                { ToLowerFirstChar(nameof(MergedContent)), MergedContent }
+                { ToLowerFirstChar(nameof(MergedContent)), MergedContent },
+                { ToLowerFirstChar(nameof(Title)), Title },
+                { ToLowerFirstChar(nameof(SourceType)), SourceType },
+                { ToLowerFirstChar(nameof(SourcePath)), SourcePath }
             };
         }
 

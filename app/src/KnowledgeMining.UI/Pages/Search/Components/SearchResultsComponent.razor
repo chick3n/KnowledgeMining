@@ -31,7 +31,7 @@ else
     @if (TotalCount > 0)
     {
         <MudGrid>
-            @foreach (var document in Documents)
+            @foreach (var document in Documents ?? Enumerable.Empty<DocumentMetadata>())
             {
                 <MudItem xs="12" sm="12">
                     <MudCard Outlined="true" @onclick="() => OnDocumentClicked.InvokeAsync(document.Id)" Style="cursor: pointer;">
@@ -64,7 +64,7 @@ else
                                 </div>
 
                                 <div class="flex-grow-1">
-                                    @foreach (var keyPhrase in document.KeyPhrases.Take(8))
+                                    @foreach (var keyPhrase in document.KeyPhrases?.Take(8) ?? Enumerable.Empty<string>())
                                     {
                                         <MudChip Color="Color.Info"><MudText Typo="Typo.body2">@keyPhrase</MudText></MudChip>
                                     }
@@ -141,10 +141,18 @@ else
 
     private string DocumentHeader(DocumentMetadata document)
     {
-        if (!string.IsNullOrWhiteSpace(document.Mission))
-            return document.Mission;
+        if(!string.IsNullOrWhiteSpace(document.Title))
+        {
+            if (!string.IsNullOrWhiteSpace(document.Mission))
+            {
+                if (!document.Title.StartsWith(document.Mission, StringComparison.CurrentCultureIgnoreCase))
+                    return $"{document.Mission} - {document.Title}";
+            }
 
-        return document.Name;
+            return document.Title;
+        }        
+
+        return document.Name ?? string.Empty;
     }
 
     private string DocumentSummary(DocumentMetadata document)
