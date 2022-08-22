@@ -150,7 +150,12 @@ else
             }
 
             return document.Title;
-        }        
+        }     
+
+        if (!string.IsNullOrWhiteSpace(document.Mission))
+        {
+            return document.Mission;
+        }
 
         return document.Name ?? string.Empty;
     }
