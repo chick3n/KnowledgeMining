@@ -194,9 +194,16 @@ namespace KnowledgeMining.Infrastructure.Services.Storage
                 return Array.Empty<byte>();
             }
 
+            var containerName = _storageOptions.ContainerName;
+            if (documentName.Contains("/")) //has container
+            {
+                containerName = documentName.Substring(0, documentName.IndexOf("/"));
+                documentName = documentName.Substring(documentName.IndexOf("/") + 1);
+            }
+
             var decodedFilename = WebUtility.UrlDecode(documentName);
 
-            var container = GetBlobContainerClient();
+            var container = GetBlobContainerClient(containerName);
             var blob = container.GetBlobClient(decodedFilename);
 
             if (!await blob.ExistsAsync(cancellationToken))
@@ -222,7 +229,12 @@ namespace KnowledgeMining.Infrastructure.Services.Storage
 
         private BlobContainerClient GetBlobContainerClient()
         {
-            return _blobServiceClient.GetBlobContainerClient(_storageOptions.ContainerName);
+            return GetBlobContainerClient(_storageOptions.ContainerName);
+        }
+
+        private BlobContainerClient GetBlobContainerClient(string containerName)
+        {
+            return _blobServiceClient.GetBlobContainerClient(containerName);
         }
     }
 }

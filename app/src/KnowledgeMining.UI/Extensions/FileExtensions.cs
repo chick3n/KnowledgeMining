@@ -21,6 +21,8 @@ namespace KnowledgeMining.UI.Extensions
         public const string PPTX = ".pptx";
         public const string XLS = ".xls";
         public const string XLSX = ".xlsx";
+        public const string MSG = ".msg";
+        public const string EML = ".eml";
         public const string UNKNOWN = "";
 
         private static IReadOnlyDictionary<string, string> _contentTypes = new Dictionary<string, string>()
@@ -42,6 +44,8 @@ namespace KnowledgeMining.UI.Extensions
             {PPTX    , "application/vnd.openxmlformats-officedocument.presentationml.presentation"   },
             {XLS     , "application/vnd.ms-excel"   },
             {XLSX    , "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"   },
+            {MSG     , "application/vnd.ms-outlook" },
+            {EML     , "application/octet-stream" },
             {UNKNOWN , ""       }
         };
 

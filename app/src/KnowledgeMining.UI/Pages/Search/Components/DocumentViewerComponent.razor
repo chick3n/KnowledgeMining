@@ -9,6 +9,10 @@
         @RenderTextViewer((DocumentUri, contentType))
         ;
         break;
+    case FileExtensions.MSG:
+    case FileExtensions.EML:
+        @RenderEmailViewer((DocumentUri, contentType));
+        break;
     default:
         @RenderUnknowViewer(documentExtention)
         ;
@@ -24,7 +28,7 @@
 
     protected override void OnParametersSet()
     {
-        documentExtention = DocumentUri.GetFileExtension();
+        documentExtention = DocumentUri?.GetFileExtension() ?? string.Empty;
         contentType = FileExtensions.GetContentTypeForFileExtension(documentExtention);
     }
 
@@ -40,6 +44,14 @@
         <iframe class="file-container" src="@data.DocumentUri" type="@data.ContentType">
             This browser does not support Text files. Please download the file to view it: <a href="@data.DocumentUri">Download File</a>"
         </iframe>
+    };
+
+    private RenderFragment<(string?, string)> RenderEmailViewer = ((string? DocumentUri, string ContentType) data) => __builder =>
+    {
+        <iframe class="file-container" src="@data.DocumentUri" type="@data.ContentType">
+            This browser does not support Text files. Please download the file to view it: <a href="@data.DocumentUri">Download File</a>"
+        </iframe>
+        
     };
 
     private RenderFragment<string> RenderUnknowViewer = extension => __builder =>

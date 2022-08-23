@@ -1,5 +1,6 @@
 ﻿using KnowledgeMining.Application.Common.Interfaces;
 using KnowledgeMining.UI.Extensions;
+using System.Web;
 
 namespace KnowledgeMining.UI.Api
 {
@@ -13,11 +14,12 @@ namespace KnowledgeMining.UI.Api
             IStorageService storageService,
             CancellationToken cancellationToken)
         {
-            var fileContents = await storageService.DownloadDocument(fileName, cancellationToken);
+            var decodedFileName = HttpUtility.UrlDecode(fileName);
+            var fileContents = await storageService.DownloadDocument(decodedFileName.Trim('/'), cancellationToken);
 
-            var contentType = FileExtensions.GetContentTypeForFileExtension(fileName.GetFileExtension());
+            var contentType = FileExtensions.GetContentTypeForFileExtension(decodedFileName.GetFileExtension());
 
-            return Results.Extensions.InlineFile(fileContents, fileName, contentType, cancellationToken);
+            return Results.Extensions.InlineFile(fileContents, decodedFileName, contentType, cancellationToken);
         }
     }
 }

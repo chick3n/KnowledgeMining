@@ -1,4 +1,5 @@
 ﻿@using KnowledgeMining.Application.Documents.Queries.SearchDocuments
+@using System.Text.RegularExpressions
 @if (IsLoading)
 {
     <MudGrid>
@@ -139,11 +140,6 @@ else
     {
         if(!string.IsNullOrWhiteSpace(document.Title))
         {
-            if (!string.IsNullOrWhiteSpace(document.Mission))
-            {
-                return $"{document.Mission} ⮞ {document.Title}";
-            }
-
             return document.Title;
         }     
 
@@ -173,7 +169,17 @@ else
         if (summary.Length > SummaryLength)
             summary = summary.Substring(0, SummaryLength-Suffix.Length) + Suffix;
 
-        return summary;
+        return CleanString(summary);
+    }
+
+    private string CleanString(string text)
+    {
+        if (string.IsNullOrEmpty(text))
+            return text;
+
+        text = text.ReplaceLineEndings();
+        text = Regex.Replace(text, "\\t|\\r|\\n", string.Empty);
+        return text;
     }
 
     private string DocumentFooter(DocumentMetadata document)

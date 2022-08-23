@@ -1,4 +1,5 @@
 ﻿using KnowledgeMining.Application.Common.Options;
+using KnowledgeMining.Domain.Entities;
 using KnowledgeMining.UI.Api;
 using Microsoft.Extensions.Options;
 
@@ -20,9 +21,26 @@ namespace KnowledgeMining.UI.Services.Links
             _azureSignalROptions = azureSignalROptions.Value;
         }
 
+        public string GenerateDocumentPreviewUrl(DocumentMetadata document)
+        {
+            if (string.IsNullOrWhiteSpace(document.SourcePath))
+                return GenerateDocumentPreviewUrl(document.Name);
+
+            var sourcePath = document.SourcePath;
+            if (document.SourcePath.Contains("/dbfs/mnt"))
+                sourcePath = document.SourcePath.Replace("/dbfs/mnt", string.Empty);
+
+            return GenerateDocumentPreviewUrl(sourcePath);
+        }
+
         public string GenerateDocumentPreviewUrl(string documentName)
         {
-            var relativePath = _linker.GetPathByName(PreviewFileEndpoint.EndpointName, values: new { fileName = documentName });
+            return GenerateDocumentPreviewUrl(PreviewFileEndpoint.EndpointName, documentName);
+        }
+
+        public string GenerateDocumentPreviewUrl(string endpoint, string documentName)
+        {
+            var relativePath = _linker.GetPathByName(endpoint, values: new { fileName = documentName });
 
             if (_azureSignalROptions.Enabled)
             {
