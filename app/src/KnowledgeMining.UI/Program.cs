@@ -18,6 +18,8 @@ namespace KnowledgeMining.UI
             builder.WebHost.CaptureStartupErrors(true);
 
             // Add services to the container.
+
+            builder.Services.AddApplicationInsightsTelemetry();
             builder.Services.AddMemoryCache();
             builder.Services.AddRazorPages();
             builder.Services.AddServerSideBlazor();

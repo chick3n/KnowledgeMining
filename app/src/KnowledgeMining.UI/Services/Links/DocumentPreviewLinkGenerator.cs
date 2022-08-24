@@ -23,8 +23,10 @@ namespace KnowledgeMining.UI.Services.Links
 
         private string CleanSourcePath(string sourcePath)
         {
-            if (sourcePath.Contains("/dbfs/mnt"))
-                return sourcePath.Replace("/dbfs/mnt", string.Empty);
+            var lastIndex = sourcePath.LastIndexOf('/');
+            if (lastIndex > -1 && sourcePath.Length > lastIndex)
+                return sourcePath.Substring(lastIndex + 1);
+
             return sourcePath; 
         }
 

@@ -187,27 +187,22 @@ namespace KnowledgeMining.Infrastructure.Services.Storage
             return tags.Where(t => !string.IsNullOrWhiteSpace(t.Key) && !string.IsNullOrWhiteSpace(t.Value)).ToDictionary(t => t.Key, t => t.Value);
         }
 
-        public async ValueTask<byte[]> DownloadDocument(string documentName, CancellationToken cancellationToken)
+        public async ValueTask<byte[]> DownloadDocument(string containerName, string documentName, CancellationToken cancellationToken)
         {
-            if (string.IsNullOrEmpty(documentName))
+            if (string.IsNullOrEmpty(documentName) || string.IsNullOrEmpty(containerName))
             {
                 return Array.Empty<byte>();
             }
 
-            var containerName = _storageOptions.ContainerName;
-            if (documentName.Contains("/")) //has container
-            {
-                containerName = documentName.Substring(0, documentName.IndexOf("/"));
-                documentName = documentName.Substring(documentName.IndexOf("/") + 1);
-            }
-
-            var decodedFilename = WebUtility.UrlDecode(documentName);
+            var decodedFilename = WebUtility.UrlDecode(documentName); 
+            _logger.LogInformation("Download blob {Container} {DocumentName}", containerName, documentName);
 
             var container = GetBlobContainerClient(containerName);
             var blob = container.GetBlobClient(decodedFilename);
 
             if (!await blob.ExistsAsync(cancellationToken))
             {
+                _logger.LogWarning("Blob {Container}/{Name} does not exist", containerName, decodedFilename);
                 return Array.Empty<byte>();
             }
 
@@ -219,6 +214,12 @@ namespace KnowledgeMining.Infrastructure.Services.Storage
 
             return ms.ToArray();
         }
+
+        public async ValueTask<byte[]> DownloadDocument(string documentName, CancellationToken cancellationToken) =>
+            await DownloadDocument(_storageOptions.ContainerName, documentName, cancellationToken);
+
+        public async ValueTask<byte[]> DownloadSource(string documentName, CancellationToken cancellationToken) =>
+            await DownloadDocument(_storageOptions.SourceContainerName, documentName, cancellationToken);
 
         public async ValueTask DeleteDocument(string documentName, CancellationToken cancellationToken)
         {

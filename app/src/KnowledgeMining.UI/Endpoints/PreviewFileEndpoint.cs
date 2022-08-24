@@ -15,7 +15,7 @@ namespace KnowledgeMining.UI.Api
             CancellationToken cancellationToken)
         {
             var decodedFileName = HttpUtility.UrlDecode(fileName);
-            var fileContents = await storageService.DownloadDocument(decodedFileName.Trim('/'), cancellationToken);
+            var fileContents = await storageService.DownloadSource(decodedFileName.Trim('/'), cancellationToken);
 
             var contentType = FileExtensions.GetContentTypeForFileExtension(decodedFileName.GetFileExtension());
 
