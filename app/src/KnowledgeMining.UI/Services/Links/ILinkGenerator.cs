@@ -5,5 +5,6 @@ namespace KnowledgeMining.UI.Services.Links
     public interface ILinkGenerator
     {
         string GenerateDocumentPreviewUrl(DocumentMetadata document);
+        string GenerateDocumentDownloadUrl(DocumentMetadata document);
     }
 }

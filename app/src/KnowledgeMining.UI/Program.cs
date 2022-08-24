@@ -53,7 +53,7 @@ namespace KnowledgeMining.UI
             builder.Services.AddScoped<DocumentCacheService>();
             builder.Services.AddScoped<MetadataService>();
             builder.Services.AddScoped<ILinkGenerator, DocumentPreviewLinkGenerator>();
-            builder.Services.AddScoped<ILinkGenerator, DocumentPreviewLinkGenerator>();
+            //builder.Services.AddScoped<ILinkGenerator, DocumentPreviewLinkGenerator>();
             builder.Services.AddScoped<IScopedProcessingService, DocumentFilterScopedService>();
 
             builder.Services.AddApplicationInsightsTelemetry();
@@ -77,11 +77,19 @@ namespace KnowledgeMining.UI
 
             app.UseCookiePolicy();
 
-            app.MapGet(PreviewFileEndpoint.Route, async (
-                    string fileName,
+            app.MapGet(PreviewFileEndpoint.Route, 
+                async (string fileName,
                     IStorageService storageClient,
-                    CancellationToken cancellationToken) => await PreviewFileEndpoint.DownloadInlineFile(fileName, storageClient, cancellationToken))
+                    CancellationToken cancellationToken) => 
+                await PreviewFileEndpoint.DownloadInlineFile(fileName, storageClient, cancellationToken))
                .WithName(PreviewFileEndpoint.EndpointName);
+
+            app.MapGet(DownloadFileEndpoint.Route,
+                async (string fileName,
+                    IStorageService storageClient,
+                    CancellationToken cancellationToken) =>
+                await DownloadFileEndpoint.DownloadInlineFile(fileName, storageClient, cancellationToken))
+               .WithName(DownloadFileEndpoint.EndpointName);
 
             app.MapBlazorHub();
             app.MapFallbackToPage("/_Host");

@@ -5,17 +5,25 @@ namespace KnowledgeMining.UI.Extensions
 {
     public static class ResultsExtensions
     {
-        public static IResult InlineFile(this IResultExtensions resultExtensions, byte[] fileContents, string fileName, string contentType, CancellationToken cancellationToken)
+        public static IResult InlineFile(this IResultExtensions resultExtensions, 
+            byte[] fileContents, 
+            string fileName, 
+            string contentType, 
+            bool raw,
+            CancellationToken cancellationToken)
         {
             ArgumentNullException.ThrowIfNull(resultExtensions);
 
-            var fileType = fileName.GetFileExtension();
-
-            switch(fileType)
+            if (!raw)
             {
-                case FileExtensions.EML:
-                case FileExtensions.MSG:
-                    return new InlineEmailResult(fileContents, fileName, contentType, fileType, cancellationToken);
+                var fileType = fileName.GetFileExtension();
+
+                switch (fileType)
+                {
+                    case FileExtensions.EML:
+                    case FileExtensions.MSG:
+                        return new InlineEmailResult(fileContents, fileName, contentType, fileType, cancellationToken);
+                }
             }
 
             return new InlineFileResult(fileContents, fileName, contentType, cancellationToken);
@@ -76,6 +84,7 @@ namespace KnowledgeMining.UI.Extensions
         private string WriteMsgResponse(HttpContext httpContext)
         {
             var ms = new MemoryStream(_fileContents);
+
             using (var msg = new MsgReader.Outlook.Storage.Message(ms))
             {
 
@@ -90,13 +99,13 @@ namespace KnowledgeMining.UI.Extensions
                 {
                     body = msg.BodyHtml;
                 }
-                catch(Exception)
+                catch (Exception)
                 {
                     body = msg.BodyText ?? string.Empty;
                 }
 
                 return WriteHtml(from, to, cc, bcc, subject, body);
-            }           
+            }
         }
 
         private string WriteEmlResponse(HttpContext httpContext)
@@ -118,7 +127,7 @@ namespace KnowledgeMining.UI.Extensions
             {
                 body = System.Text.Encoding.UTF8.GetString(eml.TextBody.Body);
             }
-            
+
             return WriteHtml(from, to, cc, bcc, subject, body);
         }
 

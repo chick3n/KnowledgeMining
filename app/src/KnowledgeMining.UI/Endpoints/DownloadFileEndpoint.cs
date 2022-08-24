@@ -4,10 +4,10 @@ using System.Web;
 
 namespace KnowledgeMining.UI.Api
 {
-    public static class PreviewFileEndpoint
+    public static class DownloadFileEndpoint
     {
-        public const string Route = "api/documents/preview/{fileName}";
-        public const string EndpointName = "preview";
+        public const string Route = "api/documents/download/{fileName}";
+        public const string EndpointName = "download";
 
         public static async Task<IResult> DownloadInlineFile(
             string fileName,
@@ -19,7 +19,7 @@ namespace KnowledgeMining.UI.Api
 
             var contentType = FileExtensions.GetContentTypeForFileExtension(decodedFileName.GetFileExtension());
 
-            return Results.Extensions.InlineFile(fileContents, decodedFileName, contentType, false, cancellationToken);
+            return Results.Extensions.InlineFile(fileContents, decodedFileName, contentType, true, cancellationToken);
         }
     }
 }

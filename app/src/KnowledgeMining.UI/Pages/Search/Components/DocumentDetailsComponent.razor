@@ -114,7 +114,11 @@
     {
         if(!string.IsNullOrWhiteSpace(Document?.SourcePath))
         {
-            return Uri.TryCreate(Document?.SourcePath, UriKind.Absolute, out _);
+            if(Uri.TryCreate(Document?.SourcePath, UriKind.Absolute, out var uri))
+            {
+                return uri.Scheme.Equals("http", StringComparison.CurrentCultureIgnoreCase) ||
+                    uri.Scheme.Equals("https", StringComparison.CurrentCultureIgnoreCase);
+            }
         }
 
         return false;

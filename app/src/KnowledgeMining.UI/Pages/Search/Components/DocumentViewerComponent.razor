@@ -1,7 +1,7 @@
 ﻿@inject ILinkGenerator LinkGenerator;
 
 <div>
-    <a href="@DocumentUri" download>Download File</a>
+    <a href="@LinkGenerator.GenerateDocumentDownloadUrl(Document)" download>Download File</a>
 </div>
 <hr/>
 
@@ -37,28 +37,28 @@
     protected override void OnParametersSet()
     {
         DocumentUri = LinkGenerator.GenerateDocumentPreviewUrl(Document);
-        documentExtention = DocumentUri?.GetFileExtension() ?? string.Empty;
+        documentExtention = Document.SourcePath?.GetFileExtension() ?? Document.Name?.GetFileExtension() ?? string.Empty;
         contentType = FileExtensions.GetContentTypeForFileExtension(documentExtention);
     }
 
     private RenderFragment<(string?, string)> RenderPDFViewer = ((string? DocumentUri, string ContentType) data) => __builder =>
     {
         <iframe class="file-container" src="@data.DocumentUri" type="@data.ContentType">
-            This browser does not support PDFs. Please download the file to view it: <a href="@data.DocumentUri" download>Download PDF</a>"
+            This browser does not support PDFs. Please download the file to view it.
         </iframe>
     };
 
     private RenderFragment<(string?, string)> RenderTextViewer = ((string? DocumentUri, string ContentType) data) => __builder =>
     {
         <iframe class="file-container" src="@data.DocumentUri" type="@data.ContentType">
-            This browser does not support Text files. Please download the file to view it: <a href="@data.DocumentUri" download>Download File</a>"
+            This browser does not support Text files. Please download the file to view it.
         </iframe>
     };
 
     private RenderFragment<(string?, string)> RenderEmailViewer = ((string? DocumentUri, string ContentType) data) => __builder =>
     {
         <iframe class="file-container" src="@data.DocumentUri" type="@data.ContentType">
-            This browser does not support Text files. Please download the file to view it: <a href="@data.DocumentUri" download>Download File</a>"
+            This browser does not support Email files. Please download the file to view it.
         </iframe>
     };
 

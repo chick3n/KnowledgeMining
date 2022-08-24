@@ -21,14 +21,29 @@ namespace KnowledgeMining.UI.Services.Links
             _azureSignalROptions = azureSignalROptions.Value;
         }
 
+        private string CleanSourcePath(string sourcePath)
+        {
+            if (sourcePath.Contains("/dbfs/mnt"))
+                return sourcePath.Replace("/dbfs/mnt", string.Empty);
+            return sourcePath; 
+        }
+
+        public string GenerateDocumentDownloadUrl(DocumentMetadata document)
+        {
+            if (string.IsNullOrWhiteSpace(document.SourcePath))
+                return GenerateDocumentPreviewUrl(DownloadFileEndpoint.EndpointName, document.Name);
+
+            var sourcePath = CleanSourcePath(document.SourcePath);
+
+            return GenerateDocumentPreviewUrl(DownloadFileEndpoint.EndpointName, sourcePath);
+        }
+
         public string GenerateDocumentPreviewUrl(DocumentMetadata document)
         {
             if (string.IsNullOrWhiteSpace(document.SourcePath))
                 return GenerateDocumentPreviewUrl(document.Name);
 
-            var sourcePath = document.SourcePath;
-            if (document.SourcePath.Contains("/dbfs/mnt"))
-                sourcePath = document.SourcePath.Replace("/dbfs/mnt", string.Empty);
+            var sourcePath = CleanSourcePath(document.SourcePath);
 
             return GenerateDocumentPreviewUrl(sourcePath);
         }
