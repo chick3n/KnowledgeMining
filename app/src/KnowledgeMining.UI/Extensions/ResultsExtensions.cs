@@ -73,14 +73,38 @@ namespace KnowledgeMining.UI.Extensions
             return string.Empty;
         }
 
-        private string WriteMsgResponse(HttpContext httpContext) => throw new NotImplementedException();
+        private string WriteMsgResponse(HttpContext httpContext)
+        {
+            var ms = new MemoryStream(_fileContents);
+            using (var msg = new MsgReader.Outlook.Storage.Message(ms))
+            {
+
+                var from = msg.Sender.Email;
+                var to = msg.Headers?.To?.Select(x => x.Address).ToList() ?? new List<string>();
+                var cc = msg.Headers?.Cc?.Select(x => x.Address).ToList() ?? new List<string>();
+                var bcc = msg.Headers?.Bcc?.Select(x => x.Address).ToList() ?? new List<string>();
+                var subject = msg.Subject;
+                var body = string.Empty;
+
+                try
+                {
+                    body = msg.BodyHtml;
+                }
+                catch(Exception)
+                {
+                    body = msg.BodyText ?? string.Empty;
+                }
+
+                return WriteHtml(from, to, cc, bcc, subject, body);
+            }           
+        }
 
         private string WriteEmlResponse(HttpContext httpContext)
         {
-            var content = new StringBuilder();
             var ms = new MemoryStream(_fileContents);
             var eml = MsgReader.Mime.Message.Load(ms);
 
+            var from = eml.Headers?.From?.Address ?? string.Empty;
             var to = eml.Headers?.To?.Select(x => x.Address).ToList() ?? new List<string>();
             var cc = eml.Headers?.Cc?.Select(x => x.Address).ToList() ?? new List<string>();
             var bcc = eml.Headers?.Bcc?.Select(x => x.Address).ToList() ?? new List<string>();
@@ -95,15 +119,16 @@ namespace KnowledgeMining.UI.Extensions
                 body = System.Text.Encoding.UTF8.GetString(eml.TextBody.Body);
             }
             
-            return WriteHtml(to, cc, bcc, subject, body);
+            return WriteHtml(from, to, cc, bcc, subject, body);
         }
 
-        private string WriteHtml(List<string> to, List<string> cc, List<string> bcc, string subject, string body)
+        private string WriteHtml(string from, List<string> to, List<string> cc, List<string> bcc, string subject, string body)
         {
             var sb = new StringBuilder();
 
             sb.AppendLine("<html><head></head><body><table style='text-align:left; width: 100%'>");
 
+            sb.AppendLine($"<tr><th style='width: 5%'>From</th><td>{from}</td></tr>");
             sb.AppendLine($"<tr><th style='width: 5%'>To</th><td>{string.Join(", ", to)}</td></tr>");
             if(cc.Count > 0)
                 sb.AppendLine($"<tr><th>Cc</th><td>{string.Join(", ", cc)}</td></tr>");
