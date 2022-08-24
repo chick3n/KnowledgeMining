@@ -1,5 +1,5 @@
 ﻿@using System.ComponentModel
-@inject ILinkGenerator LinkGenerator;
+@inject IJSRuntime jsRuntime
 
 <MudOverlay Visible="@IsVisible" DarkBackground="true" AutoClose="true" VisibleChanged="IsVisibleChanged">
     <MudContainer>
@@ -28,9 +28,20 @@
                     </MudTabPanel>
                     @if(!string.IsNullOrEmpty(Document?.SourcePath))
                     {
-                        <MudTabPanel Text="Document Preview">
-                            <DocumentViewerComponent DocumentUri="@(LinkGenerator.GenerateDocumentPreviewUrl(Document))"></DocumentViewerComponent>
-                        </MudTabPanel>
+                        @if (IsUrlPath())
+                        {
+                            <MudTabPanel 
+                                OnClick="@(async () => await jsRuntime.InvokeAsync<object>("open", Document.SourcePath, "_blank"))" 
+                                    Text="Website">
+                                <div><a href="@Document.SourcePath" target="_blank">@Document.SourcePath</a></div>
+                            </MudTabPanel>
+                        }
+                        else
+                        {
+                             <MudTabPanel Text="Document Preview">
+                                <DocumentViewerComponent Document="Document"></DocumentViewerComponent>
+                             </MudTabPanel>
+                        }
                     }
                     <MudTabPanel Text="Metadata">
                         <MudTable Items="@Document!.ToDictionary()" Height="50vh" Hover="true" Breakpoint="Breakpoint.Sm" HorizontalScrollbar="true" Virtualize="true" FixedHeader="true">
@@ -97,6 +108,16 @@
     private Task ClosePopover()
     {
         return IsVisibleChanged.InvokeAsync(false);
+    }
+
+    private bool IsUrlPath()
+    {
+        if(!string.IsNullOrWhiteSpace(Document?.SourcePath))
+        {
+            return Uri.TryCreate(Document?.SourcePath, UriKind.Absolute, out _);
+        }
+
+        return false;
     }
 
 
