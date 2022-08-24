@@ -1,9 +1,8 @@
 ﻿@inject ILinkGenerator LinkGenerator;
 
-<div>
-    <a href="@LinkGenerator.GenerateDocumentDownloadUrl(Document)" download>Download File</a>
-</div>
-<hr/>
+
+
+<MudProgressCircular id="loader" Color="Color.Default" Indeterminate="true" />
 
 @switch (documentExtention)
 {
@@ -25,6 +24,11 @@
         ;
         break;
 }
+
+<hr/>
+<div>
+    <a href="@LinkGenerator.GenerateDocumentDownloadUrl(Document)" download>Download File</a>
+</div>
 
 @code {
     [Parameter]

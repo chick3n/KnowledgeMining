@@ -21,7 +21,8 @@
 		<PackageReference Include="Microsoft.AspNetCore.ApplicationInsights.HostingStartup" Version="2.2.0" />
 		<PackageReference Include="Microsoft.Extensions.Azure" Version="1.3.0" />
 		<PackageReference Include="Microsoft.Spatial" Version="7.12.0" />
-		<PackageReference Include="Microsoft.VisualStudio.Web.BrowserLink" Version="2.2.0" />		
+		<PackageReference Include="Microsoft.VisualStudio.Web.BrowserLink" Version="2.2.0" />
+		<PackageReference Include="RtfPipe" Version="2.0.7677.4303" />		
 		<PackageReference Include="System.Text.Json" Version="6.0.5" />
 		<PackageReference Include="Microsoft.DotNet.UpgradeAssistant.Extensions.Default.Analyzers" Version="0.3.330701">
 			<PrivateAssets>all</PrivateAssets>

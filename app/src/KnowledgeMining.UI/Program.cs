@@ -6,6 +6,7 @@ using KnowledgeMining.UI.Services.Metadata;
 using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.Extensions.Azure;
 using MudBlazor.Services;
+using System.Text;
 
 namespace KnowledgeMining.UI
 {
@@ -17,8 +18,9 @@ namespace KnowledgeMining.UI
 
             builder.WebHost.CaptureStartupErrors(true);
 
-            // Add services to the container.
+            Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
 
+            // Add services to the container.
             builder.Services.AddApplicationInsightsTelemetry();
             builder.Services.AddMemoryCache();
             builder.Services.AddRazorPages();

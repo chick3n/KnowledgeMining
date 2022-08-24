@@ -1,4 +1,5 @@
-﻿using System.Net.Mime;
+﻿using RtfPipe;
+using System.Net.Mime;
 using System.Text;
 
 namespace KnowledgeMining.UI.Extensions
@@ -97,7 +98,18 @@ namespace KnowledgeMining.UI.Extensions
 
                 try
                 {
-                    body = msg.BodyHtml;
+                    if (msg.BodyHtml != null)
+                    {
+                        body = msg.BodyHtml;
+                    }
+                    else
+                    {
+                        using (TextReader tr = new StringReader(msg.BodyRtf))
+                        {
+                            var rtf = new RtfSource(tr);
+                            body = Rtf.ToHtml(rtf);
+                        }
+                    }                    
                 }
                 catch (Exception)
                 {
@@ -135,8 +147,9 @@ namespace KnowledgeMining.UI.Extensions
         {
             var sb = new StringBuilder();
 
-            sb.AppendLine("<html><head></head><body><table style='text-align:left; width: 100%'>");
-
+            sb.AppendLine("<html><head></head><body>");
+            sb.AppendLine("<script>window.parent.document.querySelector('#loader').hidden = true;</script>");
+            sb.AppendLine("<table style='text-align:left; width: 100%'>");
             sb.AppendLine($"<tr><th style='width: 5%'>From</th><td>{from}</td></tr>");
             sb.AppendLine($"<tr><th style='width: 5%'>To</th><td>{string.Join(", ", to)}</td></tr>");
             if(cc.Count > 0)
