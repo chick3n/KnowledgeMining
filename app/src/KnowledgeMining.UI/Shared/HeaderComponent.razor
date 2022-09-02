@@ -1,5 +1,6 @@
 ﻿@inject NavigationManager NavigationManager;
 
+
 <MudAppBar Style="@($"color: {Theme.Palette.Black};background: {Theme.Palette.White}")" Elevation="1">
     <MudStack Spacing="3" Row="true">
         <MudImage Src="images/logo.png" Height="35" Elevation="0" onclick="@(() => NavigateToHomePage())" />
@@ -9,20 +10,29 @@
 </MudAppBar>
 
 @code {
+    [CascadingParameter]
+    public RouteData? RouteData { get; set; }
+
+    private string? IndexName { get; set; }
     private MudTheme Theme = new MudTheme();
+
+    protected override void OnInitialized()
+    {
+        IndexName = RouteData?.RouteValues["Index"]?.ToString();
+    } 
 
     private void NavigateToHomePage()
     {
-        NavigationManager.NavigateTo("/");
+        NavigationManager.NavigateTo($"/{IndexName}");
     }
 
     private void NavigateToSearchPage()
     {
-        NavigationManager.NavigateTo("/search");
+        NavigationManager.NavigateTo($"/{IndexName}/search");
     }
 
     private void NavigateToDocumentsPage()
     {
-        NavigationManager.NavigateTo("/documents");
+        NavigationManager.NavigateTo($"/{IndexName}/documents");
     }
 }

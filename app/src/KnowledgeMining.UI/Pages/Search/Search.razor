@@ -1,4 +1,4 @@
-﻿@page "/search"
+﻿@page "/{Index}/search/"
 
 @using KnowledgeMining.Application.Documents.Queries.SearchDocuments
 @using KnowledgeMining.Application.Documents.Queries.GenerateEntityMap
@@ -96,6 +96,7 @@
 </MudContainer>
 
 @code {
+    [Parameter] public string? Index { get; set; }
     [Parameter, SupplyParameterFromQuery(Name = "q")] public string? SearchText { get; set; }
     private MudDateRangePicker? _timespanPicker;
     private FacetsFilterComponent? _facetsFilterComponent;

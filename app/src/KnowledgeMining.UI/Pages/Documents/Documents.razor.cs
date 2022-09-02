@@ -23,6 +23,8 @@ namespace KnowledgeMining.UI.Pages.Documents
         [Inject] public DocumentCacheService DocumentCacheService { get; set; }
         [Inject] public IMediator Mediator { get; set; }
 
+        [Parameter] public string? Index { get; set; }
+
         private bool _isLoading;
         private string? _searchText;
         private int _totalPages = 0;

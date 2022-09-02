@@ -1,4 +1,5 @@
-﻿using System;
+﻿using KnowledgeMining.Domain.Entities;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -8,5 +9,6 @@ namespace KnowledgeMining.Application.Common.Interfaces
 {
     public interface IDatabaseService
     {
+        public Task<IEnumerable<IndexItem>> GetIndices();
     }
 }

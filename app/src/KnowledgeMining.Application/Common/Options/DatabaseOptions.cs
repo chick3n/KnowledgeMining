@@ -8,7 +8,8 @@ namespace KnowledgeMining.Application.Common.Options
 
         public string? ConnectionString { get; set; }
         public string DatabaseName { get; set; } = "doccracker";
-        public string ContainerName { get; set; } = "app";
+        public string AppContainer { get; set; } = "app";
+        public string IndexContainer { get; set; } = "indices";
         public string PartitionKey { get; set; } = "/id";
 
 

@@ -1,4 +1,4 @@
-﻿@page "/"
+﻿@page "/{index}"
 
 @inject NavigationManager NavigationManager
 @inject IMediator Mediator
@@ -31,6 +31,9 @@
 
 @code {
     private string? searchQuery;
+    
+    [Parameter]
+    public string? Index { get; set; }
 
     private MudTheme Theme = new MudTheme();
 
@@ -54,7 +57,7 @@
 
     private void GoToSearchPage()
     {
-        NavigationManager.NavigateTo($"/search?q={searchQuery ?? string.Empty}");
+        NavigationManager.NavigateTo($"/{Index}/search?q={searchQuery ?? string.Empty}");
     }
 }
 

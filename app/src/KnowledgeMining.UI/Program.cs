@@ -82,17 +82,17 @@ namespace KnowledgeMining.UI
             app.UseCookiePolicy();
 
             app.MapGet(PreviewFileEndpoint.Route, 
-                async (string fileName,
+                async (string index, string fileName,
                     IStorageService storageClient,
                     CancellationToken cancellationToken) => 
-                await PreviewFileEndpoint.DownloadInlineFile(fileName, storageClient, cancellationToken))
+                await PreviewFileEndpoint.DownloadInlineFile(index, fileName, storageClient, cancellationToken))
                .WithName(PreviewFileEndpoint.EndpointName);
 
             app.MapGet(DownloadFileEndpoint.Route,
-                async (string fileName,
+                async (string index, string fileName,
                     IStorageService storageClient,
                     CancellationToken cancellationToken) =>
-                await DownloadFileEndpoint.DownloadInlineFile(fileName, storageClient, cancellationToken))
+                await DownloadFileEndpoint.DownloadInlineFile(index, fileName, storageClient, cancellationToken))
                .WithName(DownloadFileEndpoint.EndpointName);
 
             app.MapBlazorHub();
