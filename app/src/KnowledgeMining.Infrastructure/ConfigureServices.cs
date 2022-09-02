@@ -29,6 +29,7 @@ namespace Microsoft.Extensions.DependencyInjection
 
             services.AddScoped<ISearchService, SearchService>();
             services.AddScoped<IStorageService, StorageService>();
+            services.AddDatabaseClient(configuration.GetSection(DatabaseOptions.Database));
 
 
             services.AddSingleton(Channel.CreateUnbounded<SearchIndexerJobContext>(new UnboundedChannelOptions() { SingleWriter = true, SingleReader = true }));
@@ -41,6 +42,8 @@ namespace Microsoft.Extensions.DependencyInjection
                 return provider.GetService<Channel<SearchIndexerJobContext>>()!.Reader;
             });
             services.AddHostedService<SearchIndexerJob>();
+
+
 
             return services;
         }
