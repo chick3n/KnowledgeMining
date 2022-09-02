@@ -341,6 +341,25 @@ namespace KnowledgeMining.Infrastructure.Services.Search
             });
         }
 
+        private IEnumerable<string> GenerateFacets(IReadOnlyCollection<SchemaField> facets, IReadOnlyList<FacetFilter> facetFilters)
+        {
+            var results = new List<string>(); 
+            facetFilters = facetFilters ?? new List<FacetFilter>();
+            foreach (var facet in facets)
+            {
+                if (facet.Name is not null)
+                {
+                    var facetFilter = facetFilters
+                        .FirstOrDefault(x => x.Name!.Equals(facet.Name, StringComparison.OrdinalIgnoreCase));
+
+                    var count = facetFilter?.Count != 10 ? $",count:{facetFilter?.Count}" : string.Empty;
+                    var sort = ",sort:count";
+                    results.Add($"{facet.Name}{count}{sort}");
+                }
+            }
+            return results;
+        }
+
         private Azure.Search.Documents.SearchOptions GenerateSearchOptions(
             SearchDocumentsQuery request,
             Schema schema)
@@ -356,19 +375,17 @@ namespace KnowledgeMining.Infrastructure.Services.Search
                 HighlightPostTag = "</b>",
             };
 
+            
             foreach (string s in schema.SelectFilter)
             {
                 options.Select.Add(s);
             }
 
-            var facets = schema.Facets.Select(f => f.Name).ToList();
-            foreach (string? f in facets)
+            foreach (var facet in GenerateFacets(schema.Facets, request.FacetFilters))
             {
-                if(f is not null)
-                {
-                    options.Facets.Add($"{f},sort:count");
-                }
+                options.Facets.Add(facet);
             }
+
 
             foreach (string h in schema.SearchableFields)
             {
