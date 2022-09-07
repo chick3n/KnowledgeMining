@@ -1,4 +1,5 @@
 ﻿@using KnowledgeMining.Application.Documents.Queries.GenerateEntityMap
+@using KnowledgeMining.Infrastructure.Services.Search
 @implements IAsyncDisposable
 @inject IJSRuntime JS
 @inject IMediator Mediator
@@ -15,7 +16,10 @@
                 <MudSelect T="string" Placeholder="Select facets" MultiSelection="true" SelectedValuesChanged="UpdateEntityMapFacets">
                     @foreach (var facet in FacetableFields)
                     {
-                        <MudSelectItem T="string" Value="@facet">@facet</MudSelectItem>
+                        if (SearchService.authorizedFacets.Contains(facet))
+                        { 
+                            <MudSelectItem T="string" Value="@facet">@facet</MudSelectItem>
+                        }
                     }
                 </MudSelect>
             </MudExpansionPanel>
