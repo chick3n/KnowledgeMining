@@ -30,6 +30,18 @@ namespace KnowledgeMining.Infrastructure.Services.Search
 
         private readonly ILogger _logger;
 
+        public static readonly string[] authorizedFacets = new string[]
+        {
+            //"keyPhrases",
+            "organizations",
+            "persons",
+            "locations",
+            "topics",
+            "date",
+            "mission",
+            "documentType"
+        };
+
         public SearchService(SearchClient searchClient,
                              SearchIndexClient searchIndexClient,
                              ChannelWriter<SearchIndexerJobContext> jobChannel,
@@ -315,19 +327,7 @@ namespace KnowledgeMining.Infrastructure.Services.Search
 
         private IEnumerable<SummarizedFacet> SummarizeFacets(IDictionary<string, IList<FacetResult>> facets)
         {
-            var validKeys = new string[]
-            {
-                "keyPhrases",
-                "organizations",
-                "persons",
-                "locations",
-                "topics",
-                "date",
-                "mission",
-                "documentType"
-            };
-
-            return facets.Where(x => validKeys.Contains(x.Key))
+            return facets.Where(x => authorizedFacets.Contains(x.Key))
                 .Select(f => new SummarizedFacet()
             {
                 Name = f.Key,
