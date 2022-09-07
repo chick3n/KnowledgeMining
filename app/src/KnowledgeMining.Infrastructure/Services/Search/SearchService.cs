@@ -352,7 +352,11 @@ namespace KnowledgeMining.Infrastructure.Services.Search
                     var facetFilter = facetFilters
                         .FirstOrDefault(x => x.Name!.Equals(facet.Name, StringComparison.OrdinalIgnoreCase));
 
-                    var count = facetFilter?.Count != 10 ? $",count:{facetFilter?.Count}" : string.Empty;
+                    var count = string.Empty;
+                    if (facetFilter != null && facetFilter.Count != 10)
+                    {
+                        count = $",count:{facetFilter?.Count}";
+                    }
                     var sort = ",sort:count";
                     results.Add($"{facet.Name}{count}{sort}");
                 }
