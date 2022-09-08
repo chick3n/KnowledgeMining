@@ -58,7 +58,7 @@ namespace KnowledgeMining.Domain.Entities
                 { ToLowerFirstChar(nameof(Topics)), Topics },
                 { ToLowerFirstChar(nameof(Text)), Text },
                 { ToLowerFirstChar(nameof(Summary)), Summary },
-                { ToLowerFirstChar(nameof(Date)), Date },
+                { ToLowerFirstChar(nameof(Date)), DateTime?.ToString("yyyy-MM-dd") },
                 { ToLowerFirstChar(nameof(Mission)), Mission },
                 { ToLowerFirstChar(nameof(DocumentType)), DocumentType },
                 { ToLowerFirstChar(nameof(MergedContent)), MergedContent },

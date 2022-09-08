@@ -8,23 +8,22 @@
     <div class="flex-grow-1">
         <svg id="@_entityMapContainerId"></svg>
     </div>
-    <div class="d-flex flex-column">
-        <MudSlider Min="1" Max="10" Step="1" Value="_maxLevels" T="int" ValueChanged="UpdateEntityMapLevel" ValueLabel="true">Max Levels: @_maxLevels</MudSlider>
-        <MudSlider Min="3" Max="30" Step="1" Value="_maxNodes" T="int" ValueChanged="UpdateEntityMapNodes" ValueLabel="true">Max Nodes: @_maxNodes</MudSlider>
-        <MudExpansionPanels Class="mt-6">
-            <MudExpansionPanel Text="Facets">
-                <MudSelect T="string" Placeholder="Select facets" MultiSelection="true" SelectedValuesChanged="UpdateEntityMapFacets">
-                    @foreach (var facet in FacetableFields)
-                    {
-                        if (SearchService.authorizedFacets.Contains(facet))
-                        { 
-                            <MudSelectItem T="string" Value="@facet">@facet</MudSelectItem>
-                        }
-                    }
-                </MudSelect>
-            </MudExpansionPanel>
-        </MudExpansionPanels>
-    </div>
+    <div class="d-flex flex-column" style="min-width:400px;">
+        <MudSlider Min="1" Max="10" Step="1" @bind-Value="_maxLevels" T="int" ValueLabel="true">Max Levels: @_maxLevels</MudSlider>
+        <MudSlider Min="3" Max="10" Step="1" @bind-Value="_maxNodes" T="int" ValueLabel="true">Max Nodes: @_maxNodes</MudSlider>
+        <MudSelect  MaxHeight="200" T="string" Placeholder="Select facets" Label="Facets" MultiSelection="true" @bind-SelectedValues="_selectedEntityMapFacets">
+            @foreach (var facet in FacetableFields)
+            {
+                <MudSelectItem T="string" Value="@facet">@facet</MudSelectItem> 
+            }
+        </MudSelect>
+        
+        @if(_loading)
+        {
+        <MudProgressLinear Color="Color.Primary" Indeterminate="true" Class="my-7" />    
+        }
+        <MudButton Variant="Variant.Filled"  Color="Color.Primary" OnClick="GenerateEntityMap">Apply</MudButton>
+        </div>
 </div>
 
 @code{
@@ -34,8 +33,9 @@
     public IEnumerable<string> FacetableFields { get; set; } = Enumerable.Empty<string>();
 
     private string _entityMapContainerId = "entity-map";
-    private int _maxLevels = 10;
-    private int _maxNodes = 10;
+    private int _maxLevels = 1;
+    private int _maxNodes = 3;
+    private bool _loading = false;
 
     private IEnumerable<string> _selectedEntityMapFacets = new HashSet<string>();
     private IJSObjectReference? module;
@@ -44,37 +44,19 @@
     {
         if (firstRender)
         {
+            _selectedEntityMapFacets = FacetableFields.Take(1);
             module = await JS.InvokeAsync<IJSObjectReference>("import", "./js/entityMapV2.js");
+            await GenerateEntityMap();
+            StateHasChanged();
         }
-    }
-
-    protected override async Task OnInitializedAsync()
-    {
-        await GenerateEntityMap();
-    }
-
-    private Task UpdateEntityMapLevel(int levels)
-    {
-        _maxLevels = levels;
-        return GenerateEntityMap();
-    }
-
-    private Task UpdateEntityMapNodes(int nodes)
-    {
-        _maxNodes = nodes;
-        return GenerateEntityMap();
-    }
-
-    private Task UpdateEntityMapFacets(IEnumerable<string> facets)
-    {
-        _selectedEntityMapFacets = facets;
-        return GenerateEntityMap();
     }
 
     private async Task GenerateEntityMap()
     {
+        _loading = true;
         var entityMapData = await Mediator.Send(new GenerateEntityMapQuery(SearchText, _selectedEntityMapFacets, _maxLevels, _maxNodes));
         await module.InvokeVoidAsync("renderEntityGraph", _entityMapContainerId, entityMapData, _maxLevels);
+        _loading = false;
     }
 
     async ValueTask IAsyncDisposable.DisposeAsync()

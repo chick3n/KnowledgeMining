@@ -32,7 +32,8 @@
                             AdornmentColor="Color.Primary"
                             OnClearButtonClick="@SearchIfClearClicked"
                             OnKeyUp="@SearchIfEnterPressed"
-                            OnAdornmentClick="@(() => SearchDocuments(new SearchDocumentsQuery(SearchText, _selectedPage, poligonString, _selectedFacets)))" 
+                            OnAdornmentClick="@(() => SearchDocuments(
+                                new SearchDocumentsQuery(SearchText, _selectedPage, poligonString, _selectedFacets, _selectedFilters, _orderBy)))" 
                             Variant="Variant.Outlined" 
                             Margin="Margin.None"
                             />
@@ -105,6 +106,8 @@
 
     private int _selectedPage;
     private List<FacetFilter> _selectedFacets = new();
+    private List<FacetFilter> _selectedFilters = new();
+    private List<FacetFilter> _orderBy = new();
     private string poligonString = string.Empty;
     private enum TimeSpanType {
         Any,
@@ -139,7 +142,7 @@
 
     protected override async Task OnInitializedAsync()
     {
-        var request = new SearchDocumentsQuery(SearchText, _selectedPage, poligonString, _selectedFacets);
+        var request = new SearchDocumentsQuery(SearchText, _selectedPage, poligonString, _selectedFacets, _selectedFilters, _orderBy);
         await SearchDocuments(request);
     }
 
@@ -147,14 +150,14 @@
     {
         if (e.Code == "Enter" || e.Code == "NumpadEnter")
         {
-            var request = new SearchDocumentsQuery(SearchText, _selectedPage, poligonString, _selectedFacets);
+            var request = new SearchDocumentsQuery(SearchText, _selectedPage, poligonString, _selectedFacets, _selectedFilters, _orderBy);
             await SearchDocuments(request);
         }
     }
 
     private async Task SearchIfClearClicked(MouseEventArgs e)
     {
-        var request = new SearchDocumentsQuery(SearchText, _selectedPage, poligonString, _selectedFacets);
+        var request = new SearchDocumentsQuery(SearchText, _selectedPage, poligonString, _selectedFacets, _selectedFilters, _orderBy);
         await SearchDocuments(request);
     }
 
@@ -203,7 +206,7 @@
             searchFacet.Values.Add(facet.Value);
         }
 
-        var request = new SearchDocumentsQuery(SearchText, _selectedPage, poligonString, _selectedFacets);
+        var request = new SearchDocumentsQuery(SearchText, _selectedPage, poligonString, _selectedFacets, _selectedFilters, _orderBy);
 
         await SearchDocuments(request);
     }
@@ -211,7 +214,7 @@
     private async Task SearchPageSelected(int page)
     {
         _selectedPage = page;
-        var request = new SearchDocumentsQuery(SearchText, _selectedPage, poligonString, _selectedFacets);
+        var request = new SearchDocumentsQuery(SearchText, _selectedPage, poligonString, _selectedFacets, _selectedFilters, _orderBy);
         await SearchDocuments(request);
     }
 
@@ -234,7 +237,9 @@
             request.SearchText,
             request.Page,
             request.PolygonString,
-            facetFilters
+            facetFilters,
+            _selectedFilters,
+            _orderBy
         ));
 
         var missionFacet = topResponse.Facets.Where(x => x.Name?.Equals(BlobMetadata.Mission) ?? false).FirstOrDefault()        
@@ -319,14 +324,14 @@
     {
         _timeSpanSelectedType = TimeSpanType.Any;
         UpdateTimeSpanMenu();
-        await UpdateDateTimeFacet("datetime", null, null); 
+        await UpdateDateTimeFilter("datetime", null, null); 
     }
 
     private async Task TimeSpanTodayOnClick(MouseEventArgs mouseEventArgs)
     {
         _timeSpanSelectedType = TimeSpanType.Today;
         UpdateTimeSpanMenu();
-        await UpdateDateTimeFacet("datetime", DateTime.Now);
+        await UpdateDateTimeFilter("datetime", DateTime.Now);
     }
 
     private DateTime GetMondayOfCurrentWeek()
@@ -343,7 +348,7 @@
     {
         _timeSpanSelectedType = TimeSpanType.Week;        
         UpdateTimeSpanMenu();
-        await UpdateDateTimeFacet("datetime", GetMondayOfCurrentWeek(), DateTime.Today); 
+        await UpdateDateTimeFilter("datetime", GetMondayOfCurrentWeek(), DateTime.Today); 
     }
 
     private DateTime GetFirstOfCurrentMonth()
@@ -356,7 +361,7 @@
     {
         _timeSpanSelectedType = TimeSpanType.Month;
         UpdateTimeSpanMenu();
-        await UpdateDateTimeFacet("datetime", GetFirstOfCurrentMonth(), DateTime.Today);
+        await UpdateDateTimeFilter("datetime", GetFirstOfCurrentMonth(), DateTime.Today);
     }
 
     private async Task TimeSpanCustomOnClick(MouseEventArgs mouseEventArgs)
@@ -398,7 +403,7 @@
     private async Task TimeSpanCustomRangeChanged(DateRange dateRange)
     {
         UpdateTimeSpanMenu();
-        await UpdateDateTimeFacet("datetime", dateRange.Start, dateRange.End);
+        await UpdateDateTimeFilter("datetime", dateRange.Start, dateRange.End);
     }
 
     private string GetDateTimeSearchFormated(DateTime? dateTime)
@@ -430,30 +435,30 @@
         return null;
     }
 
-    private async Task UpdateDateTimeFacet(string fieldName, DateTime? a, DateTime? b = null)
+    private async Task UpdateDateTimeFilter(string fieldName, DateTime? a, DateTime? b = null)
     {        
-        FacetFilter? searchFacet = _selectedFacets.FirstOrDefault(x => x.Name != null && x.Name.Equals("datetime"));
+        FacetFilter? searchFacet = _selectedFilters.FirstOrDefault(x => x.Name != null && x.Name.Equals("datetime"));
         if(searchFacet == null)
         {
             searchFacet = new FacetFilter { Name = "datetime" };
-            _selectedFacets.Add(searchFacet);
+            _selectedFilters.Add(searchFacet);
         }
 
         var searchQuery = GetDateTimeSearchQuery(fieldName, a, b);
 
         if(string.IsNullOrEmpty(searchQuery))
         {
-            _selectedFacets.Remove(searchFacet);
+            _selectedFilters.Remove(searchFacet);
         }
         else 
         {
             searchFacet.Values = new string[]
             {
-                    searchQuery
+                searchQuery
             };
         }
 
-        var request = new SearchDocumentsQuery(SearchText, _selectedPage, poligonString, _selectedFacets);
+        var request = new SearchDocumentsQuery(SearchText, _selectedPage, poligonString, _selectedFacets, _selectedFilters, _orderBy);
 
         await SearchDocuments(request);
     }
@@ -468,21 +473,22 @@
         _sortLabel = LABEL_ORDERBY_BEST_MATCH;
 
         UpdateTimeSpanMenu();
-        await SearchDocuments(new SearchDocumentsQuery(SearchText, _selectedPage, poligonString, _selectedFacets));
+        await SearchDocuments(new SearchDocumentsQuery(SearchText, _selectedPage, poligonString, _selectedFacets, _selectedFilters, _orderBy));
     }
 
     private async Task OrderByCallback(FacetFilter? facet)
     {
         if(facet != null) {
-            _selectedFacets.RemoveAll(x => x.Name.Equals(facet.Name));
-            _selectedFacets.Add(facet);
-            await SearchDocuments(new SearchDocumentsQuery(SearchText, _selectedPage, poligonString, _selectedFacets));
+            _orderBy.RemoveAll(x => x.Name.Equals(facet.Name));
+            _orderBy.Add(facet);
+            await SearchDocuments(new SearchDocumentsQuery(SearchText, _selectedPage, poligonString, _selectedFacets, _selectedFilters, _orderBy));
         }
     }
 
     private bool DisableClearFilter()
     {
-        return (_selectedFacets != null && _selectedFacets.Count == 0);
+        int? filtersCount = _selectedFacets?.Count + _selectedFilters?.Count + _orderBy?.Count;
+        return filtersCount == 0;
     }
 
     private async Task SortBestMatchClicked(MouseEventArgs args)
