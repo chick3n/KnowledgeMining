@@ -9,6 +9,7 @@ namespace KnowledgeMining.Application.Common.Interfaces
 {
     public interface IDatabaseService
     {
-        public Task<IEnumerable<IndexItem>> GetIndices();
+        public Task<IEnumerable<IndexItem>> GetIndices(CancellationToken cancellationToken);
+        public Task<IndexItem> GetIndex(string indexName, CancellationToken cancellationToken);
     }
 }

@@ -4,6 +4,7 @@ using KnowledgeMining.Application.Common.Options;
 using KnowledgeMining.Application.Documents.Commands.DeleteDocument;
 using KnowledgeMining.Infrastructure.Extensions;
 using KnowledgeMining.Infrastructure.Jobs;
+using KnowledgeMining.Infrastructure.Services.Database;
 using KnowledgeMining.Infrastructure.Services.Search;
 using KnowledgeMining.Infrastructure.Services.Storage;
 using Microsoft.Extensions.Azure;
@@ -29,7 +30,7 @@ namespace Microsoft.Extensions.DependencyInjection
 
             services.AddScoped<ISearchService, SearchService>();
             services.AddScoped<IStorageService, StorageService>();
-            services.AddDatabaseClient(configuration.GetSection(DatabaseOptions.Database));
+            services.AddScoped<IDatabaseService, DatabaseService>();
 
 
             services.AddSingleton(Channel.CreateUnbounded<SearchIndexerJobContext>(new UnboundedChannelOptions() { SingleWriter = true, SingleReader = true }));

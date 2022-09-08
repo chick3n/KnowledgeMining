@@ -1,5 +1,6 @@
 ﻿@page "/{Index}/search/"
 
+@using KnowledgeMining.Application.Documents.Queries.GetIndex
 @using KnowledgeMining.Application.Documents.Queries.SearchDocuments
 @using KnowledgeMining.Application.Documents.Queries.GenerateEntityMap
 @using KnowledgeMining.Application.Documents.Queries.GetAutocompleteSuggestions
@@ -133,6 +134,7 @@
         }
     }
     private DocumentMetadata? _documentMetadata;
+    private IndexItem? _indexItem;
     private const string LABEL_ORDERBY_BEST_MATCH = "Best Match";
     private const string LABEL_ORDERBY_DATE = "Date";
     private string _sortLabel = LABEL_ORDERBY_BEST_MATCH;
@@ -143,6 +145,8 @@
 
     protected override async Task OnInitializedAsync()
     {
+        var indexResponse = await Mediator.Send(new GetIndexQuery(Index));
+        _indexItem = indexResponse.IndexItem;
         var request = new SearchDocumentsQuery(SearchText, _selectedPage, poligonString, _selectedFacets, _selectedFilters, _orderBy);
         await SearchDocuments(request);
     }
