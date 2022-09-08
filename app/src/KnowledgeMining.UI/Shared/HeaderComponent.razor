@@ -1,4 +1,9 @@
-﻿@inject NavigationManager NavigationManager;
+﻿@using KnowledgeMining.Application.Documents.Queries.GetIndex
+@using KnowledgeMining.Domain.Entities
+@using MediatR
+
+@inject NavigationManager NavigationManager;
+@inject IMediator Mediator;
 
 
 <MudAppBar Style="@($"color: {Theme.Palette.Black};background: {Theme.Palette.White}")" Elevation="1">
@@ -6,6 +11,13 @@
         <MudImage Src="images/logo.png" Height="35" Elevation="0" onclick="@(() => NavigateToHomePage())" />
         <MudButton Variant="Variant.Text" OnClick="NavigateToSearchPage">Search</MudButton>
         @*<MudButton Variant="Variant.Text" OnClick="@NavigateToDocumentsPage">Documents</MudButton>*@
+        @if(indexNavigationItems != null)
+        {
+            foreach(var nav in indexNavigationItems)
+            {
+                <MudButton Variant="Variant.Text" Href="@nav.Url">@nav.Name</MudButton>
+            }
+        }
     </MudStack>
 </MudAppBar>
 
@@ -13,16 +25,22 @@
     [CascadingParameter]
     public RouteData? RouteData { get; set; }
 
+    private IEnumerable<IndexNavigationItem>? indexNavigationItems;
     private string? IndexName { get; set; }
     private MudTheme Theme = new MudTheme();
 
-    protected override void OnInitialized()
+    protected override async Task OnInitializedAsync()
     {
         if(RouteData?.RouteValues.ContainsKey("Index") ?? false)
         {
             IndexName = RouteData?.RouteValues["Index"]?.ToString();
+
+            var response = await Mediator.Send(new GetIndexQuery(IndexName));
+            indexNavigationItems = response.IndexItem.NavigationItems;
         }
-    } 
+
+        await base.OnInitializedAsync();
+    }
 
     private void NavigateToHomePage()
     {
