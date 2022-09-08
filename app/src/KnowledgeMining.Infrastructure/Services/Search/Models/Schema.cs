@@ -12,6 +12,7 @@ namespace KnowledgeMining.UI.Services.Search.Models
         public IReadOnlyCollection<string> SelectFilter { get; set; }
 
         public IReadOnlyCollection<string> SearchableFields { get; set; }
+        public string KeyField => Fields.First(x => x.IsKey)?.Name;
 
         public Schema(IList<Azure.Search.Documents.Indexes.Models.SearchField> fields)
         {

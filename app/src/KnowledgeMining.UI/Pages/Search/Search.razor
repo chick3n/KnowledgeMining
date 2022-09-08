@@ -77,6 +77,7 @@
                     <MudTabPanel @ref="_searchResultsPanel" Text="@_searchResultsLabel">
                         <SearchResultsComponent @ref="_searchResultsComponent"
                             Documents="@_searchState.Documents" 
+                            KeyField="@_searchState.KeyField"
                             IsLoading="@_isSearching" TotalCount="@_searchState.TotalCount" TotalPages="@_searchState.TotalPages" 
                             OnDocumentClicked="@GetDocumentDetails" OnPageSelectedChanged="@SearchPageSelected" 
                             PageSelected="@_selectedPage"></SearchResultsComponent>
@@ -238,6 +239,7 @@
         _searchState.TotalCount = response.TotalCount;
         _searchState.TotalPages = (int)response.TotalPages;        
         _searchState.Facets = response.Facets;
+        _searchState.KeyField = response.KeyField;
 
         UpdateSearchResultsLabelWithDocumentCount(_searchState.TotalCount);
 

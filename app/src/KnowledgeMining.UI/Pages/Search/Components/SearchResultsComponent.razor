@@ -35,7 +35,7 @@ else
             @foreach (var document in Documents ?? Enumerable.Empty<DocumentMetadata>())
             {
                 <MudItem xs="12" sm="12">
-                    <MudCard Outlined="true" @onclick="() => OnDocumentClicked.InvokeAsync(document.Id)" Style="cursor: pointer;">
+                    <MudCard Outlined="true" @onclick="() => OnDocumentClicked.InvokeAsync(document.GetKeyValue(KeyField))" Style="cursor: pointer;">
                         <MudCardHeader>
                             <CardHeaderAvatar>
                                 <MudAvatar Color="Color.Dark"><MudIcon Icon="@Icons.Custom.FileFormats.FileDocument"></MudIcon></MudAvatar>
@@ -91,6 +91,8 @@ else
 @code {
     [Parameter]
     public IEnumerable<DocumentMetadata>? Documents { get; set; }
+    [Parameter]
+    public string KeyField { get; set; }
     [Parameter]
     public long? TotalCount { get; set; }
     [Parameter]

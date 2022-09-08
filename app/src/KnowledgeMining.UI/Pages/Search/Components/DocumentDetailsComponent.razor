@@ -17,9 +17,12 @@
                                 <div class="d-flex flex-column flex-shrink-1">
                                     <MudTextField T="string" Immediate="true" Placeholder="Search in transcript" ValueChanged="UpdateTextToHighlight" Variant="Variant.Outlined"></MudTextField>
                                     <MudChipSet SelectedChipChanged="UpdateTextToHighlight" Filter="true" Class="d-flex flex-wrap">
-                                        @foreach (var keyPhrase in Document!.KeyPhrases!.Take(5))
+                                        @if (Document.KeyPhrases != null)
                                         {
-                                            <MudChip Text="@keyPhrase"></MudChip>
+                                            @foreach (var keyPhrase in Document!.KeyPhrases!.Take(5))
+                                            {
+                                                <MudChip Text="@keyPhrase"></MudChip>
+                                            }
                                         }
                                     </MudChipSet>
                                 </div>

@@ -13,6 +13,7 @@ namespace KnowledgeMining.Application.Documents.Queries.SearchDocuments
         public IEnumerable<string?> FilterableFields { get; set; } = Enumerable.Empty<string?>();
         public long TotalCount { get; set; }
         public string? SearchId { get; set; }
+        public string KeyField { get; set; }
     }
 
     public class SearchDocumentsQuery : IRequest<SearchDocumentsResponse>

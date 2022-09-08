@@ -78,7 +78,7 @@ namespace KnowledgeMining.Infrastructure.Services.Search
         {
             var searchSchema = await GenerateSearchSchema(request.Index.IndexName, cancellationToken);
             var searchOptions = GenerateSearchOptions(request, searchSchema);
-
+            
             var searchResults = await GetSearchClient(request.Index.IndexName)
                 .SearchAsync<DocumentMetadata>(request.SearchText, searchOptions, cancellationToken);
 
@@ -95,7 +95,8 @@ namespace KnowledgeMining.Infrastructure.Services.Search
                 // Not sure if I need to return page in the search result
                 TotalPages = CalculateTotalPages(searchResults.Value.TotalCount ?? 0),
                 FacetableFields = searchSchema.Facets.Select(f => f.Name), // Not sure if I need to return page in the search result
-                SearchId = ParseSearchId(searchResults)
+                SearchId = ParseSearchId(searchResults),
+                KeyField = searchSchema.KeyField
             };
         }
 

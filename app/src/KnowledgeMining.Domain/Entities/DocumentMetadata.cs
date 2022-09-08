@@ -1,4 +1,5 @@
-﻿using System.Text.Json.Serialization;
+﻿using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace KnowledgeMining.Domain.Entities
 {
@@ -6,7 +7,7 @@ namespace KnowledgeMining.Domain.Entities
     {
         [JsonPropertyName("@search.score")]
         public double SearchScore { get; set; }
-        [JsonPropertyName("metadata_storage_path")]
+        [JsonPropertyName("id")]
         public string? Id { get; set; }
         [JsonPropertyName("metadata_storage_name")]
         public string? Name { get; set; }
@@ -46,6 +47,23 @@ namespace KnowledgeMining.Domain.Entities
         public string? SourceType { get; set; }
         [JsonPropertyName("sourcePath")]
         public string? SourcePath { get; set; }
+
+        [JsonExtensionData]
+        public Dictionary<string, JsonElement>? ExtensionData { get; set; }
+
+
+        public string GetKeyValue(string? keyField = null)
+        {
+            if(keyField != null && Id == null)
+            {
+                if(ExtensionData != null && ExtensionData.TryGetValue(keyField, out var value))
+                {
+                    return value.ToString();
+                }
+            }
+
+            return Id;
+        }
 
         public IDictionary<string, object?> ToDictionary()
         {
