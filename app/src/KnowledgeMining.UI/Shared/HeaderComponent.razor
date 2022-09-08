@@ -18,7 +18,10 @@
 
     protected override void OnInitialized()
     {
-        IndexName = RouteData?.RouteValues["Index"]?.ToString();
+        if(RouteData?.RouteValues.ContainsKey("Index") ?? false)
+        {
+            IndexName = RouteData?.RouteValues["Index"]?.ToString();
+        }
     } 
 
     private void NavigateToHomePage()

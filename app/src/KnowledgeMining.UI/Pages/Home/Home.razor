@@ -1,4 +1,4 @@
-﻿@page "/{index}"
+﻿@page "/{index?}"
 
 @inject NavigationManager NavigationManager
 @inject IMediator Mediator
@@ -33,7 +33,7 @@
 
 @code {
     private string? searchQuery;
-    
+
     [Parameter]
     public string? Index { get; set; }
 
@@ -42,6 +42,8 @@
 
     protected override async Task OnInitializedAsync()
     {
+        if (string.IsNullOrWhiteSpace(Index))
+            NavigationManager.NavigateTo("/ukraine"); //remove when operationalized
         var indexResponse = await Mediator.Send(new GetIndexQuery(Index));
         _indexItem = indexResponse.IndexItem;
     }

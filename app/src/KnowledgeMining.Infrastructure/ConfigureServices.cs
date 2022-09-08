@@ -30,7 +30,7 @@ namespace Microsoft.Extensions.DependencyInjection
 
                 //clientBuilder.AddSearchClient(configuration.GetSection(KMOptions.SearchOptions.Search));
                 clientBuilder.AddSearchIndexClient(configuration.GetSection(KMOptions.SearchOptions.Search));
-                clientBuilder.AddSearchIndexerClient(configuration.GetSection(KMOptions.SearchOptions.Search));
+                //clientBuilder.AddSearchIndexerClient(configuration.GetSection(KMOptions.SearchOptions.Search));
             });
 
             services.AddScoped<ISearchService, SearchService>();
@@ -47,7 +47,7 @@ namespace Microsoft.Extensions.DependencyInjection
             {
                 return provider.GetService<Channel<SearchIndexerJobContext>>()!.Reader;
             });
-            services.AddHostedService<SearchIndexerJob>();
+            //services.AddHostedService<SearchIndexerJob>();
 
 
 
