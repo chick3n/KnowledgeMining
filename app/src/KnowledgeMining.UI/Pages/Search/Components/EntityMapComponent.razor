@@ -30,6 +30,8 @@
     [Parameter]
     public string? SearchText { get; set; } = default;
     [Parameter]
+    public string? IndexName { get; set; } = default;
+    [Parameter]
     public IEnumerable<string> FacetableFields { get; set; } = Enumerable.Empty<string>();
 
     private string _entityMapContainerId = "entity-map";
@@ -54,7 +56,7 @@
     private async Task GenerateEntityMap()
     {
         _loading = true;
-        var entityMapData = await Mediator.Send(new GenerateEntityMapQuery(SearchText, _selectedEntityMapFacets, _maxLevels, _maxNodes));
+        var entityMapData = await Mediator.Send(new GenerateEntityMapQuery(IndexName, SearchText, _selectedEntityMapFacets, _maxLevels, _maxNodes));
         await module.InvokeVoidAsync("renderEntityGraph", _entityMapContainerId, entityMapData, _maxLevels);
         _loading = false;
     }

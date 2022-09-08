@@ -17,13 +17,15 @@ namespace KnowledgeMining.Application.Documents.Queries.SearchDocuments
 
     public class SearchDocumentsQuery : IRequest<SearchDocumentsResponse>
     {
-        public SearchDocumentsQuery(string query,
+        public SearchDocumentsQuery(IndexItem index,
+                             string query,
                              int page,
                              string polygonString,
                              IEnumerable<FacetFilter> facetFilters,
                              IEnumerable<FacetFilter> fieldFilters,
                              IEnumerable<FacetFilter> order)
         {
+            Index = index;
             SearchText = string.IsNullOrWhiteSpace(query) ? "*" : query.Replace("?", string.Empty);
             FacetFilters = (facetFilters ?? Array.Empty<FacetFilter>()).ToList().AsReadOnly();
             FieldFilters = (fieldFilters ?? Array.Empty<FacetFilter>()).ToList().AsReadOnly();
@@ -32,6 +34,7 @@ namespace KnowledgeMining.Application.Documents.Queries.SearchDocuments
             Order = (order ?? Array.Empty<FacetFilter>()).ToList().AsReadOnly();
         }
 
+        public IndexItem Index { get; private set; }
         public string SearchText { get; private set; }
         public IReadOnlyList<FacetFilter> FacetFilters { get; private set; }
         public IReadOnlyList<FacetFilter> FieldFilters { get; private set; }

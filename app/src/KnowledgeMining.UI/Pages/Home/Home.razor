@@ -4,6 +4,8 @@
 @inject IMediator Mediator
 
 @using KnowledgeMining.Application.Documents.Queries.GetAutocompleteSuggestions
+@using KnowledgeMining.Application.Documents.Queries.GetIndex
+@using KnowledgeMining.Domain.Entities
 
 <PageTitle>Home</PageTitle>
 
@@ -36,10 +38,17 @@
     public string? Index { get; set; }
 
     private MudTheme Theme = new MudTheme();
+    private IndexItem? _indexItem;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var indexResponse = await Mediator.Send(new GetIndexQuery(Index));
+        _indexItem = indexResponse.IndexItem;
+    }
 
     private async Task<IEnumerable<string>?> AutoComplete(string value)
     {
-        var results = await Mediator.Send(new GetAutocompleteSuggestionsQuery(value));
+        var results = await Mediator.Send(new GetAutocompleteSuggestionsQuery(_indexItem.IndexName, value));
         if (results.Count() == 0)
             return null;
         return results.Prepend(value).Distinct(); 

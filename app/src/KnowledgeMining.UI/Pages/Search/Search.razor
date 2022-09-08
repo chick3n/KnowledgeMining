@@ -34,7 +34,7 @@
                             OnClearButtonClick="@SearchIfClearClicked"
                             OnKeyUp="@SearchIfEnterPressed"
                             OnAdornmentClick="@(() => SearchDocuments(
-                                new SearchDocumentsQuery(SearchText, _selectedPage, poligonString, _selectedFacets, _selectedFilters, _orderBy)))" 
+                                new SearchDocumentsQuery(_indexItem, SearchText, _selectedPage, poligonString, _selectedFacets, _selectedFilters, _orderBy)))" 
                             Variant="Variant.Outlined" 
                             Margin="Margin.None"
                             />
@@ -83,7 +83,7 @@
                             PageSelected="@_selectedPage"></SearchResultsComponent>
                     </MudTabPanel>
                     <MudTabPanel Text="Entity Map">
-                        <EntityMapComponent FacetableFields="@_searchState.FacetableFields" SearchText="@SearchText" />
+                        <EntityMapComponent FacetableFields="@_searchState.FacetableFields" IndexName="@_indexItem.IndexName" SearchText="@SearchText" />
                     </MudTabPanel>
                 </div>
             </MudTabs>
@@ -147,7 +147,7 @@
     {
         var indexResponse = await Mediator.Send(new GetIndexQuery(Index));
         _indexItem = indexResponse.IndexItem;
-        var request = new SearchDocumentsQuery(SearchText, _selectedPage, poligonString, _selectedFacets, _selectedFilters, _orderBy);
+        var request = new SearchDocumentsQuery(_indexItem, SearchText, _selectedPage, poligonString, _selectedFacets, _selectedFilters, _orderBy);
         await SearchDocuments(request);
     }
 
@@ -155,14 +155,14 @@
     {
         if (e.Code == "Enter" || e.Code == "NumpadEnter")
         {
-            var request = new SearchDocumentsQuery(SearchText, _selectedPage, poligonString, _selectedFacets, _selectedFilters, _orderBy);
+            var request = new SearchDocumentsQuery(_indexItem, SearchText, _selectedPage, poligonString, _selectedFacets, _selectedFilters, _orderBy);
             await SearchDocuments(request);
         }
     }
 
     private async Task SearchIfClearClicked(MouseEventArgs e)
     {
-        var request = new SearchDocumentsQuery(SearchText, _selectedPage, poligonString, _selectedFacets, _selectedFilters, _orderBy);
+        var request = new SearchDocumentsQuery(_indexItem, SearchText, _selectedPage, poligonString, _selectedFacets, _selectedFilters, _orderBy);
         await SearchDocuments(request);
     }
 
@@ -211,7 +211,7 @@
             searchFacet.Values.Add(facet.Value);
         }
 
-        var request = new SearchDocumentsQuery(SearchText, _selectedPage, poligonString, _selectedFacets, _selectedFilters, _orderBy);
+        var request = new SearchDocumentsQuery(_indexItem, SearchText, _selectedPage, poligonString, _selectedFacets, _selectedFilters, _orderBy);
 
         await SearchDocuments(request);
     }
@@ -219,7 +219,7 @@
     private async Task SearchPageSelected(int page)
     {
         _selectedPage = page;
-        var request = new SearchDocumentsQuery(SearchText, _selectedPage, poligonString, _selectedFacets, _selectedFilters, _orderBy);
+        var request = new SearchDocumentsQuery(_indexItem, SearchText, _selectedPage, poligonString, _selectedFacets, _selectedFilters, _orderBy);
         await SearchDocuments(request);
     }
 
@@ -239,6 +239,7 @@
 
         //Override String -> StringCollection facets
         var topResponse = await Mediator.Send(new SearchDocumentsQuery(
+            _indexItem, 
             request.SearchText,
             request.Page,
             request.PolygonString,
@@ -320,7 +321,7 @@
     {
         _showDocumentDetails = false;
 
-        _documentMetadata = await Mediator.Send(new GetDocumentMetadataQuery(documentId));
+        _documentMetadata = await Mediator.Send(new GetDocumentMetadataQuery(_indexItem.IndexName, documentId));
 
         _showDocumentDetails = true;
     }  
@@ -463,7 +464,7 @@
             };
         }
 
-        var request = new SearchDocumentsQuery(SearchText, _selectedPage, poligonString, _selectedFacets, _selectedFilters, _orderBy);
+        var request = new SearchDocumentsQuery(_indexItem, SearchText, _selectedPage, poligonString, _selectedFacets, _selectedFilters, _orderBy);
 
         await SearchDocuments(request);
     }
@@ -478,7 +479,7 @@
         _sortLabel = LABEL_ORDERBY_BEST_MATCH;
 
         UpdateTimeSpanMenu();
-        await SearchDocuments(new SearchDocumentsQuery(SearchText, _selectedPage, poligonString, _selectedFacets, _selectedFilters, _orderBy));
+        await SearchDocuments(new SearchDocumentsQuery(_indexItem, SearchText, _selectedPage, poligonString, _selectedFacets, _selectedFilters, _orderBy));
     }
 
     private async Task OrderByCallback(FacetFilter? facet)
@@ -486,7 +487,7 @@
         if(facet != null) {
             _orderBy.RemoveAll(x => x.Name.Equals(facet.Name));
             _orderBy.Add(facet);
-            await SearchDocuments(new SearchDocumentsQuery(SearchText, _selectedPage, poligonString, _selectedFacets, _selectedFilters, _orderBy));
+            await SearchDocuments(new SearchDocumentsQuery(_indexItem, SearchText, _selectedPage, poligonString, _selectedFacets, _selectedFilters, _orderBy));
         }
     }
 

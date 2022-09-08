@@ -21,7 +21,6 @@ namespace KnowledgeMining.Infrastructure.Services.Search
 {
     public class SearchService : ISearchService
     {
-        private readonly SearchClient _searchClient;
         private readonly SearchIndexClient _searchIndexClient;
         private readonly ChannelWriter<SearchIndexerJobContext> _jobChannel;
 
@@ -30,14 +29,12 @@ namespace KnowledgeMining.Infrastructure.Services.Search
 
         private readonly ILogger _logger;
 
-        public SearchService(SearchClient searchClient,
-                             SearchIndexClient searchIndexClient,
+        public SearchService(SearchIndexClient searchIndexClient,
                              ChannelWriter<SearchIndexerJobContext> jobChannel,
                              IOptions<Application.Common.Options.SearchOptions> searchOptions,
                              IOptions<EntityMapOptions> entityMapOptions,
                              ILogger<SearchService> logger)
         {
-            _searchClient = searchClient;
             _searchIndexClient = searchIndexClient;
             _jobChannel = jobChannel;
 
@@ -55,7 +52,12 @@ namespace KnowledgeMining.Infrastructure.Services.Search
             return new Schema(response.Value.Fields);
         }
 
-        public async Task<IEnumerable<string>> Autocomplete(string searchText, bool fuzzy, CancellationToken cancellationToken)
+        private SearchClient GetSearchClient(string indexName)
+        {
+            return _searchIndexClient.GetSearchClient(indexName);
+        }
+
+        public async Task<IEnumerable<string>> Autocomplete(string indexName, string searchText, bool fuzzy, CancellationToken cancellationToken)
         {
             // Execute search based on query string
             AutocompleteOptions options = new()
@@ -65,7 +67,8 @@ namespace KnowledgeMining.Infrastructure.Services.Search
                 Size = _searchOptions.PageSize
             };
 
-            var response = await _searchClient.AutocompleteAsync(searchText, _searchOptions.SuggesterName, options, cancellationToken);
+            var response = await GetSearchClient(indexName)
+                .AutocompleteAsync(searchText, _searchOptions.SuggesterName, options, cancellationToken);
 
 
             return response.Value.Results.Select(r => r.Text).Distinct();
@@ -76,7 +79,8 @@ namespace KnowledgeMining.Infrastructure.Services.Search
             var searchSchema = await GenerateSearchSchema(cancellationToken);
             var searchOptions = GenerateSearchOptions(request, searchSchema);
 
-            var searchResults = await _searchClient.SearchAsync<DocumentMetadata>(request.SearchText, searchOptions, cancellationToken);
+            var searchResults = await GetSearchClient(request.Index.IndexName)
+                .SearchAsync<DocumentMetadata>(request.SearchText, searchOptions, cancellationToken);
 
             if (searchResults == null || searchResults?.Value == null)
             {
@@ -95,13 +99,14 @@ namespace KnowledgeMining.Infrastructure.Services.Search
             };
         }
 
-        public async Task<DocumentMetadata> GetDocumentDetails(string documentId, CancellationToken cancellationToken)
+        public async Task<DocumentMetadata> GetDocumentDetails(string indexName, string documentId, CancellationToken cancellationToken)
         {
-            var response = await _searchClient.GetDocumentAsync<DocumentMetadata>(documentId, cancellationToken: cancellationToken);
+            var response = await GetSearchClient(indexName)
+                .GetDocumentAsync<DocumentMetadata>(documentId, cancellationToken: cancellationToken);
 
             return response.Value;
         }
-        private async Task<SearchResults<SearchDocument>> GetFacets(string searchText, IEnumerable<string> facetNames, int maxCount, CancellationToken cancellationToken)
+        private async Task<SearchResults<SearchDocument>> GetFacets(string indexName, string searchText, IEnumerable<string> facetNames, int maxCount, CancellationToken cancellationToken)
         {
             var facets = new List<string>();
 
@@ -123,7 +128,8 @@ namespace KnowledgeMining.Infrastructure.Services.Search
                 options.Facets.Add(s);
             }
 
-            return await _searchClient.SearchAsync<SearchDocument>(EscapeSpecialCharacters(searchText), options, cancellationToken);
+            return await GetSearchClient(indexName)
+                .SearchAsync<SearchDocument>(EscapeSpecialCharacters(searchText), options, cancellationToken);
         }
 
         private string EscapeSpecialCharacters(string searchText)
@@ -131,7 +137,12 @@ namespace KnowledgeMining.Infrastructure.Services.Search
             return Regex.Replace(searchText, @"([-+&|!(){}\[\]^""~?:/\\])", @"\$1", RegexOptions.CultureInvariant | RegexOptions.IgnoreCase | RegexOptions.Compiled);
         }
 
-        public async Task<EntityMap> GenerateEntityMap(string? q, IEnumerable<string> facetNames, int maxLevels, int maxNodes, CancellationToken cancellationToken)
+        public async Task<EntityMap> GenerateEntityMap(string indexName,
+            string? q, 
+            IEnumerable<string> facetNames, 
+            int maxLevels, 
+            int maxNodes,
+            CancellationToken cancellationToken)
         {
             var query = "*";
 
@@ -204,7 +215,7 @@ namespace KnowledgeMining.Infrastructure.Services.Search
                         facetsToGrab = maxNodes;
                     }
 
-                    var response = await GetFacets(t, facets, facetsToGrab, cancellationToken);
+                    var response = await GetFacets(indexName, t, facets, facetsToGrab, cancellationToken);
 
                     if (response != null)
                     {
