@@ -30,18 +30,6 @@ namespace KnowledgeMining.Infrastructure.Services.Search
 
         private readonly ILogger _logger;
 
-        public static readonly string[] authorizedFacets = new string[]
-        {
-            //"keyPhrases",
-            "organizations",
-            "persons",
-            "locations",
-            "topics",
-            "date",
-            "mission",
-            "documentType"
-        };
-
         public SearchService(SearchClient searchClient,
                              SearchIndexClient searchIndexClient,
                              ChannelWriter<SearchIndexerJobContext> jobChannel,
@@ -327,7 +315,7 @@ namespace KnowledgeMining.Infrastructure.Services.Search
 
         private IEnumerable<SummarizedFacet> SummarizeFacets(IDictionary<string, IList<FacetResult>> facets)
         {
-            return facets.Where(x => authorizedFacets.Contains(x.Key))
+            return facets
                 .Select(f => new SummarizedFacet()
             {
                 Name = f.Key,
@@ -396,62 +384,18 @@ namespace KnowledgeMining.Infrastructure.Services.Search
                 options.HighlightFields.Add(h);
             }
 
-            var filterBuilder = new StringBuilder();
-            var filterInitialized = false;
+            // Filter Query
+            var filterBuilder = new List<string>();
+            GenerateFilters(filterBuilder, request.FacetFilters, schema.Facets);
+            GenerateFilters(filterBuilder, request.FieldFilters, schema.Fields);
+            if (filterBuilder.Count > 0)
+                options.Filter = string.Join(" and ", filterBuilder);
 
-            if (request.FacetFilters != null)
+            //Order by
+            if (request.Order != null && 
+                request.Order.Any(x => x.Name?.Equals("$orderby") ?? false))
             {
-                foreach (var facetFilter in request.FacetFilters)
-                {
-                    var facet = schema.Facets.FirstOrDefault(f => f.Name == facetFilter.Name);
-                    var facetValues = string.Join(",", facetFilter.Values);
-
-                    string? clause = default;
-                    string clausePrefix = filterInitialized ? " and " : string.Empty;
-
-                    var facetType = facet?.Type;
-
-                    if (facetType == typeof(string[]))
-                    {
-                        filterInitialized = true;
-                        clause = $"{clausePrefix}{facetFilter.Name}/any(t: search.in(t, '{facetValues}', ','))";
-                    }
-                    else if (facetType == typeof(string))
-                    {
-                        filterInitialized = true;
-
-                        if(facetFilter.Values.Count > 1)
-                        {
-                            var orFilters = facetFilter.Values.Select(x => $"{facetFilter.Name} eq '{x}'");
-                            var query = string.Join(" or ", orFilters);
-                            clause = $"{clausePrefix}({query})";
-                        }
-                        else
-                        {
-                            clause = $"{clausePrefix}{facetFilter.Name} eq '{facetValues}'";
-                        }
-                        
-                    }
-                    else if (facetType == typeof(DateTime))
-                    {
-                        filterInitialized = true;
-                        clause = $"{clausePrefix}{facetFilter.Name} {facetValues}";
-                    }
-                    else if(facetType == typeof(DateTimeOffset))
-                    {
-                        filterInitialized = true;
-                        clause = $"{clausePrefix}{facetFilter.Name} {facetValues}";
-                    }
-
-                    filterBuilder.Append(clause);
-                }
-            }
-            options.Filter = filterBuilder.ToString();
-
-            if (request.FacetFilters != null && 
-                request.FacetFilters.Any(x => x.Name?.Equals("$orderby") ?? false))
-            {
-                var orderValues = request.FacetFilters
+                var orderValues = request.Order
                     .Where(x => x.Name?.Equals("$orderby") ?? false)
                     .SelectMany(x => x.Values);
                 foreach (var orderValue in orderValues)
@@ -478,6 +422,51 @@ namespace KnowledgeMining.Infrastructure.Services.Search
             }
 
             return options;
+        }
+
+        private void GenerateFilters(List<string> builder, IReadOnlyList<FacetFilter> filters, IReadOnlyCollection<SchemaField> schemaFields)
+        {
+            if (filters == null)
+                return;
+
+            foreach (var facetFilter in filters)
+            {
+                var facet = schemaFields.FirstOrDefault(f => f.Name == facetFilter.Name);
+                if (facet == null)
+                    continue;
+
+                var facetValues = string.Join(",", facetFilter.Values);
+
+                string? clause = default;
+
+                var facetType = facet?.Type;
+
+                if (facetType == typeof(string[]))
+                {
+                    clause = $"{facetFilter.Name}/any(t: search.in(t, '{facetValues}', ','))";
+                }
+                else if (facetType == typeof(string))
+                {
+                    if (facetFilter.Values.Count > 1)
+                    {
+                        var orFilters = facetFilter.Values.Select(x => $"{facetFilter.Name} eq '{x}'");
+                        var query = string.Join(" or ", orFilters);
+                        clause = $"({query})";
+                    }
+                    else
+                    {
+                        clause = $"{facetFilter.Name} eq '{facetValues}'";
+                    }
+
+                }
+                else if (facetType == typeof(DateTime) || facetType == typeof(DateTimeOffset))
+                {
+                    clause = $"{facetFilter.Name} {facetValues}";
+                }
+                else continue;
+
+                builder.Add(clause);
+            }
         }
     }
 }

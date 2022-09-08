@@ -6,6 +6,7 @@ namespace KnowledgeMining.UI.Services.Search.Models
     public class Schema
     {
         public IReadOnlyCollection<SchemaField> Facets { get; set; }
+        public IReadOnlyCollection<SchemaField> Fields { get; set; }
         public IReadOnlyCollection<SchemaField> Tags { get; set; }
 
         public IReadOnlyCollection<string> SelectFilter { get; set; }
@@ -18,6 +19,7 @@ namespace KnowledgeMining.UI.Services.Search.Models
             Facets = fields.Where(f => f.IsFacetable ?? false).Select(f => ToSearchField(f)).ToList().AsReadOnly();
             Tags = fields.Where(f => f.IsFacetable ?? false).Select(f => ToSearchField(f)).ToList().AsReadOnly();
             SearchableFields = fields.Where(f => f.IsSearchable ?? false).Select(f => f.Name).ToList().AsReadOnly();
+            Fields = fields.Select(f => ToSearchField(f)).ToList().AsReadOnly();
         }
 
         private SchemaField ToSearchField(Azure.Search.Documents.Indexes.Models.SearchField field)

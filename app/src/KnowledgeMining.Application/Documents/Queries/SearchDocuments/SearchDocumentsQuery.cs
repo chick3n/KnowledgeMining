@@ -10,6 +10,7 @@ namespace KnowledgeMining.Application.Documents.Queries.SearchDocuments
         public IEnumerable<SummarizedFacet> Facets { get; set; } = Enumerable.Empty<SummarizedFacet>();
         public long TotalPages { get; set; }
         public IEnumerable<string?> FacetableFields { get; set; } = Enumerable.Empty<string?>();
+        public IEnumerable<string?> FilterableFields { get; set; } = Enumerable.Empty<string?>();
         public long TotalCount { get; set; }
         public string? SearchId { get; set; }
     }
@@ -19,18 +20,24 @@ namespace KnowledgeMining.Application.Documents.Queries.SearchDocuments
         public SearchDocumentsQuery(string query,
                              int page,
                              string polygonString,
-                             IEnumerable<FacetFilter> facetFilters)
+                             IEnumerable<FacetFilter> facetFilters,
+                             IEnumerable<FacetFilter> fieldFilters,
+                             IEnumerable<FacetFilter> order)
         {
             SearchText = string.IsNullOrWhiteSpace(query) ? "*" : query.Replace("?", string.Empty);
             FacetFilters = (facetFilters ?? Array.Empty<FacetFilter>()).ToList().AsReadOnly();
+            FieldFilters = (fieldFilters ?? Array.Empty<FacetFilter>()).ToList().AsReadOnly();
             Page = page > 0 ? page : 1;
             PolygonString = string.IsNullOrWhiteSpace(polygonString) ? string.Empty : polygonString;
+            Order = (order ?? Array.Empty<FacetFilter>()).ToList().AsReadOnly();
         }
 
         public string SearchText { get; private set; }
         public IReadOnlyList<FacetFilter> FacetFilters { get; private set; }
+        public IReadOnlyList<FacetFilter> FieldFilters { get; private set; }
         public int Page { get; private set; }
         public string PolygonString { get; private set; }
+        public IReadOnlyList<FacetFilter> Order { get; private set; }
     }
 
     public class SearchDocumentsQueryHandler : IRequestHandler<SearchDocumentsQuery, SearchDocumentsResponse>
