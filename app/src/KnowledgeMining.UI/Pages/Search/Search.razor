@@ -69,7 +69,6 @@
                 <FacetsFilterComponent 
                     @ref="_facetsFilterComponent"
                     Facets="@_searchState.Facets"
-                    StaticFacets="@_searchState.StaticFacets"
                     OnFacetSelectedChanged="UpdateSearchFacetsAndSearch"></FacetsFilterComponent>
         </MudItem>
         <MudItem xs="12" md="10">
@@ -223,57 +222,6 @@
         await SearchDocuments(request);
     }
 
-    private async Task<IEnumerable<SummarizedFacet>> SearchDocumentsStaticFacets(SearchDocumentsQuery request, SearchDocumentsResponse response)
-    {
-        var staticFacets = new List<SummarizedFacet>();
-
-        staticFacets.Add(await SearchDocumentsMissionFacets(request));
-        staticFacets.Add(await SearchDocumentsDocumentTypeFacet(response));
-
-        return staticFacets;
-    }
-
-    private async Task<SummarizedFacet> SearchDocumentsMissionFacets(SearchDocumentsQuery request) 
-    {
-        var facetFilters = request.FacetFilters.Where(x => !x.Name?.Equals(BlobMetadata.Mission) ?? false);
-
-        //Override String -> StringCollection facets
-        var topResponse = await Mediator.Send(new SearchDocumentsQuery(
-            _indexItem, 
-            request.SearchText,
-            request.Page,
-            request.PolygonString,
-            facetFilters,
-            _selectedFilters,
-            _orderBy
-        ));
-
-        var missionFacet = topResponse.Facets.Where(x => x.Name?.Equals(BlobMetadata.Mission) ?? false).FirstOrDefault()        
-            ?? new SummarizedFacet();
-
-        return missionFacet;
-    }
-
-    private async Task<SummarizedFacet> SearchDocumentsDocumentTypeFacet(SearchDocumentsResponse response)
-    {
-        var documentTypes = await MetadataService.DocumentTypes();
-        var dtSummarizedFacets = new SummarizedFacet();
-        var dtFacets = response.Facets.Where(x => x.Name?.Equals(BlobMetadata.DocumentType) ?? false).FirstOrDefault();
-
-        dtSummarizedFacets.Name = BlobMetadata.DocumentType;
-        dtSummarizedFacets.Count = dtFacets?.Count ?? 0;
-
-        var facetValues = documentTypes.Select(x => new Facet
-            {
-                Count = dtFacets?.Values?.FirstOrDefault(y => y.Value?.Equals(x) ?? false)?.Count ?? 0,
-                Name = BlobMetadata.DocumentType,
-                Value = x
-            });
-
-        dtSummarizedFacets.Values = facetValues.OrderByDescending(x => x.Count);
-
-        return dtSummarizedFacets;
-    }
 
     private async Task SearchDocuments(SearchDocumentsQuery request)
     {
@@ -289,8 +237,7 @@
         _searchState.FacetableFields = response.FacetableFields;
         _searchState.TotalCount = response.TotalCount;
         _searchState.TotalPages = (int)response.TotalPages;        
-        _searchState.Facets = response.Facets.Where(x => !excludeFacets.Contains(x.Name));
-        _searchState.StaticFacets = await SearchDocumentsStaticFacets(request, response);
+        _searchState.Facets = response.Facets;
 
         UpdateSearchResultsLabelWithDocumentCount(_searchState.TotalCount);
 

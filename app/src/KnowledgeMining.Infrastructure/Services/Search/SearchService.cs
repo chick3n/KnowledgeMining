@@ -45,9 +45,9 @@ namespace KnowledgeMining.Infrastructure.Services.Search
         }
 
         // TODO: Add schema to a cache
-        public async Task<Schema> GenerateSearchSchema(CancellationToken cancellationToken)
+        public async Task<Schema> GenerateSearchSchema(string indexName, CancellationToken cancellationToken)
         {
-            var response = await _searchIndexClient.GetIndexAsync(_searchOptions.IndexName, cancellationToken);
+            var response = await _searchIndexClient.GetIndexAsync(indexName, cancellationToken);
 
             return new Schema(response.Value.Fields);
         }
@@ -76,7 +76,7 @@ namespace KnowledgeMining.Infrastructure.Services.Search
 
         public async Task<SearchDocumentsResponse> SearchDocuments(SearchDocumentsQuery request, CancellationToken cancellationToken)
         {
-            var searchSchema = await GenerateSearchSchema(cancellationToken);
+            var searchSchema = await GenerateSearchSchema(request.Index.IndexName, cancellationToken);
             var searchOptions = GenerateSearchOptions(request, searchSchema);
 
             var searchResults = await GetSearchClient(request.Index.IndexName)
@@ -160,7 +160,7 @@ namespace KnowledgeMining.Infrastructure.Services.Search
             }
             else
             {
-                var schema = await GenerateSearchSchema(cancellationToken);
+                var schema = await GenerateSearchSchema(indexName, cancellationToken);
                 var facetablesFacets = schema.Facets.Where(f => f.IsFacetable).Select(f => f.Name);
                 if (facetablesFacets.Any())
                 {
@@ -334,10 +334,24 @@ namespace KnowledgeMining.Infrastructure.Services.Search
                 Values = f.Value.Select(v => new Facet()
                 {
                     Name = f.Key,
-                    Value = v.AsValueFacetResult<string>().Value,
+                    Value = ValueFacetResult(v),
                     Count = v.Count ?? 0
                 })
             });
+        }
+
+        private string ValueFacetResult(FacetResult f)
+        {
+            try
+            {
+                return f.AsValueFacetResult<string>().Value;
+            }
+            catch(InvalidCastException ex)
+            {
+                _logger.LogError(ex, $"Unabled to cast facet result.");
+
+            }
+            return f.Value?.ToString() ?? string.Empty;
         }
 
         private IEnumerable<string> GenerateFacets(IReadOnlyCollection<SchemaField> facets, IReadOnlyList<FacetFilter> facetFilters)

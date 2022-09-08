@@ -1,0 +1,14 @@
+﻿@page "/{Index}/external/{*Source}"
+
+<PageTitle>External</PageTitle>
+
+<iframe src="@Source">
+    Error
+</iframe>
+
+
+@code {
+    [Parameter] public string? Index { get; set; }
+    [Parameter] public string? Source { get; set; }
+}
+
