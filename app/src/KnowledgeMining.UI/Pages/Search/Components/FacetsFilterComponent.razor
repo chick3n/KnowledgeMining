@@ -1,6 +1,6 @@
 ﻿@using KnowledgeMining.Application.Documents.Queries.SearchDocuments
 
-@foreach (var aggregateFacet in Facets)
+@foreach (var aggregateFacet in Facets?.OrderBy(x => x.Name) ?? Enumerable.Empty<SummarizedFacet>())
 {
     var selectedAggregateFacets = aggregateFacet.Values?.Where(x => IsSelected(x)).ToList() 
         ?? new List<Facet>();
