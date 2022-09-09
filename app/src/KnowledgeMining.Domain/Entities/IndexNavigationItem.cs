@@ -15,5 +15,11 @@ namespace KnowledgeMining.Domain.Entities
         public string Name { get; set; }
         [JsonPropertyName("url")]
         public string Url { get; set; }
+        [JsonPropertyName("width")]
+        public string Width { get; set; }
+        [JsonPropertyName("height")]
+        public string Height { get; set; }
+        [JsonPropertyName("type")]
+        public string Type { get; set; }
     }
 }

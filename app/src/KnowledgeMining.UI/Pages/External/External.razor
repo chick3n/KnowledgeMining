@@ -1,14 +1,47 @@
-﻿@page "/{Index}/external/{*Source}"
+﻿@page "/external/{Index}/{id}"
+@using KnowledgeMining.Domain.Entities
+@using MediatR
+@using KnowledgeMining.Application.Documents.Queries.GetIndex
+@inject IMediator Mediator;
 
 <PageTitle>External</PageTitle>
 
-<iframe src="@Source">
-    Error
-</iframe>
+<iframe title=""
+    width="@_width"
+    height="@_height"
+    allowFullScreen="true"
+    frameborder="0"
+    src="@_source"></iframe>
 
 
 @code {
     [Parameter] public string? Index { get; set; }
-    [Parameter] public string? Source { get; set; }
+    [Parameter] public string? Id { get; set; }
+
+    private string? _source;
+    private string? _width = "1140";
+    private string? _height = "540";
+
+    protected override async Task OnInitializedAsync()
+    {
+        var indexResponse = await Mediator.Send(new GetIndexQuery(Index));
+        SetValues(indexResponse.IndexItem);
+
+        await base.OnInitializedAsync();
+    }
+
+    private void SetValues(IndexItem indexItem)
+    {
+        if (indexItem == null || indexItem.NavigationItems == null)
+            return;
+
+        var navItem = indexItem.NavigationItems.FirstOrDefault(x => x.Id.Equals(Id));
+        if(navItem != null)
+        {
+            _source = navItem.Url;
+            _width = navItem.Width ?? _width;
+            _height = navItem.Height ?? _height;
+        }
+    }
 }
 

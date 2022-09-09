@@ -15,7 +15,14 @@
         {
             foreach(var nav in indexNavigationItems)
             {
-                <MudButton Variant="Variant.Text" Href="@nav.Url">@nav.Name</MudButton>
+                if (nav.Type == "embed")
+                {
+                    <MudButton Variant="Variant.Text" Href="@($"/external/{IndexName}/{nav.Id}")">@nav.Name</MudButton>
+                }
+                else
+                {
+                    <MudButton Variant="Variant.Text" Href="@nav.Url">@nav.Name</MudButton>
+                }
             }
         }
     </MudStack>
@@ -49,11 +56,11 @@
 
     private void NavigateToSearchPage()
     {
-        NavigationManager.NavigateTo($"/{IndexName}/search");
+        NavigationManager.NavigateTo($"/search/{IndexName}/");
     }
 
     private void NavigateToDocumentsPage()
     {
-        NavigationManager.NavigateTo($"/{IndexName}/documents");
+        NavigationManager.NavigateTo($"/documents/{IndexName}/");
     }
 }
