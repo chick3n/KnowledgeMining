@@ -1,5 +1,6 @@
 ﻿@using KnowledgeMining.Application.Documents.Queries.SearchDocuments
 @using System.Text.RegularExpressions
+@using KnowledgeMining.UI.Wrappers
 @if (IsLoading)
 {
     <MudGrid>
@@ -32,10 +33,10 @@ else
     @if (TotalCount > 0)
     {
         <MudGrid>
-            @foreach (var document in Documents ?? Enumerable.Empty<DocumentMetadata>())
+            @foreach (var document in DocumentWrapper.Documents())
             {
                 <MudItem xs="12" sm="12">
-                    <MudCard Outlined="true" @onclick="() => OnDocumentClicked.InvokeAsync(document.GetKeyValue(KeyField))" Style="cursor: pointer;">
+                    <MudCard Outlined="true" @onclick="() => OnDocumentClicked.InvokeAsync(document.Id)" Style="cursor: pointer;">
                         <MudCardHeader>
                             <CardHeaderAvatar>
                                 <MudAvatar Color="Color.Dark"><MudIcon Icon="@Icons.Custom.FileFormats.FileDocument"></MudIcon></MudAvatar>
@@ -51,9 +52,9 @@ else
                                     {
                                         <MudMenuItem Class="cursor-help">File: @document.Name</MudMenuItem>
                                     }
-                                    @if(!string.IsNullOrEmpty(document.DocumentType)) 
+                                    @if(!string.IsNullOrEmpty(document.Category)) 
                                     {
-                                        <MudMenuItem Class="cursor-help">Type: @document.DocumentType</MudMenuItem>
+                                        <MudMenuItem Class="cursor-help">Type: @document.Category</MudMenuItem>
                                     }
                                     </MudMenu>
                             </CardHeaderActions>
@@ -65,7 +66,7 @@ else
                                 </div>
 
                                 <div class="flex-grow-1">
-                                    @foreach (var keyPhrase in document.KeyPhrases?.Take(8) ?? Enumerable.Empty<string>())
+                                    @foreach (var keyPhrase in DocumentWrapper.GetCloudWords(document).Take(8) ?? Enumerable.Empty<string>())
                                     {
                                         <MudChip Color="Color.Info"><MudText Typo="Typo.body2">@keyPhrase</MudText></MudChip>
                                     }
@@ -90,9 +91,7 @@ else
 
 @code {
     [Parameter]
-    public IEnumerable<DocumentMetadata>? Documents { get; set; }
-    [Parameter]
-    public string KeyField { get; set; }
+    public DocumentMetadataWrapper DocumentWrapper { get; set; }
     [Parameter]
     public long? TotalCount { get; set; }
     [Parameter]
@@ -140,17 +139,7 @@ else
 
     private string DocumentHeader(DocumentMetadata document)
     {
-        if(!string.IsNullOrWhiteSpace(document.Title))
-        {
-            return document.Title;
-        }     
-
-        if (!string.IsNullOrWhiteSpace(document.Mission))
-        {
-            return document.Mission;
-        }
-
-        return document.Name ?? string.Empty;
+        return DocumentWrapper.GetTitle(document)!;
     }
 
     private string DocumentSubHeader(DocumentMetadata document)
@@ -163,7 +152,7 @@ else
         var summary = document.Summary ?? string.Empty;
 
         if (string.IsNullOrWhiteSpace(summary))
-            summary = document.MergedContent ?? string.Empty;
+            summary = document.Content ?? string.Empty;
 
         if (string.IsNullOrEmpty(summary))
             return NoSummary;

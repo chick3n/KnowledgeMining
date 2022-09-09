@@ -9,6 +9,7 @@
 @using KnowledgeMining.Infrastructure.Services.Storage
 @using KnowledgeMining.UI.Pages.Search.ViewModels
 @using KnowledgeMining.UI.Services.Metadata
+@using KnowledgeMining.UI.Wrappers
 
 @inject IMediator Mediator
 @inject MetadataService MetadataService
@@ -76,8 +77,7 @@
                 <div class="d-flex flex-column">
                     <MudTabPanel @ref="_searchResultsPanel" Text="@_searchResultsLabel">
                         <SearchResultsComponent @ref="_searchResultsComponent"
-                            Documents="@_searchState.Documents" 
-                            KeyField="@_searchState.KeyField"
+                            DocumentWrapper="@(new DocumentMetadataWrapper(_searchState.Documents, _indexItem.FieldMapping, @_searchState.KeyField))"
                             IsLoading="@_isSearching" TotalCount="@_searchState.TotalCount" TotalPages="@_searchState.TotalPages" 
                             OnDocumentClicked="@GetDocumentDetails" OnPageSelectedChanged="@SearchPageSelected" 
                             PageSelected="@_selectedPage"></SearchResultsComponent>
@@ -270,7 +270,10 @@
     {
         _showDocumentDetails = false;
 
-        _documentMetadata = await Mediator.Send(new GetDocumentMetadataQuery(_indexItem.IndexName, documentId));
+        var documentMetadata = await Mediator.Send(new GetDocumentMetadataQuery(_indexItem.IndexName, documentId));
+        var wrapper = new DocumentMetadataWrapper(new DocumentMetadata[] { documentMetadata }, 
+            _indexItem.FieldMapping, _searchState.KeyField);
+        _documentMetadata = wrapper.Documents().FirstOrDefault();
 
         _showDocumentDetails = true;
     }  

@@ -345,6 +345,16 @@ namespace KnowledgeMining.Infrastructure.Services.Search
         {
             try
             {
+                var facetValueType = f.Value.GetType();
+
+                if (facetValueType == typeof(double))
+                {
+                    return f.Value.ToString();
+                }
+                else if(facetValueType == typeof(bool))
+                {
+                    return (bool)f.Value ? "True" : "False";
+                }
                 return f.AsValueFacetResult<string>().Value;
             }
             catch(InvalidCastException ex)

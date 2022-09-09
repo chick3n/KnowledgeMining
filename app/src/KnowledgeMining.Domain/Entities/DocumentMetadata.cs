@@ -9,10 +9,6 @@ namespace KnowledgeMining.Domain.Entities
         public double SearchScore { get; set; }
         [JsonPropertyName("id")]
         public string? Id { get; set; }
-        [JsonPropertyName("metadata_storage_name")]
-        public string? Name { get; set; }
-        [JsonPropertyName("content")]
-        public string? Content { get; set; }
         [JsonPropertyName("keyPhrases")]
         public IEnumerable<string>? KeyPhrases { get; set; }
         [JsonPropertyName("organizations")]
@@ -25,16 +21,12 @@ namespace KnowledgeMining.Domain.Entities
         public IEnumerable<string>? Topics { get; set; }
         [JsonPropertyName("text")]
         public IEnumerable<string>? Text { get; set; }
+        [JsonPropertyName("content")]
+        public string? Content { get; set; }
         [JsonPropertyName("layoutText")]
         public IEnumerable<string>? LayoutText { get; set; }
         [JsonPropertyName("imageTags")]
         public IEnumerable<string>? ImageTags { get; set; }
-        [JsonPropertyName("date")]
-        public string? Date { get; set; }
-        [JsonPropertyName("mission")]
-        public string? Mission { get; set; }
-        [JsonPropertyName("documentType")]
-        public string? DocumentType { get; set; }
         [JsonPropertyName("merged_content")]
         public string? MergedContent { get; set; }
         [JsonPropertyName("summary")]
@@ -47,6 +39,10 @@ namespace KnowledgeMining.Domain.Entities
         public string? SourceType { get; set; }
         [JsonPropertyName("sourcePath")]
         public string? SourcePath { get; set; }
+        [JsonPropertyName("name")]
+        public string? Name { get; set; }
+        [JsonPropertyName("category")]
+        public string? Category { get; set; }
 
         [JsonExtensionData]
         public Dictionary<string, JsonElement>? ExtensionData { get; set; }
@@ -76,9 +72,6 @@ namespace KnowledgeMining.Domain.Entities
                 { ToLowerFirstChar(nameof(Topics)), Topics },
                 { ToLowerFirstChar(nameof(Text)), Text },
                 { ToLowerFirstChar(nameof(Summary)), Summary },
-                { ToLowerFirstChar(nameof(Date)), DateTime?.ToString("yyyy-MM-dd") },
-                { ToLowerFirstChar(nameof(Mission)), Mission },
-                { ToLowerFirstChar(nameof(DocumentType)), DocumentType },
                 { ToLowerFirstChar(nameof(MergedContent)), MergedContent },
                 { ToLowerFirstChar(nameof(Title)), Title },
                 { ToLowerFirstChar(nameof(SourceType)), SourceType },

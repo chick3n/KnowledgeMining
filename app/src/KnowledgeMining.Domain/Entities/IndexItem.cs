@@ -19,5 +19,7 @@ namespace KnowledgeMining.Domain.Entities
         public string? Route { get; set; }
         [JsonPropertyName("navigation")]
         public IEnumerable<IndexNavigationItem>? NavigationItems { get; set; }
+        [JsonPropertyName("fieldMapping")]
+        public IndexItemFieldMapping? FieldMapping { get; set; }
     }
 }
