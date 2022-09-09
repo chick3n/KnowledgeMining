@@ -21,5 +21,7 @@ namespace KnowledgeMining.Domain.Entities
         public IEnumerable<IndexNavigationItem>? NavigationItems { get; set; }
         [JsonPropertyName("fieldMapping")]
         public IndexItemFieldMapping? FieldMapping { get; set; }
+        [JsonPropertyName("facets")]
+        public IEnumerable<IndexItemFacet> Facets { get; set; } = Enumerable.Empty<IndexItemFacet>();
     }
 }

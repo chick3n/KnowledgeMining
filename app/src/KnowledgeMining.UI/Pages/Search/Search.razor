@@ -238,12 +238,50 @@
         _searchState.FacetableFields = response.FacetableFields;
         _searchState.TotalCount = response.TotalCount;
         _searchState.TotalPages = (int)response.TotalPages;        
-        _searchState.Facets = response.Facets;
+        _searchState.Facets = SummarizeFacets(response.Facets.ToArray());
         _searchState.KeyField = response.KeyField;
 
         UpdateSearchResultsLabelWithDocumentCount(_searchState.TotalCount);
 
         _isSearching = false;
+    }
+
+    private IEnumerable<SummarizedFacet> SummarizeFacets(SummarizedFacet[] facets)
+    {
+        if(_indexItem == null || _indexItem.Facets == null)
+        {
+            return facets;
+        }
+
+        foreach(var facet in facets)
+        {
+            if (facet.Name == null) continue;
+
+            var indexFacet = _indexItem.Facets.FirstOrDefault(x => x.Id.Equals(facet.Name));
+            if(indexFacet != null)
+            {
+                if(indexFacet.ShowAll && indexFacet.Values != null)
+                {
+                    var newValues = facet.Values.ToList();
+                    foreach(var value in indexFacet.Values)
+                    {
+                        if(!facet.Values.Any(x => x.Name.Equals(value.Id)))
+                        {
+                            newValues.Add(new Facet
+                                {
+                                    Count = 0,
+                                    Name = facet.Name,
+                                    Value = value.Id
+                                });
+                        }
+                    }
+                    facet.Values = newValues;
+                    facet.Count = newValues.Count;
+                }
+            }
+        }
+
+        return facets;
     }
 
     private void SwitchToSearchResultsTab()
