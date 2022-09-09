@@ -68,7 +68,7 @@
 
     private void GoToSearchPage()
     {
-        NavigationManager.NavigateTo($"/{Index}/search?q={searchQuery ?? string.Empty}");
+        NavigationManager.NavigateTo($"/search/{Index}?q={searchQuery ?? string.Empty}");
     }
 }
 
