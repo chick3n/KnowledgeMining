@@ -6,13 +6,14 @@
 
 <PageTitle>External</PageTitle>
 
-<iframe title=""
-    width="@_width"
-    height="@_height"
-    allowFullScreen="true"
-    frameborder="0"
-    src="@_source"></iframe>
-
+<div style="height: 90vh">
+    <iframe title=""
+        width="@_width"
+        height="@_height"
+        allowFullScreen="true"
+        frameborder="0"
+        src="@_source"></iframe>
+</div>
 
 @code {
     [Parameter] public string? Index { get; set; }
