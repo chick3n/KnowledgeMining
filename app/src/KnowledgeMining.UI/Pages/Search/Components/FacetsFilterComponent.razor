@@ -1,5 +1,16 @@
 ﻿@using KnowledgeMining.Application.Documents.Queries.SearchDocuments
 
+<style>
+    .expander-facets .mud-expand-panel-content  {
+        max-height: 330px;
+        overflow: scroll;
+    }
+
+    .checkbox-single-line {
+        display: block !important;
+    }
+</style>
+
 @foreach (var aggregateFacet in Facets?.OrderBy(x => x.Name) ?? Enumerable.Empty<SummarizedFacet>())
 {
     var selectedAggregateFacets = aggregateFacet.Values?.Where(x => IsSelected(x)).ToList() 
@@ -7,12 +18,12 @@
 
     <MudExpansionPanels Class="mt-6">
         <MudExpansionPanel Text="@($"{aggregateFacet.Name?.SplitCamelCase().ToTitleCase()} ({aggregateFacet.Values?.Count()})")" 
-            Disabled="@(aggregateFacet.Values?.Any() is false)">
+            Disabled="@(aggregateFacet.Values?.Any() is false)" Class="@(aggregateFacet.Count > 10 ? "expander-facets" : string.Empty)">
             @if (selectedAggregateFacets.Count > 0) 
             {
                 @foreach (var facet in selectedAggregateFacets)
                 {
-                    <MudCheckBox T="bool" Label="@($"{facet.Value} ({facet.Count})")" 
+                    <MudCheckBox Class="checkbox-single-line" T="bool" Label="@($"{facet.Value} ({facet.Count})")" 
                         Checked="true" 
                         CheckedChanged="@(isSelected => HandleCheckedChanged(facet, isSelected))"></MudCheckBox>
                 }
@@ -26,9 +37,9 @@
             {
                 @foreach (var facet in aggregateFacet.Values.Except(selectedAggregateFacets))
                 {
-                    <MudCheckBox T="bool" Label="@($"{facet.Value} ({facet.Count})")" 
-                    Checked="false" 
-                    CheckedChanged="@(isSelected => HandleCheckedChanged(facet, isSelected))"></MudCheckBox>
+                    <MudCheckBox Class="checkbox-single-line" T="bool" Label="@($"{facet.Value} ({facet.Count})")" 
+                        Checked="false" 
+                        CheckedChanged="@(isSelected => HandleCheckedChanged(facet, isSelected))"></MudCheckBox>
                 }
             }
         </MudExpansionPanel>
