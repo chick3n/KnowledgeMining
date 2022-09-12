@@ -109,7 +109,7 @@
     private int _selectedPage;
     private List<FacetFilter> _selectedFacets = new();
     private List<FacetFilter> _selectedFilters = new();
-    private List<FacetFilter> _orderBy = new();
+    private List<FacetFilter> _orderBy = new() { OrderByFacetFilter.BestMatch() };
     private string poligonString = string.Empty;
     private enum TimeSpanType {
         Any,
