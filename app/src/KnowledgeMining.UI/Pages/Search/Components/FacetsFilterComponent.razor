@@ -23,7 +23,7 @@
             {
                 @foreach (var facet in selectedAggregateFacets)
                 {
-                    <MudCheckBox Class="checkbox-single-line" T="bool" Label="@($"{facet.Value} ({facet.Count})")" 
+                    <MudCheckBox Class="checkbox-single-line" T="bool" Label="@GetFacetLabel(facet)" 
                         Checked="true" 
                         CheckedChanged="@(isSelected => HandleCheckedChanged(facet, isSelected))"></MudCheckBox>
                 }
@@ -37,7 +37,7 @@
             {
                 @foreach (var facet in aggregateFacet.Values.Except(selectedAggregateFacets))
                 {
-                    <MudCheckBox Class="checkbox-single-line" T="bool" Label="@($"{facet.Value} ({facet.Count})")" 
+                    <MudCheckBox Class="checkbox-single-line" T="bool" Label="@GetFacetLabel(facet)" 
                         Checked="false" 
                         CheckedChanged="@(isSelected => HandleCheckedChanged(facet, isSelected))"></MudCheckBox>
                 }
@@ -83,5 +83,17 @@
         }
 
         return OnFacetSelectedChanged.InvokeAsync(facet);
+    }
+
+    private string GetFacetLabel(Facet facet)
+    {
+        if (facet == null)
+            return string.Empty;
+
+
+        if (facet.Count > 0)
+            return $"{facet.Value} ({facet.Count})";
+
+        return facet.Value!;
     }
 }
