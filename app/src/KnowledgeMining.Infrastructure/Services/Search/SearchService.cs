@@ -365,22 +365,24 @@ namespace KnowledgeMining.Infrastructure.Services.Search
             return f.Value?.ToString() ?? string.Empty;
         }
 
-        private IEnumerable<string> GenerateFacets(IReadOnlyCollection<SchemaField> facets, IReadOnlyList<FacetFilter> facetFilters)
+        private IEnumerable<string> GenerateFacets(IReadOnlyCollection<SchemaField> facets, IndexItem indexItem)
         {
             var results = new List<string>(); 
-            facetFilters = facetFilters ?? new List<FacetFilter>();
             foreach (var facet in facets)
             {
                 if (facet.Name is not null)
                 {
-                    var facetFilter = facetFilters
-                        .FirstOrDefault(x => x.Name!.Equals(facet.Name, StringComparison.OrdinalIgnoreCase));
+                    var facetConfig = indexItem.Facets.FirstOrDefault(x => x.Id.Equals(facet.Name));
 
                     var count = string.Empty;
-                    if (facetFilter != null && facetFilter.Count != 10)
+                    if (facetConfig != null && facetConfig.ShowAll)
                     {
-                        count = $",count:{facetFilter?.Count}";
+                        count = $",count:0";
                     }
+                    /*else if(facetConfig !=null && facetConfig.Count >= 0)
+                    {
+                        count = $",count:{facetConfig.Count}";
+                    }*/
                     var sort = ",sort:count";
                     results.Add($"{facet.Name}{count}{sort}");
                 }
@@ -409,7 +411,7 @@ namespace KnowledgeMining.Infrastructure.Services.Search
                 options.Select.Add(s);
             }
 
-            foreach (var facet in GenerateFacets(schema.Facets, request.FacetFilters))
+            foreach (var facet in GenerateFacets(schema.Facets, request.Index))
             {
                 options.Facets.Add(facet);
             }
