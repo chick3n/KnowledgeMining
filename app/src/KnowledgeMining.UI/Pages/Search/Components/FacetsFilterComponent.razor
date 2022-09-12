@@ -16,7 +16,7 @@
     var selectedAggregateFacets = aggregateFacet.Values?.Where(x => IsSelected(x)).ToList() 
         ?? new List<Facet>();
 
-    <MudExpansionPanels Class="mt-6">
+    <MudExpansionPanels Class="mb-6">
         <MudExpansionPanel Text="@($"{aggregateFacet.Name?.SplitCamelCase().ToTitleCase()} ({aggregateFacet.Values?.Count()})")" 
             Disabled="@(aggregateFacet.Values?.Any() is false)" Class="@(aggregateFacet.Count > 10 ? "expander-facets" : string.Empty)">
             @if (selectedAggregateFacets.Count > 0) 
