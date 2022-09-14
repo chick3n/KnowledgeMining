@@ -7,8 +7,8 @@
 
 
 <MudAppBar Style="@($"color: {Theme.Palette.Black};background: {Theme.Palette.White}")" Elevation="1">
-    <MudStack Spacing="3" Row="true">
-        <MudImage Src="images/logo.png" Height="35" Elevation="0" onclick="@(() => NavigateToHomePage())" />
+    <MudStack Spacing="4" Row="true">
+        <MudImage Src="images/gac-logo-en.svg" Height="25" Elevation="0" onclick="@(() => NavigateToHomePage())" />
         <MudButton Variant="Variant.Text" OnClick="NavigateToSearchPage">Search</MudButton>
         @*<MudButton Variant="Variant.Text" OnClick="@NavigateToDocumentsPage">Documents</MudButton>*@
         @if(indexNavigationItems != null)
@@ -26,6 +26,8 @@
             }
         }
     </MudStack>
+    <MudSpacer />
+    <MudText Typo="Typo.button" Align="Align.Right">SICY</MudText>
 </MudAppBar>
 
 @code {

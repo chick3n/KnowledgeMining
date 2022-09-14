@@ -1,7 +1,25 @@
-﻿<MudContainer Fixed="true" Class="d-flex flex-row align-content-bottom flex-fill">
-    <footer>
-        <div>
-            <span class="copyright navbar-text-color">&copy; @DateTime.Now.Year - </span>
-        </div>
+﻿@using Microsoft.JSInterop
+
+<MudContainer Fixed="true" Class="d-flex flex-row align-content-bottom flex-fill">
+    <footer class="footer" id="footer">
+        <MudGrid>
+            <MudItem xs="0" sm="10"></MudItem>
+            <MudItem xs="12" sm="2">
+                <MudButton Disabled>SICY</MudButton>
+            </MudItem>
+        </MudGrid>
     </footer>
 </MudContainer>
+
+
+@code {
+
+
+    [Inject] IJSRuntime JS { get; set; }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+         await JS.InvokeAsync<string>("FooterResized", DotNetObjectReference.Create(this));
+    }
+
+}

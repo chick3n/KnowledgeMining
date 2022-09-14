@@ -11,6 +11,10 @@
 
 <MudPaper Height="400px" Width="100%" Class="mud-theme-info d-flex align-center" Square="true" Elevation="0">
     <MudContainer MaxWidth="MaxWidth.Small">
+        @if(_indexItem != null) {
+            <MudText Typo="Typo.h2" Align="Align.Center">@_indexItem.Name</MudText>
+            <div style="height:40px"></div>
+        }
         <MudPaper Style="@($"background: {Theme.Palette.White}")" Elevation="1">
             <MudAutocomplete T="string" Label="What are you searching for today?" @bind-Value="searchQuery" SearchFunc="@AutoComplete"
                              ResetValueOnEmptyText="true"
