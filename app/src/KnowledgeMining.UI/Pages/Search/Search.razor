@@ -115,7 +115,7 @@
     private int _selectedPage;
     private List<FacetFilter> _selectedFacets = new();
     private List<FacetFilter> _selectedFilters = new();
-    private List<FacetFilter> _orderBy = new() { OrderByFacetFilter.BestMatch() };
+    private List<FacetFilter> _orderBy = DefaultSortByFilters();
     private string poligonString = string.Empty;
     private enum TimeSpanType {
         Any,
@@ -523,6 +523,8 @@
         _selectedPage = 0;
         poligonString = string.Empty;
         _selectedFacets.Clear();
+        _selectedFilters.Clear();
+        _orderBy = DefaultSortByFilters();
         _timeSpanSelectedType = TimeSpanType.Any;
         _facetsFilterComponent?.ClearFacets();
         _sortLabel = LABEL_ORDERBY_BEST_MATCH;
@@ -557,6 +559,11 @@
         }
 
         return filtersCount == 0;
+    }
+
+    private static List<FacetFilter> DefaultSortByFilters()
+    {
+        return new List<FacetFilter>() { OrderByFacetFilter.BestMatch() };
     }
 
     private async Task SortBestMatchClicked(MouseEventArgs args)
