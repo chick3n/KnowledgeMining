@@ -542,7 +542,20 @@
 
     private bool DisableClearFilter()
     {
-        int? filtersCount = _selectedFacets?.Count + _selectedFilters?.Count + _orderBy?.Count;
+        int? filtersCount = _selectedFacets?.Count + _selectedFilters?.Count;
+
+        if(_orderBy.Count > 1) 
+        {
+            filtersCount += _orderBy.Count;
+        } 
+        else if(_orderBy.Count == 1)
+        {
+            var order = _orderBy.First();
+            var defaultOrder = OrderByFacetFilter.BestMatch();
+            if (!order.Equals(defaultOrder))
+                filtersCount += 1;
+        }
+
         return filtersCount == 0;
     }
 
