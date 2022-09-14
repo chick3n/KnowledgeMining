@@ -27,7 +27,6 @@ namespace KnowledgeMining.UI
             builder.Services.AddRazorPages();
             builder.Services.AddServerSideBlazor();
             builder.Services.AddMudServices();
-            builder.Services.AddHostedService<ConsumedDocumentFilterScopedService>();
 
             builder.Services.AddSignalR().AddAzureSignalR(options =>
             {
@@ -55,12 +54,8 @@ namespace KnowledgeMining.UI
             builder.Services.AddApplicationServices(builder.Configuration);
             builder.Services.AddInfrastructureServices(builder.Configuration);
 
-            builder.Services.AddScoped<DocumentCacheService>();
-            builder.Services.AddScoped<MetadataService>();
             builder.Services.AddScoped<StateService>();
             builder.Services.AddScoped<ILinkGenerator, DocumentPreviewLinkGenerator>();
-            //builder.Services.AddScoped<ILinkGenerator, DocumentPreviewLinkGenerator>();
-            builder.Services.AddScoped<IScopedProcessingService, DocumentFilterScopedService>();
 
             builder.Services.AddApplicationInsightsTelemetry();
             builder.Services.AddHttpContextAccessor();
