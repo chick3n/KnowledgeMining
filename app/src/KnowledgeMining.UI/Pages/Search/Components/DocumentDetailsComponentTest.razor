@@ -1,0 +1,130 @@
+﻿@using System.ComponentModel
+@inject IJSRuntime jsRuntime
+@inject NavigationManager NavManager
+
+@if(Document != null) {
+<div class="d-flex flex-column">
+    <MudTabs DisableSliderAnimation="true" Elevation="2" Rounded="true" ApplyEffectsToContainer="true"  @bind-ActivePanelIndex="_currentTabIndex"
+        PanelClass="pa-3" Style="max-width: 97vw; width: 97vw; min-height: 80vh;">
+        <MudTabPanel Icon="@Icons.Material.Filled.ArrowBack" Text="Search Results" OnClick="@ClosePopover"></MudTabPanel>
+        <MudTabPanel Text="Transcript">
+            <MudGrid>
+                <MudItem xs="12" sm="8">
+                    <pre style="max-width: 60vw; max-height: 70vh; width: 60vw; overflow-x: auto; overflow-y: scroll; white-space: pre-wrap; word-wrap: break-word; ">
+                    <MudHighlighter Text="@Document!.Content" HighlightedText="@_textToHighlight" Style="background-color: darkblue; font-weight:bold; color: white"></MudHighlighter>
+                    </pre>
+                </MudItem>
+                <MudItem xs="12" sm="4">
+                    <div class="d-flex flex-column flex-shrink-1">
+                        <MudTextField T="string" Immediate="true" Placeholder="Search in transcript" ValueChanged="UpdateTextToHighlight" Variant="Variant.Outlined"></MudTextField>
+                        <MudChipSet SelectedChipChanged="UpdateTextToHighlight" Filter="true" Class="d-flex flex-wrap">
+                            @if (Document.KeyPhrases != null)
+                            {
+                                @foreach (var keyPhrase in Document!.KeyPhrases!.Take(5))
+                                {
+                                    <MudChip Text="@keyPhrase"></MudChip>
+                                }
+                            }
+                        </MudChipSet>
+                    </div>
+                </MudItem>
+            </MudGrid>
+        </MudTabPanel>
+        @if(!string.IsNullOrEmpty(Document?.SourcePath))
+        {
+            @if (IsUrlPath())
+            {
+                <MudTabPanel 
+                    OnClick="@(async () => await jsRuntime.InvokeAsync<object>("open", Document.SourcePath, "_blank"))" 
+                        Text="Website">
+                    <div><a href="@Document.SourcePath" target="_blank">@Document.SourcePath</a></div>
+                </MudTabPanel>
+            }
+            else
+            {
+                    <MudTabPanel Text="Document Preview">
+                    <DocumentViewerComponent Document="Document"></DocumentViewerComponent>
+                    </MudTabPanel>
+            }
+        }
+        <MudTabPanel Text="Metadata">
+            <MudTable Items="@Document!.ToDictionary()" Height="50vh" Hover="true" Breakpoint="Breakpoint.Sm" HorizontalScrollbar="true" Virtualize="true" FixedHeader="true">
+                <HeaderContent>
+                    <MudTh>Property</MudTh>
+                    <MudTh>Value</MudTh>
+                </HeaderContent>
+                <RowTemplate>
+                    <MudTd DataLabel="Property">@context.Key</MudTd>
+                    <MudTd DataLabel="Value">@ConvertMetadataValueToString(context.Value)</MudTd>
+                </RowTemplate>
+            </MudTable>
+        </MudTabPanel>
+
+        @*<MudTabPanel Text="Maps" Disabled="true">
+        <MudText>Content Disabled</MudText>
+        </MudTabPanel>*@
+    </MudTabs>
+</div>
+}
+
+@code {
+    [Parameter]
+    public DocumentMetadata? Document { get; set; }
+
+    [Parameter]
+    public string? ReturnTo { get; set; }
+
+
+
+    private string? _textToHighlight;
+    private int _currentTabIndex = 1;
+
+    private void UpdateTextToHighlight(string searchText)
+    {
+        _textToHighlight = searchText;
+    }
+
+    private void UpdateTextToHighlight(MudChip selectedChip)
+    {
+        _textToHighlight = selectedChip?.Text ?? string.Empty;
+    }
+
+    private string ConvertMetadataValueToString(object? metadataValue)
+    {
+        if (metadataValue is not null)
+        {
+            if (metadataValue is IEnumerable<string> values)
+            {
+                return string.Join(", ", values);
+            }
+            else
+            {
+                return metadataValue!.ToString();
+            }
+        }
+
+        return string.Empty;
+    }
+
+    private void ClosePopover()
+    {
+        _currentTabIndex = 1;
+        NavManager.NavigateTo(ReturnTo, forceLoad: false);
+    }
+
+    private bool IsUrlPath()
+    {
+        if(!string.IsNullOrWhiteSpace(Document?.SourcePath))
+        {
+            if(Uri.TryCreate(Document?.SourcePath, UriKind.Absolute, out var uri))
+            {
+                return uri.Scheme.Equals("http", StringComparison.CurrentCultureIgnoreCase) ||
+                    uri.Scheme.Equals("https", StringComparison.CurrentCultureIgnoreCase);
+            }
+        }
+
+        return false;
+    }
+
+
+}

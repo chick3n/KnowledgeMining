@@ -7,13 +7,13 @@ namespace KnowledgeMining.Application.Documents.Queries.GetIndex
 {
     public readonly record struct GetIndexResponse(IndexItem IndexItem);
 
-    public readonly record struct GetIndexQuery(string IndexName) : IRequest<GetIndexResponse>;
+    public readonly record struct GetIndexQuery(string IndexKey) : IRequest<GetIndexResponse>;
 
     public class GetIndexQueryValidator : AbstractValidator<GetIndexQuery>
     {
         public GetIndexQueryValidator()
         {
-            RuleFor(q => q.IndexName)
+            RuleFor(q => q.IndexKey)
                 .NotEmpty()
                 .WithMessage("Index name must not be empty.");
         }
@@ -30,13 +30,13 @@ namespace KnowledgeMining.Application.Documents.Queries.GetIndex
 
         public async Task<GetIndexResponse> Handle(GetIndexQuery request, CancellationToken cancellationToken)
         {
-            var indexItem = await _databaseService.GetIndex(request.IndexName, cancellationToken);
+            var indexItem = await _databaseService.GetIndex(request.IndexKey, cancellationToken);
             if (indexItem != null)
             {
                 return new GetIndexResponse(indexItem);
             }
 
-            throw new FileNotFoundException(request.IndexName);
+            throw new FileNotFoundException(request.IndexKey);
         }
     }
 }
