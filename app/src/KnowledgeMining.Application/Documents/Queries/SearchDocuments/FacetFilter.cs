@@ -14,11 +14,10 @@
 
         public override bool Equals(object? obj)
         {
-            FacetFilter comparison = null;
-
             if (obj != null && obj.GetType().IsSubclassOf(typeof(FacetFilter)))
             {
                 var equals = true;
+                var comparison = obj as FacetFilter;
 
                 equals = Count == comparison!.Count;
 
