@@ -155,5 +155,16 @@ namespace KnowledgeMining.UI.Services.State
                     break;
             }
         }
+
+        public string GetSearchText()
+        {
+            if (string.IsNullOrWhiteSpace(SearchText))
+                return string.Empty;
+
+            if (SearchText.Trim().Equals("*"))
+                return string.Empty;
+
+            return SearchText;
+        }
     }
 }

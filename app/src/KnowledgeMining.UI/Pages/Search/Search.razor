@@ -156,24 +156,26 @@
         NavManager.LocationChanged += LocationChanged;
         var indexResponse = await Mediator.Send(new GetIndexQuery(Index));
         _indexItem = indexResponse.IndexItem;
-        var request = new SearchDocumentsQuery(_indexItem, SearchText, _selectedPage, poligonString, _selectedFacets, _selectedFilters, _orderBy);
-        await SearchDocuments(request);
     }
 
-    async void LocationChanged(object sender, LocationChangedEventArgs args)
-    {
-        /*if (!string.IsNullOrEmpty(Hash)) 
-            {
-            await SearchDocumentsFromHash(Hash);    
+    async void LocationChanged(object sender, LocationChangedEventArgs args) => Logger.LogInformation("Location Changed");
 
-            StateHasChanged();        
-        }*/
-        Logger.LogInformation("Location Changed");
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        await base.OnAfterRenderAsync(firstRender);
+
+        if(firstRender)
+        {
+            if(string.IsNullOrEmpty(Hash))
+            {
+                var request = new SearchDocumentsQuery(_indexItem, SearchText, _selectedPage, poligonString, _selectedFacets, _selectedFilters, _orderBy);
+                await SearchDocuments(request);
+            }
+        }
     }
 
     protected override async Task OnParametersSetAsync()
     {
-        Logger.LogInformation("OnParametersSetAsync");
         await base.OnParametersSetAsync();
 
         if(!string.IsNullOrEmpty(Hash) && !Hash.Equals(_currentHash))
@@ -278,7 +280,7 @@
 
         if (searchQueryStateModel != null)
         {
-            SearchText = searchQueryStateModel.SearchText;
+            SearchText = searchQueryStateModel.GetSearchText();
             _selectedPage = searchQueryStateModel.Page;
             poligonString = searchQueryStateModel.PolygonString;
             _selectedFacets = searchQueryStateModel.FacetFilters.ToList();
