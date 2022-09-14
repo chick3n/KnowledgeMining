@@ -16,15 +16,6 @@
         {
             FacetFilter comparison = null;
 
-            try
-            {
-                comparison = obj as FacetFilter;
-            }
-            catch
-            {
-                return false;
-            }
-
             if (obj != null && obj.GetType().IsSubclassOf(typeof(FacetFilter)))
             {
                 var equals = true;
