@@ -16,6 +16,9 @@ namespace KnowledgeMining.Domain.Entities
         [JsonPropertyName("showAll")]
         public bool ShowAll { get; set; } = false;
 
+        [JsonPropertyName("description")]
+        public string? Description { get; set; }
+
         [JsonPropertyName("join")]
         public string Join { get; set; } = "and";
 
@@ -29,5 +32,7 @@ namespace KnowledgeMining.Domain.Entities
         public string? Id { get; set; }
         [JsonPropertyName("name")]
         public string? Name { get; set; }
+        [JsonPropertyName("description")]
+        public string? Description { get; set; }
     }
 }

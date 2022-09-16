@@ -23,9 +23,12 @@
             {
                 @foreach (var facet in selectedAggregateFacets)
                 {
-                    <MudCheckBox Class="checkbox-single-line" T="bool" Label="@GetFacetLabel(facet)" 
-                        Checked="true" 
-                        CheckedChanged="@(isSelected => HandleCheckedChanged(facet, isSelected))"></MudCheckBox>
+                    <MudTooltip Text="@GetFacetValueDescription(facet.Name, facet.Value)" Arrow="true" Placement="Placement.Right">
+                        <MudCheckBox Class="checkbox-single-line" T="bool" 
+                            Label="@GetFacetLabel(facet)"
+                            Checked="true" 
+                            CheckedChanged="@(isSelected => HandleCheckedChanged(facet, isSelected))"></MudCheckBox>
+                    </MudTooltip>
                 }
                 
                 @if(aggregateFacet.Count - selectedAggregateFacets.Count > 0)
@@ -37,9 +40,12 @@
             {
                 @foreach (var facet in aggregateFacet.Values.Except(selectedAggregateFacets))
                 {
-                    <MudCheckBox Class="checkbox-single-line" T="bool" Label="@GetFacetLabel(facet)" 
-                        Checked="false" 
-                        CheckedChanged="@(isSelected => HandleCheckedChanged(facet, isSelected))"></MudCheckBox>
+                    <MudTooltip Text="@GetFacetValueDescription(facet.Name, facet.Value)" Arrow="true" Placement="Placement.Right">
+                        <MudCheckBox Class="checkbox-single-line" T="bool" 
+                            Label="@GetFacetLabel(facet)" 
+                            Checked="false" 
+                            CheckedChanged="@(isSelected => HandleCheckedChanged(facet, isSelected))"></MudCheckBox>
+                    </MudTooltip>
                 }
             }
         </MudExpansionPanel>
@@ -54,6 +60,9 @@
 
     [Parameter]
     public EventCallback<Facet> OnFacetSelectedChanged { get; set; }
+
+    [Parameter]
+    public IndexItem? IndexItem { get; set; }
 
     public void ClearFacets()
     {
@@ -95,5 +104,32 @@
             return $"{facet.Value} ({facet.Count})";
 
         return facet.Value!;
+    }
+
+    private string GetFacetDescription(string? name)
+    {
+        if(!string.IsNullOrEmpty(name) && IndexItem != null)
+        {
+            var facet = IndexItem.Facets.Where(x => x.Id.Equals(name, StringComparison.CurrentCulture)).FirstOrDefault();
+            return facet?.Description ?? string.Empty;
+        }
+        return string.Empty;
+    }
+
+    private string GetFacetValueDescription(string? facetName, string? name)
+    {
+        if(!string.IsNullOrEmpty(facetName) && !string.IsNullOrEmpty(name) && IndexItem != null)
+        {
+            var facet = IndexItem.Facets.Where(x => x.Id.Equals(facetName, StringComparison.CurrentCulture)).FirstOrDefault();
+            if(facet != null && facet.Values != null)
+            {
+                var facetValue = facet.Values
+                    .Where(x => x.Id != null && x.Id.Equals(name, StringComparison.CurrentCultureIgnoreCase))
+                    .FirstOrDefault();
+
+                return facetValue?.Description ?? string.Empty;
+            }
+        }
+        return string.Empty;
     }
 }

@@ -55,7 +55,8 @@
                 <FacetsFilterComponent 
                     @ref="_facetsFilterComponent"
                     Facets="@_searchState.Facets"
-                    OnFacetSelectedChanged="UpdateSearchFacetsAndSearch"></FacetsFilterComponent>
+                    OnFacetSelectedChanged="UpdateSearchFacetsAndSearch"
+                    IndexItem="_indexItem"></FacetsFilterComponent>
         </MudItem>
         <MudItem xs="12" md="10" hidden="@_showDocumentDetails">
             <MudTabs @ref="_mainBodyTabs" Elevation="0" Outlined="true" Rounded="true" ApplyEffectsToContainer="true" PanelClass="pa-6" Class="">
