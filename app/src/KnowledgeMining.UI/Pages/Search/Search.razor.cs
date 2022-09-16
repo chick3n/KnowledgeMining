@@ -131,7 +131,7 @@ namespace KnowledgeMining.UI.Pages.Search
 
         private DocumentMetadataWrapper GetDocumentMetadataWrapper()
         {
-            return new DocumentMetadataWrapper(_searchState.Documents, _indexItem.FieldMapping, _searchState.KeyField);
+            return new DocumentMetadataWrapper(_searchState.Documents, _indexItem?.FieldMapping, _searchState.KeyField);
         }
 
         #endregion

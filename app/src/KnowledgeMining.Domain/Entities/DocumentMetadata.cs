@@ -63,20 +63,67 @@ namespace KnowledgeMining.Domain.Entities
 
         public IDictionary<string, object?> ToDictionary()
         {
-            return new Dictionary<string, object?>()
+            var dict = new Dictionary<string, object?>()
             {
                 { ToLowerFirstChar(nameof(KeyPhrases)), KeyPhrases },
                 { ToLowerFirstChar(nameof(Organizations)), Organizations },
                 { ToLowerFirstChar(nameof(Persons)), Persons },
                 { ToLowerFirstChar(nameof(Locations)), Locations },
                 { ToLowerFirstChar(nameof(Topics)), Topics },
-                { ToLowerFirstChar(nameof(Text)), Text },
                 { ToLowerFirstChar(nameof(Summary)), Summary },
-                { ToLowerFirstChar(nameof(MergedContent)), MergedContent },
                 { ToLowerFirstChar(nameof(Title)), Title },
                 { ToLowerFirstChar(nameof(SourceType)), SourceType },
-                { ToLowerFirstChar(nameof(SourcePath)), SourcePath }
+                { ToLowerFirstChar(nameof(SourcePath)), SourcePath },
+                { ToLowerFirstChar(nameof(Name)), Name },
+                { ToLowerFirstChar(nameof(Category)), Category},
             };
+
+            if(ExtensionData != null)
+            {
+                foreach (var kvp in ExtensionData)
+                    dict.Add(kvp.Key, kvp.Value.ToString());
+            }
+
+            return dict.Where(x => MetadataHasValue(x.Value)).ToDictionary(x => x.Key, x => x.Value);
+        }
+
+        public bool IsMetadataValueAnArray(object? value)
+        {
+            if (value is not null)
+            {
+                if (value is IEnumerable<string>)
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        private bool MetadataHasValue(object? value)
+        {
+            if(IsMetadataValueAnArray(value))
+            {
+                var list = value as IEnumerable<string>;
+                return list.Count() > 0;
+            }
+            return value != null;
+        }
+
+        public string ConvertMetadataValueToString(object? metadataValue)
+        {
+            if (metadataValue is not null)
+            {
+                if (metadataValue is IEnumerable<string> values)
+                {
+                    return string.Join("\n", values);
+                }
+                else
+                {
+                    return metadataValue!.ToString();
+                }
+            }
+
+            return string.Empty;
         }
 
         // Took from https://stackoverflow.com/questions/21755757/first-character-of-string-lowercase-c-sharp

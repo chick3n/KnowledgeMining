@@ -86,22 +86,7 @@ namespace KnowledgeMining.UI.Pages.Record
             _textToHighlight = selectedChip?.Text ?? string.Empty;
         }
 
-        private string ConvertMetadataValueToString(object? metadataValue)
-        {
-            if (metadataValue is not null)
-            {
-                if (metadataValue is IEnumerable<string> values)
-                {
-                    return string.Join(", ", values);
-                }
-                else
-                {
-                    return metadataValue!.ToString();
-                }
-            }
-
-            return string.Empty;
-        }
+        
 
         private async Task GoBack()
         {
