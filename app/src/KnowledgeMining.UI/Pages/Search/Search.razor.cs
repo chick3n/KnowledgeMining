@@ -153,32 +153,33 @@ namespace KnowledgeMining.UI.Pages.Search
             return facetFilter;
         }
 
-        private async Task UpdateSearchFacetsAndSearch(Facet facet)
+        private async Task UpdateSearchFacetsAndSearch(FacetSelectedViewModel facetViewModel)
         {
-            FacetFilter searchFacet;
+            var facet = facetViewModel.Facet;
+            var isSelected = facetViewModel.IsSelected;
 
-            if (!_selectedFacets.Any(f => f.Name == facet.Name))
-            {
-                searchFacet = GenerateFacetFilter(facet);
-                _selectedFacets.Add(searchFacet);
-            }
-            else
-            {
-                searchFacet = _selectedFacets.First(f => f.Name == facet.Name);
-            }
+            if (facet == null)
+                return;
 
-            if (searchFacet.Values.Any(fv => fv == facet.Value))
+            var selectedFacet = _selectedFacets.FirstOrDefault(x => x.Name != null && x.Name.Equals(facet.Name));
+            
+            if (isSelected)
             {
-                searchFacet.Values.Remove(facet.Value);
-
-                if (!searchFacet.Values.Any())
+                if (selectedFacet == null)
                 {
-                    _selectedFacets.Remove(searchFacet);
+                    selectedFacet = GenerateFacetFilter(facet);
+                    _selectedFacets.Add(selectedFacet);
                 }
+
+                if (facet.Value != null && !selectedFacet.Values.Any(x => x.Equals(facet.Value)))
+                    selectedFacet.Values.Add(facet.Value);
             }
             else
             {
-                searchFacet.Values.Add(facet.Value);
+                if(facet.Value != null && selectedFacet != null && selectedFacet.Values.Any(x => x.Equals(facet.Value)))
+                {
+                    selectedFacet.Values.Remove(facet.Value);
+                }                
             }
 
             var request = new SearchDocumentsQuery(_indexItem, SearchText, _selectedPage, poligonString, _selectedFacets, _selectedFilters, _orderBy);

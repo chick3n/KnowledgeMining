@@ -112,7 +112,7 @@ namespace KnowledgeMining.UI.Services.State
             var series = content.Split(Series);
             foreach(var single in series)
             {
-                var kvp = single.Split(SubGroup);
+                var kvp = single.Split(SubGroup, StringSplitOptions.RemoveEmptyEntries);
                 if(kvp.Length >= 2)
                 {
                     FacetFilter facetFilter = new FacetFilter();
