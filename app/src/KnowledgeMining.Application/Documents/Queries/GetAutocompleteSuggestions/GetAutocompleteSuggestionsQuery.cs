@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace KnowledgeMining.Application.Documents.Queries.GetAutocompleteSuggestions
 {
-    public readonly record struct GetAutocompleteSuggestionsQuery(string SearchQuery) : IRequest<IEnumerable<string>>;
+    public readonly record struct GetAutocompleteSuggestionsQuery(string IndexName, string SearchQuery) : IRequest<IEnumerable<string>>;
 
     public class GetAutocompleteSuggestionsQueryHandler : IRequestHandler<GetAutocompleteSuggestionsQuery, IEnumerable<string>>
     {
@@ -23,7 +23,7 @@ namespace KnowledgeMining.Application.Documents.Queries.GetAutocompleteSuggestio
         {
             try
             {
-                return await _searchService.Autocomplete(request.SearchQuery, true, cancellationToken);
+                return await _searchService.Autocomplete(request.IndexName, request.SearchQuery, true, cancellationToken);
             } catch(Exception)
             {
                 return new List<string>();

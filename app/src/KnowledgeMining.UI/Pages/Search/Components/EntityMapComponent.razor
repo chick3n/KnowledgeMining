@@ -10,8 +10,8 @@
     </div>
     <div class="d-flex flex-column" style="min-width:400px;">
         <MudSlider Min="1" Max="10" Step="1" @bind-Value="_maxLevels" T="int" ValueLabel="true">Max Levels: @_maxLevels</MudSlider>
-        <MudSlider Min="3" Max="10" Step="1" @bind-Value="_maxNodes" T="int" ValueLabel="true">Max Nodes: @_maxNodes</MudSlider>
-        <MudSelect  MaxHeight="200" T="string" Placeholder="Select facets" Label="Facets" MultiSelection="true" @bind-SelectedValues="_selectedEntityMapFacets">
+        @*<MudSlider Min="3" Max="10" Step="1" @bind-Value="_maxNodes" T="int" ValueLabel="true">Max Nodes: @_maxNodes</MudSlider>*@
+        <MudSelect  MaxHeight="200" T="string" Placeholder="Select filters" Label="Filters" MultiSelection="true" @bind-SelectedValues="_selectedEntityMapFacets">
             @foreach (var facet in FacetableFields)
             {
                 <MudSelectItem T="string" Value="@facet">@facet</MudSelectItem> 
@@ -29,6 +29,8 @@
 @code{
     [Parameter]
     public string? SearchText { get; set; } = default;
+    [Parameter]
+    public string? IndexName { get; set; } = default;
     [Parameter]
     public IEnumerable<string> FacetableFields { get; set; } = Enumerable.Empty<string>();
 
@@ -54,7 +56,7 @@
     private async Task GenerateEntityMap()
     {
         _loading = true;
-        var entityMapData = await Mediator.Send(new GenerateEntityMapQuery(SearchText, _selectedEntityMapFacets, _maxLevels, _maxNodes));
+        var entityMapData = await Mediator.Send(new GenerateEntityMapQuery(IndexName, SearchText, _selectedEntityMapFacets, _maxLevels, _maxNodes));
         await module.InvokeVoidAsync("renderEntityGraph", _entityMapContainerId, entityMapData, _maxLevels);
         _loading = false;
     }

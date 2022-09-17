@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace KnowledgeMining.Application.Documents.Queries.GetDocumentMetadata
 {
-    public readonly record struct GetDocumentMetadataQuery(string DocumentId) : IRequest<DocumentMetadata>;
+    public readonly record struct GetDocumentMetadataQuery(string IndexName, string DocumentId) : IRequest<DocumentMetadata>;
 
     public class GetDocumentMetadataQueryValidator : AbstractValidator<GetDocumentMetadataQuery>
     {
@@ -31,7 +31,7 @@ namespace KnowledgeMining.Application.Documents.Queries.GetDocumentMetadata
 
         public Task<DocumentMetadata> Handle(GetDocumentMetadataQuery request, CancellationToken cancellationToken)
         {
-            return _searchService.GetDocumentDetails(request.DocumentId, cancellationToken);
+            return _searchService.GetDocumentDetails(request.IndexName, request.DocumentId, cancellationToken);
         }
     }
 }

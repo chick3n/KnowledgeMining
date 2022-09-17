@@ -1,5 +1,11 @@
 ﻿@using KnowledgeMining.Application.Documents.Queries.SearchDocuments
 @using System.Text.RegularExpressions
+@using KnowledgeMining.UI.Services.State
+@using KnowledgeMining.UI.Wrappers
+
+@inject NavigationManager NavManager
+@inject StateService StateService
+
 @if (IsLoading)
 {
     <MudGrid>
@@ -32,47 +38,50 @@ else
     @if (TotalCount > 0)
     {
         <MudGrid>
-            @foreach (var document in Documents ?? Enumerable.Empty<DocumentMetadata>())
+            @foreach (var document in DocumentWrapper.Documents())
             {
                 <MudItem xs="12" sm="12">
-                    <MudCard Outlined="true" @onclick="() => OnDocumentClicked.InvokeAsync(document.Id)" Style="cursor: pointer;">
-                        <MudCardHeader>
-                            <CardHeaderAvatar>
-                                <MudAvatar Color="Color.Dark"><MudIcon Icon="@Icons.Custom.FileFormats.FileDocument"></MudIcon></MudAvatar>
-                            </CardHeaderAvatar>
-                            <CardHeaderContent>
-                                <MudText Typo="Typo.body1">@DocumentHeader(document)</MudText>
-                                <MudText Typo="Typo.body2">@DocumentSubHeader(document)</MudText>
-                            </CardHeaderContent>
-                            <CardHeaderActions>
-                                <MudMenu Icon="@Icons.Material.Outlined.Info">
-                                    <MudMenuItem Class="cursor-help">Score: @document.SearchScore</MudMenuItem>
-                                    @if(!string.IsNullOrEmpty(document.Name))
-                                    {
-                                        <MudMenuItem Class="cursor-help">File: @document.Name</MudMenuItem>
-                                    }
-                                    @if(!string.IsNullOrEmpty(document.DocumentType)) 
-                                    {
-                                        <MudMenuItem Class="cursor-help">Type: @document.DocumentType</MudMenuItem>
-                                    }
-                                    </MudMenu>
-                            </CardHeaderActions>
-                        </MudCardHeader>
-                        <MudCardContent>
-                            <div class="d-flex flex-row gap-10">
-                                <div class="flex-grow-1" style="min-width: 50%; max-width:50%">
-                                    <MudText Typo="Typo.body2">@DocumentSummary(document)</MudText>
-                                </div>
+                    <a href="@($"{NavigateTo}{document.Id}")">
+                        <MudCard Outlined="true"
+                            Style="cursor: pointer;">
+                            <MudCardHeader>
+                                <CardHeaderAvatar>
+                                    <MudAvatar Color="Color.Dark"><MudIcon Icon="@Icons.Custom.FileFormats.FileDocument"></MudIcon></MudAvatar>
+                                </CardHeaderAvatar>
+                                <CardHeaderContent>
+                                    <MudText Typo="Typo.body1">@DocumentHeader(document)</MudText>
+                                    <MudText Typo="Typo.body2">@DocumentSubHeader(document)</MudText>
+                                </CardHeaderContent>
+                                <CardHeaderActions>
+                                    <MudMenu Icon="@Icons.Material.Outlined.Info">
+                                        <MudMenuItem Class="cursor-help">Score: @document.SearchScore</MudMenuItem>
+                                        @if(!string.IsNullOrEmpty(document.Name))
+                                        {
+                                            <MudMenuItem Class="cursor-help">File: @document.Name</MudMenuItem>
+                                        }
+                                        @if(!string.IsNullOrEmpty(document.Category)) 
+                                        {
+                                            <MudMenuItem Class="cursor-help">Type: @document.Category</MudMenuItem>
+                                        }
+                                        </MudMenu>
+                                </CardHeaderActions>
+                            </MudCardHeader>
+                            <MudCardContent>
+                                <div class="d-flex flex-row gap-10">
+                                    <div class="flex-grow-1" style="min-width: 50%; max-width:50%">
+                                        <MudText Typo="Typo.body2">@DocumentSummary(document)</MudText>
+                                    </div>
 
-                                <div class="flex-grow-1">
-                                    @foreach (var keyPhrase in document.KeyPhrases?.Take(8) ?? Enumerable.Empty<string>())
-                                    {
-                                        <MudChip Color="Color.Info"><MudText Typo="Typo.body2">@keyPhrase</MudText></MudChip>
-                                    }
+                                    <div class="flex-grow-1">
+                                        @foreach (var keyPhrase in DocumentWrapper.GetCloudWords(document).Take(8) ?? Enumerable.Empty<string>())
+                                        {
+                                            <MudChip Color="Color.Info"><MudText Typo="Typo.body2">@keyPhrase</MudText></MudChip>
+                                        }
+                                    </div>
                                 </div>
-                            </div>
-                        </MudCardContent>
-                    </MudCard>
+                            </MudCardContent>
+                        </MudCard>
+                    </a>
                 </MudItem>
             }
         </MudGrid>
@@ -90,14 +99,13 @@ else
 
 @code {
     [Parameter]
-    public IEnumerable<DocumentMetadata>? Documents { get; set; }
+    public DocumentMetadataWrapper DocumentWrapper { get; set; }
     [Parameter]
     public long? TotalCount { get; set; }
     [Parameter]
     public int? TotalPages { get; set; }
-
     [Parameter]
-    public EventCallback<string> OnDocumentClicked { get; set; }
+    public string NavigateTo { get; set; }
 
     [Parameter]
     public int? PageSelected { get; set; }
@@ -124,6 +132,11 @@ else
         return 1;
     }
 
+    private void OnSearchItemClicked(string documentId)
+    {
+        NavManager.NavigateTo($"{NavigateTo}{documentId}");
+    }
+
     private Task HandlePageSelected(int page)
     {
         if(GetSelectedPage() != page)
@@ -138,17 +151,7 @@ else
 
     private string DocumentHeader(DocumentMetadata document)
     {
-        if(!string.IsNullOrWhiteSpace(document.Title))
-        {
-            return document.Title;
-        }     
-
-        if (!string.IsNullOrWhiteSpace(document.Mission))
-        {
-            return document.Mission;
-        }
-
-        return document.Name ?? string.Empty;
+        return DocumentWrapper.GetTitle(document)!;
     }
 
     private string DocumentSubHeader(DocumentMetadata document)
@@ -161,7 +164,7 @@ else
         var summary = document.Summary ?? string.Empty;
 
         if (string.IsNullOrWhiteSpace(summary))
-            summary = document.MergedContent ?? string.Empty;
+            summary = document.Content ?? string.Empty;
 
         if (string.IsNullOrEmpty(summary))
             return NoSummary;

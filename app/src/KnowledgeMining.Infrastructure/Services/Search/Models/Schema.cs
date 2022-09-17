@@ -12,10 +12,11 @@ namespace KnowledgeMining.UI.Services.Search.Models
         public IReadOnlyCollection<string> SelectFilter { get; set; }
 
         public IReadOnlyCollection<string> SearchableFields { get; set; }
+        public string KeyField => Fields.First(x => x.IsKey)?.Name;
 
         public Schema(IList<Azure.Search.Documents.Indexes.Models.SearchField> fields)
         {
-            SelectFilter = fields.Select(f => f.Name).ToList().AsReadOnly();
+            SelectFilter = fields.Where(x => !x.IsHidden ?? false).Select(f => f.Name).ToList().AsReadOnly();
             Facets = fields.Where(f => f.IsFacetable ?? false).Select(f => ToSearchField(f)).ToList().AsReadOnly();
             Tags = fields.Where(f => f.IsFacetable ?? false).Select(f => ToSearchField(f)).ToList().AsReadOnly();
             SearchableFields = fields.Where(f => f.IsSearchable ?? false).Select(f => f.Name).ToList().AsReadOnly();

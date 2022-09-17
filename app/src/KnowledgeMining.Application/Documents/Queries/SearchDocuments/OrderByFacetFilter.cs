@@ -17,7 +17,7 @@ namespace KnowledgeMining.Application.Documents.Queries.SearchDocuments
             return new OrderByFacetFilter
             {
                 Name = FieldName,
-                Values = new string[] { "search.score() desc" }
+                Values = new string[] { "search.score() desc, datetime desc" }
             };
         }
 

@@ -1,0 +1,114 @@
+﻿@page "/record/{Index}/{RecordId}"
+
+
+
+<PageTitle>Record</PageTitle>
+<MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="mt-4">
+    <MudGrid>
+        <MudItem xs="12" sm="2">
+            @if (_canNavigateBack)
+            {
+                <MudButton StartIcon="@Icons.Material.Filled.ArrowBack" Title="Back" Color="Color.Inherit" OnClick="GoBack">Back</MudButton>
+            }
+        </MudItem>
+        <MudItem xs="0" sm="10">
+            @if(_documentMetadata != null && _isLoading == false)
+            {
+                <MudButton Disabled>@_title</MudButton>
+            }
+        </MudItem>
+    </MudGrid>
+    <MudGrid>
+        <MudItem xs="2">            
+            <MudPaper>
+                <MudList Clickable="true" @bind-SelectedItem="_selectedItem" @bind-SelectedValue="_selectedValue">
+                    <MudListItem Text="Transcript" Value="1"/>
+                    <MudListItem Text="Metadata" Value="4" />
+                    @if(!string.IsNullOrEmpty(_documentMetadata?.SourcePath))
+                    {
+                        @if (IsUrlPath())
+                        {
+                            <MudListItem Text="Website" Value="2" Icon="@Icons.Material.Outlined.Link"
+                                OnClick="@(async () => await jsRuntime.InvokeAsync<object>("open", _documentMetadata.SourcePath, "_blank"))" />
+                        }
+                        else
+                        {    
+                            <MudListItem Text="Document Preview" Value="3"/>
+                        }
+                    }
+                </MudList>
+            </MudPaper>
+        </MudItem>
+        <MudItem xs="10">
+            @if(_documentMetadata != null && _isLoading == false)
+            {
+                @if((int)_selectedValue == 1)
+                {
+                        <MudGrid>
+                            <MudItem xs="12" sm="8">
+                                <MudPaper MinHeight="@_contentMinHeight" Class="p-2">
+                                    <pre style="max-height: 70vh; overflow-x: auto; overflow-y: scroll; white-space: pre-wrap; word-wrap: break-word; ">
+                                    <MudHighlighter Text="@_documentMetadata!.Content" HighlightedText="@_textToHighlight" Style="background-color: darkblue; font-weight:bold; color: white"></MudHighlighter>
+                                    </pre>
+                                </MudPaper>
+                            </MudItem>
+                            <MudItem xs="12" sm="4">
+                                <div class="d-flex flex-column flex-shrink-1">
+                                    <MudTextField T="string" Immediate="true" Placeholder="Search in transcript" 
+                                        ValueChanged="UpdateTextToHighlight" Variant="Variant.Outlined"></MudTextField>
+                                    <MudChipSet SelectedChipChanged="UpdateTextToHighlight" Filter="true" Class="d-flex flex-wrap">
+                                        @if (_documentMetadata.KeyPhrases != null)
+                                        {
+                                            @foreach (var keyPhrase in _documentMetadata!.KeyPhrases!.Take(5))
+                                            {
+                                                <MudChip Text="@keyPhrase"></MudChip>
+                                            }
+                                        }
+                                    </MudChipSet>
+                                </div>
+                            </MudItem>
+                        </MudGrid>
+                }
+                else if((int)_selectedValue == 2)
+                {
+                    <MudPaper MinHeight="@_contentMinHeight" Class="p-2">
+                        <div><a href="@_documentMetadata.SourcePath" target="_blank">@_documentMetadata.SourcePath</a></div>
+                    </MudPaper>
+                }
+                else if((int)_selectedValue == 3)
+                {
+                    @*<DocumentViewerComponent Document="_documentMetadata"></DocumentViewerComponent>*@
+                }
+                else if((int)_selectedValue == 4)
+                {
+                    <MudTable Items="@_documentMetadata!.ToDictionary()" Height="@_contentMinHeight" Hover="true" 
+                        Breakpoint="Breakpoint.Sm" HorizontalScrollbar="true" Virtualize="true" FixedHeader="true">
+                        <HeaderContent>
+                            <MudTh>Property</MudTh>
+                            <MudTh>Value</MudTh>
+                        </HeaderContent>
+                        <RowTemplate>
+                            <MudTd DataLabel="Property" Style="vertical-align:top;">@context.Key</MudTd>
+                            <MudTd DataLabel="Value" >
+                                @if (context.Value != null && _documentMetadata.IsMetadataValueAnArray(context.Value))
+                                {
+                                    <ul>
+                                    @foreach(var item in ((IEnumerable<string>)context.Value))
+                                    {
+                                        <li style="list-style-type: circle">@item</li>
+                                    }
+                                    </ul>
+                                }
+                                else
+                                {
+                                    @_documentMetadata.ConvertMetadataValueToString(context.Value)
+                                }
+                            </MudTd>
+                        </RowTemplate>
+                    </MudTable>
+                }
+            }            
+            <MudProgressCircular Color="Color.Primary" Size="Size.Large" Indeterminate="@_isLoading" />
+        </MudItem>
+    </MudGrid>
+</MudContainer>

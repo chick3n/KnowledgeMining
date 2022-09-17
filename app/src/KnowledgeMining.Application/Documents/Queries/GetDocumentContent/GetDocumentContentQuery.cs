@@ -1,51 +1,42 @@
 ﻿using FluentValidation;
 using KnowledgeMining.Application.Common.Interfaces;
+using KnowledgeMining.Domain.Entities;
 using MediatR;
 
-namespace KnowledgeMining.Application.Documents.Queries.GetDocumentContent
+namespace KnowledgeMining.Application.Documents.Queries.GetIndex
 {
-    public record struct DocumentContent(string Name, IDictionary<string, string>? Tags, string Content);
+    public readonly record struct GetIndexResponse(IndexItem IndexItem);
 
-    public readonly record struct GetDocumentContentResponse(DocumentContent Document);
+    public readonly record struct GetIndexQuery(string IndexKey) : IRequest<GetIndexResponse>;
 
-    public readonly record struct GetDocumentContentQuery(string FileName) : IRequest<GetDocumentContentResponse>;
-
-    public class GetDocumentsQueryValidator : AbstractValidator<GetDocumentContentQuery>
+    public class GetIndexQueryValidator : AbstractValidator<GetIndexQuery>
     {
-        public GetDocumentsQueryValidator()
+        public GetIndexQueryValidator()
         {
-            RuleFor(q => q.FileName)
+            RuleFor(q => q.IndexKey)
                 .NotEmpty()
-                .WithMessage("Filename must not be empty.");
+                .WithMessage("Index name must not be empty.");
         }
     }
 
-    public class GetDocumentsQueryHandler : IRequestHandler<GetDocumentContentQuery, GetDocumentContentResponse>
+    public class GetIndexQueryHandler : IRequestHandler<GetIndexQuery, GetIndexResponse>
     {
-        private readonly IStorageService _storageService;
+        private readonly IDatabaseService _databaseService;
 
-        public GetDocumentsQueryHandler(IStorageService storageService)
+        public GetIndexQueryHandler(IDatabaseService databaseService)
         {
-            _storageService = storageService;
+            _databaseService = databaseService;
         }
 
-        public async Task<GetDocumentContentResponse> Handle(GetDocumentContentQuery request, CancellationToken cancellationToken)
+        public async Task<GetIndexResponse> Handle(GetIndexQuery request, CancellationToken cancellationToken)
         {
-            var bytes = await _storageService.DownloadDocument(request.FileName, cancellationToken);
-            if (bytes != null)
+            var indexItem = await _databaseService.GetIndex(request.IndexKey, cancellationToken);
+            if (indexItem != null)
             {
-                return new GetDocumentContentResponse
-                {
-                    Document = new DocumentContent
-                    {
-                        Name = request.FileName,
-                        Content = System.Text.Encoding.UTF8.GetString(bytes),
-                        Tags = null
-                    }
-                };
+                return new GetIndexResponse(indexItem);
             }
 
-            throw new FileNotFoundException(request.FileName);
+            throw new FileNotFoundException(request.IndexKey);
         }
     }
 }

@@ -3,6 +3,7 @@ using KnowledgeMining.UI.Api;
 using KnowledgeMining.UI.Services.Documents;
 using KnowledgeMining.UI.Services.Links;
 using KnowledgeMining.UI.Services.Metadata;
+using KnowledgeMining.UI.Services.State;
 using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.Extensions.Azure;
 using MudBlazor.Services;
@@ -26,7 +27,6 @@ namespace KnowledgeMining.UI
             builder.Services.AddRazorPages();
             builder.Services.AddServerSideBlazor();
             builder.Services.AddMudServices();
-            builder.Services.AddHostedService<ConsumedDocumentFilterScopedService>();
 
             builder.Services.AddSignalR().AddAzureSignalR(options =>
             {
@@ -54,11 +54,8 @@ namespace KnowledgeMining.UI
             builder.Services.AddApplicationServices(builder.Configuration);
             builder.Services.AddInfrastructureServices(builder.Configuration);
 
-            builder.Services.AddScoped<DocumentCacheService>();
-            builder.Services.AddScoped<MetadataService>();
+            builder.Services.AddScoped<StateService>();
             builder.Services.AddScoped<ILinkGenerator, DocumentPreviewLinkGenerator>();
-            //builder.Services.AddScoped<ILinkGenerator, DocumentPreviewLinkGenerator>();
-            builder.Services.AddScoped<IScopedProcessingService, DocumentFilterScopedService>();
 
             builder.Services.AddApplicationInsightsTelemetry();
             builder.Services.AddHttpContextAccessor();
@@ -82,17 +79,17 @@ namespace KnowledgeMining.UI
             app.UseCookiePolicy();
 
             app.MapGet(PreviewFileEndpoint.Route, 
-                async (string fileName,
+                async (string index, string fileName,
                     IStorageService storageClient,
                     CancellationToken cancellationToken) => 
-                await PreviewFileEndpoint.DownloadInlineFile(fileName, storageClient, cancellationToken))
+                await PreviewFileEndpoint.DownloadInlineFile(index, fileName, storageClient, cancellationToken))
                .WithName(PreviewFileEndpoint.EndpointName);
 
             app.MapGet(DownloadFileEndpoint.Route,
-                async (string fileName,
+                async (string index, string fileName,
                     IStorageService storageClient,
                     CancellationToken cancellationToken) =>
-                await DownloadFileEndpoint.DownloadInlineFile(fileName, storageClient, cancellationToken))
+                await DownloadFileEndpoint.DownloadInlineFile(index, fileName, storageClient, cancellationToken))
                .WithName(DownloadFileEndpoint.EndpointName);
 
             app.MapBlazorHub();

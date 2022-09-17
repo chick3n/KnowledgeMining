@@ -10,7 +10,8 @@ using System.Threading.Tasks;
 
 namespace KnowledgeMining.Application.Documents.Queries.GenerateEntityMap
 {
-    public readonly record struct GenerateEntityMapQuery(string? SearchText, IEnumerable<string> Facets, int MaxLevels, int MaxNodes) : IRequest<EntityMap>;
+    public readonly record struct GenerateEntityMapQuery(string IndexName, string? SearchText, 
+        IEnumerable<string> Facets, int MaxLevels, int MaxNodes) : IRequest<EntityMap>;
 
     public class GenerateEntityMapQueryValidator : AbstractValidator<GenerateEntityMapQuery>
     {
@@ -32,7 +33,8 @@ namespace KnowledgeMining.Application.Documents.Queries.GenerateEntityMap
 
         public Task<EntityMap> Handle(GenerateEntityMapQuery request, CancellationToken cancellationToken)
         {
-            return _searchService.GenerateEntityMap(request.SearchText, request.Facets, request.MaxLevels, request.MaxNodes, cancellationToken);
+            return _searchService.GenerateEntityMap(request.IndexName, request.SearchText, request.Facets, 
+                request.MaxLevels, request.MaxNodes, cancellationToken);
         }
     }
 }

@@ -21,7 +21,6 @@ namespace KnowledgeMining.Infrastructure.Services.Search
 {
     public class SearchService : ISearchService
     {
-        private readonly SearchClient _searchClient;
         private readonly SearchIndexClient _searchIndexClient;
         private readonly ChannelWriter<SearchIndexerJobContext> _jobChannel;
 
@@ -30,14 +29,12 @@ namespace KnowledgeMining.Infrastructure.Services.Search
 
         private readonly ILogger _logger;
 
-        public SearchService(SearchClient searchClient,
-                             SearchIndexClient searchIndexClient,
+        public SearchService(SearchIndexClient searchIndexClient,
                              ChannelWriter<SearchIndexerJobContext> jobChannel,
                              IOptions<Application.Common.Options.SearchOptions> searchOptions,
                              IOptions<EntityMapOptions> entityMapOptions,
                              ILogger<SearchService> logger)
         {
-            _searchClient = searchClient;
             _searchIndexClient = searchIndexClient;
             _jobChannel = jobChannel;
 
@@ -48,14 +45,19 @@ namespace KnowledgeMining.Infrastructure.Services.Search
         }
 
         // TODO: Add schema to a cache
-        public async Task<Schema> GenerateSearchSchema(CancellationToken cancellationToken)
+        public async Task<Schema> GenerateSearchSchema(string indexName, CancellationToken cancellationToken)
         {
-            var response = await _searchIndexClient.GetIndexAsync(_searchOptions.IndexName, cancellationToken);
+            var response = await _searchIndexClient.GetIndexAsync(indexName, cancellationToken);
 
             return new Schema(response.Value.Fields);
         }
 
-        public async Task<IEnumerable<string>> Autocomplete(string searchText, bool fuzzy, CancellationToken cancellationToken)
+        private SearchClient GetSearchClient(string indexName)
+        {
+            return _searchIndexClient.GetSearchClient(indexName);
+        }
+
+        public async Task<IEnumerable<string>> Autocomplete(string indexName, string searchText, bool fuzzy, CancellationToken cancellationToken)
         {
             // Execute search based on query string
             AutocompleteOptions options = new()
@@ -65,7 +67,8 @@ namespace KnowledgeMining.Infrastructure.Services.Search
                 Size = _searchOptions.PageSize
             };
 
-            var response = await _searchClient.AutocompleteAsync(searchText, _searchOptions.SuggesterName, options, cancellationToken);
+            var response = await GetSearchClient(indexName)
+                .AutocompleteAsync(searchText, _searchOptions.SuggesterName, options, cancellationToken);
 
 
             return response.Value.Results.Select(r => r.Text).Distinct();
@@ -73,10 +76,11 @@ namespace KnowledgeMining.Infrastructure.Services.Search
 
         public async Task<SearchDocumentsResponse> SearchDocuments(SearchDocumentsQuery request, CancellationToken cancellationToken)
         {
-            var searchSchema = await GenerateSearchSchema(cancellationToken);
+            var searchSchema = await GenerateSearchSchema(request.Index.IndexName, cancellationToken);
             var searchOptions = GenerateSearchOptions(request, searchSchema);
-
-            var searchResults = await _searchClient.SearchAsync<DocumentMetadata>(request.SearchText, searchOptions, cancellationToken);
+            
+            var searchResults = await GetSearchClient(request.Index.IndexName)
+                .SearchAsync<DocumentMetadata>(request.SearchText, searchOptions, cancellationToken);
 
             if (searchResults == null || searchResults?.Value == null)
             {
@@ -91,17 +95,19 @@ namespace KnowledgeMining.Infrastructure.Services.Search
                 // Not sure if I need to return page in the search result
                 TotalPages = CalculateTotalPages(searchResults.Value.TotalCount ?? 0),
                 FacetableFields = searchSchema.Facets.Select(f => f.Name), // Not sure if I need to return page in the search result
-                SearchId = ParseSearchId(searchResults)
+                SearchId = ParseSearchId(searchResults),
+                KeyField = searchSchema.KeyField
             };
         }
 
-        public async Task<DocumentMetadata> GetDocumentDetails(string documentId, CancellationToken cancellationToken)
+        public async Task<DocumentMetadata> GetDocumentDetails(string indexName, string documentId, CancellationToken cancellationToken)
         {
-            var response = await _searchClient.GetDocumentAsync<DocumentMetadata>(documentId, cancellationToken: cancellationToken);
+            var response = await GetSearchClient(indexName)
+                .GetDocumentAsync<DocumentMetadata>(documentId, cancellationToken: cancellationToken);
 
             return response.Value;
         }
-        private async Task<SearchResults<SearchDocument>> GetFacets(string searchText, IEnumerable<string> facetNames, int maxCount, CancellationToken cancellationToken)
+        private async Task<SearchResults<SearchDocument>> GetFacets(string indexName, string searchText, IEnumerable<string> facetNames, int maxCount, CancellationToken cancellationToken)
         {
             var facets = new List<string>();
 
@@ -123,7 +129,8 @@ namespace KnowledgeMining.Infrastructure.Services.Search
                 options.Facets.Add(s);
             }
 
-            return await _searchClient.SearchAsync<SearchDocument>(EscapeSpecialCharacters(searchText), options, cancellationToken);
+            return await GetSearchClient(indexName)
+                .SearchAsync<SearchDocument>(EscapeSpecialCharacters(searchText), options, cancellationToken);
         }
 
         private string EscapeSpecialCharacters(string searchText)
@@ -131,7 +138,12 @@ namespace KnowledgeMining.Infrastructure.Services.Search
             return Regex.Replace(searchText, @"([-+&|!(){}\[\]^""~?:/\\])", @"\$1", RegexOptions.CultureInvariant | RegexOptions.IgnoreCase | RegexOptions.Compiled);
         }
 
-        public async Task<EntityMap> GenerateEntityMap(string? q, IEnumerable<string> facetNames, int maxLevels, int maxNodes, CancellationToken cancellationToken)
+        public async Task<EntityMap> GenerateEntityMap(string indexName,
+            string? q, 
+            IEnumerable<string> facetNames, 
+            int maxLevels, 
+            int maxNodes,
+            CancellationToken cancellationToken)
         {
             var query = "*";
 
@@ -149,7 +161,7 @@ namespace KnowledgeMining.Infrastructure.Services.Search
             }
             else
             {
-                var schema = await GenerateSearchSchema(cancellationToken);
+                var schema = await GenerateSearchSchema(indexName, cancellationToken);
                 var facetablesFacets = schema.Facets.Where(f => f.IsFacetable).Select(f => f.Name);
                 if (facetablesFacets.Any())
                 {
@@ -204,7 +216,7 @@ namespace KnowledgeMining.Infrastructure.Services.Search
                         facetsToGrab = maxNodes;
                     }
 
-                    var response = await GetFacets(t, facets, facetsToGrab, cancellationToken);
+                    var response = await GetFacets(indexName, t, facets, facetsToGrab, cancellationToken);
 
                     if (response != null)
                     {
@@ -323,28 +335,54 @@ namespace KnowledgeMining.Infrastructure.Services.Search
                 Values = f.Value.Select(v => new Facet()
                 {
                     Name = f.Key,
-                    Value = v.AsValueFacetResult<string>().Value,
+                    Value = ValueFacetResult(v),
                     Count = v.Count ?? 0
                 })
             });
         }
 
-        private IEnumerable<string> GenerateFacets(IReadOnlyCollection<SchemaField> facets, IReadOnlyList<FacetFilter> facetFilters)
+        private string ValueFacetResult(FacetResult f)
+        {
+            try
+            {
+                var facetValueType = f.Value.GetType();
+
+                if (facetValueType == typeof(double))
+                {
+                    return f.Value.ToString();
+                }
+                else if(facetValueType == typeof(bool))
+                {
+                    return (bool)f.Value ? "True" : "False";
+                }
+                return f.AsValueFacetResult<string>().Value;
+            }
+            catch(InvalidCastException ex)
+            {
+                _logger.LogError(ex, $"Unabled to cast facet result.");
+
+            }
+            return f.Value?.ToString() ?? string.Empty;
+        }
+
+        private IEnumerable<string> GenerateFacets(IReadOnlyCollection<SchemaField> facets, IndexItem indexItem)
         {
             var results = new List<string>(); 
-            facetFilters = facetFilters ?? new List<FacetFilter>();
             foreach (var facet in facets)
             {
                 if (facet.Name is not null)
                 {
-                    var facetFilter = facetFilters
-                        .FirstOrDefault(x => x.Name!.Equals(facet.Name, StringComparison.OrdinalIgnoreCase));
+                    var facetConfig = indexItem.Facets.FirstOrDefault(x => x.Id.Equals(facet.Name));
 
                     var count = string.Empty;
-                    if (facetFilter != null && facetFilter.Count != 10)
+                    if (facetConfig != null && facetConfig.ShowAll)
                     {
-                        count = $",count:{facetFilter?.Count}";
+                        count = $",count:0";
                     }
+                    /*else if(facetConfig !=null && facetConfig.Count >= 0)
+                    {
+                        count = $",count:{facetConfig.Count}";
+                    }*/
                     var sort = ",sort:count";
                     results.Add($"{facet.Name}{count}{sort}");
                 }
@@ -373,7 +411,7 @@ namespace KnowledgeMining.Infrastructure.Services.Search
                 options.Select.Add(s);
             }
 
-            foreach (var facet in GenerateFacets(schema.Facets, request.FacetFilters))
+            foreach (var facet in GenerateFacets(schema.Facets, request.Index))
             {
                 options.Facets.Add(facet);
             }

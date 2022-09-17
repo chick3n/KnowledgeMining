@@ -1,80 +1,37 @@
 ﻿@using KnowledgeMining.Application.Documents.Queries.SearchDocuments
+@using KnowledgeMining.UI.Pages.Search.ViewModels
 
-@foreach (var aggregateFacet in StaticFacets)
-{
-    if (aggregateFacet == null) continue;
+<style>
+    .expander-facets .mud-expand-panel-content  {
+        max-height: 330px;
+        overflow: scroll;
+    }
 
-    var selectedAggregateFacets = aggregateFacet.Values?.Where(x => IsSelected(x)).ToList() 
-        ?? new List<Facet>();
+    .checkbox-single-line {
+        display: block !important;
+    }
+</style>
 
-    <MudExpansionPanels Class="@(StaticFacets.FirstOrDefault() == aggregateFacet ? "mt-1" : "mt-6")">
-            <MudExpansionPanel Text="@($"{aggregateFacet.Name.SplitCamelCase().ToTitleCase()} ({aggregateFacet.Values.Count()})")" 
-            Disabled="@(aggregateFacet.Values.Any() is false)">
-                @if (selectedAggregateFacets.Count > 0) 
-            {
-                    @foreach (var facet in selectedAggregateFacets)
-                {
-                        <MudCheckBox T="bool" Label="@($"{facet.Value} ({facet.Count})")" 
-                        Checked="true" 
-                        CheckedChanged="@(isSelected => HandleCheckedChanged(facet, isSelected))"></MudCheckBox>
-                }
-                
-                    @if(aggregateFacet.Count - selectedAggregateFacets.Count > 0)
-                {
-                        <MudDivider Light="true" />
-                }
-            }
-
-                @foreach (var facet in aggregateFacet.Values.Except(selectedAggregateFacets))
-            {
-                    @if(selectedAggregateFacets.Count == 0)
-                {
-                        <MudCheckBox T="bool" Label="@($"{facet.Value} ({facet.Count})")" 
-                        Checked="false" 
-                        CheckedChanged="@(isSelected => HandleCheckedChanged(facet, isSelected))"></MudCheckBox>
-                }
-                else
-                {
-                        <MudCheckBox T="bool" Label="@($"{facet.Value}")" 
-                        Checked="false" 
-                        CheckedChanged="@(isSelected => HandleCheckedChanged(facet, isSelected))"></MudCheckBox>
-                }
-
-            }
-            </MudExpansionPanel>
-    </MudExpansionPanels>
-}
-
-<hr />
-
-@foreach (var aggregateFacet in Facets)
+@foreach (var aggregateFacet in Facets?.OrderBy(x => x.Name) ?? Enumerable.Empty<SummarizedFacet>())
 {
     var selectedAggregateFacets = aggregateFacet.Values?.Where(x => IsSelected(x)).ToList() 
         ?? new List<Facet>();
 
-    <MudExpansionPanels Class="mt-6">
-        <MudExpansionPanel Text="@($"{OverrideFacetNames(aggregateFacet)} ({aggregateFacet.Values.Count()})")" 
-            Disabled="@(aggregateFacet.Values.Any() is false)">
-            @if (selectedAggregateFacets.Count > 0) 
-            {
-                @foreach (var facet in selectedAggregateFacets)
-                {
-                    <MudCheckBox T="bool" Label="@($"{OverrideFacetValues(facet)} ({facet.Count})")" 
-                        Checked="true" 
-                        CheckedChanged="@(isSelected => HandleCheckedChanged(facet, isSelected))"></MudCheckBox>
-                }
-                
-                @if(aggregateFacet.Count - selectedAggregateFacets.Count > 0)
-                {
-                    <MudDivider Light="true" />
-                }
-            }
+    <MudExpansionPanels Class="mb-6">
+        <MudExpansionPanel Text="@($"{aggregateFacet.Name?.SplitCamelCase().ToTitleCase()} ({aggregateFacet.Values?.Count()})")" 
+            Disabled="@(aggregateFacet.Values?.Any() is false)" Class="@(aggregateFacet.Count > 10 ? "expander-facets" : string.Empty)">
 
-            @foreach (var facet in aggregateFacet.Values.Except(selectedAggregateFacets))
+            @foreach (var facet in GetFacets(aggregateFacet))
             {
-                <MudCheckBox T="bool" Label="@($"{OverrideFacetValues(facet)} ({facet.Count})")" 
-                    Checked="false" 
-                    CheckedChanged="@(isSelected => HandleCheckedChanged(facet, isSelected))"></MudCheckBox>
+                <div>
+                <MudTooltip Text="@GetFacetValueDescription(facet.Name, facet.Value)" 
+                    Arrow="true" Placement="Placement.Right">
+                    <MudCheckBox T="bool" 
+                        Label="@GetFacetLabel(facet)"
+                        Checked="@IsSelected(facet)" 
+                        CheckedChanged="@(isSelected => HandleCheckedChanged(facet, isSelected))" />
+                </MudTooltip>
+                </div>
             }
         </MudExpansionPanel>
     </MudExpansionPanels>
@@ -87,14 +44,26 @@
     public IEnumerable<SummarizedFacet>? Facets { get; set; }
 
     [Parameter]
-    public IEnumerable<SummarizedFacet>? StaticFacets { get; set; }
+    public EventCallback<FacetSelectedViewModel> OnFacetSelectedChanged { get; set; }
 
     [Parameter]
-    public EventCallback<Facet> OnFacetSelectedChanged { get; set; }
+    public IndexItem? IndexItem { get; set; }
 
     public void ClearFacets()
     {
         _selectedFacets = new Dictionary<Facet, bool>();
+    }
+
+    private IEnumerable<Facet> GetFacets(SummarizedFacet aggregateFacet)
+    {
+        if(aggregateFacet.Values == null)
+            return Enumerable.Empty<Facet>();
+
+        return aggregateFacet.Values
+            .OrderBy(x => !IsSelected(x))
+            .ThenByDescending(x => x.Count)
+            .ThenBy(x => x.Value)
+            .ToList();
     }
 
     private bool IsSelected(Facet facet)
@@ -107,29 +76,6 @@
         return false;
     }
 
-    private string OverrideFacetNames(SummarizedFacet facet)
-    {
-        var name = facet.Name?.ToLower();
-        switch(name)
-        {
-            case "date":
-                return "Dates";
-        }
-
-        return facet.Name?.SplitCamelCase().ToTitleCase() ?? string.Empty;
-    }
-
-    private string OverrideFacetValues(Facet facet)
-    {
-        var name = facet.Name?.ToLower();
-        switch(name)
-        {
-            case "date":
-                return facet.Value.Replace("--", "-");
-        }
-
-        return facet.Value;
-    }
 
     private Task HandleCheckedChanged(Facet facet, bool isSelected)
     {
@@ -142,6 +88,45 @@
             _selectedFacets.Add(facet, isSelected);
         }
 
-        return OnFacetSelectedChanged.InvokeAsync(facet);
+        return OnFacetSelectedChanged.InvokeAsync(new (facet, isSelected));
+    }
+
+    private string GetFacetLabel(Facet facet)
+    {
+        if (facet == null)
+            return string.Empty;
+
+
+        if (facet.Count > 0)
+            return $"{facet.Value} ({facet.Count})";
+
+        return facet.Value!;
+    }
+
+    private string GetFacetDescription(string? name)
+    {
+        if(!string.IsNullOrEmpty(name) && IndexItem != null)
+        {
+            var facet = IndexItem.Facets.Where(x => x.Id.Equals(name, StringComparison.CurrentCulture)).FirstOrDefault();
+            return facet?.Description ?? string.Empty;
+        }
+        return string.Empty;
+    }
+
+    private string GetFacetValueDescription(string? facetName, string? name)
+    {
+        if(!string.IsNullOrEmpty(facetName) && !string.IsNullOrEmpty(name) && IndexItem != null)
+        {
+            var facet = IndexItem.Facets.Where(x => x.Id.Equals(facetName, StringComparison.CurrentCulture)).FirstOrDefault();
+            if(facet != null && facet.Values != null)
+            {
+                var facetValue = facet.Values
+                    .Where(x => x.Id != null && x.Id.Equals(name, StringComparison.CurrentCultureIgnoreCase))
+                    .FirstOrDefault();
+
+                return facetValue?.Description ?? string.Empty;
+            }
+        }
+        return string.Empty;
     }
 }

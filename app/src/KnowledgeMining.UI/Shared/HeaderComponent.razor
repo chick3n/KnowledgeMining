@@ -1,28 +1,73 @@
-﻿@inject NavigationManager NavigationManager;
+﻿@using KnowledgeMining.Application.Documents.Queries.GetIndex
+@using KnowledgeMining.Domain.Entities
+@using MediatR
+
+@inject NavigationManager NavigationManager;
+@inject IMediator Mediator;
+
 
 <MudAppBar Style="@($"color: {Theme.Palette.Black};background: {Theme.Palette.White}")" Elevation="1">
-    <MudStack Spacing="3" Row="true">
-        <MudImage Src="images/logo.png" Height="35" Elevation="0" onclick="@(() => NavigateToHomePage())" />
+    <MudStack Spacing="4" Row="true">
+        <MudImage Src="@_logoPath" Height="25" Elevation="0" onclick="@(() => NavigateToHomePage())" />
         <MudButton Variant="Variant.Text" OnClick="NavigateToSearchPage">Search</MudButton>
         @*<MudButton Variant="Variant.Text" OnClick="@NavigateToDocumentsPage">Documents</MudButton>*@
+        @if(indexNavigationItems != null)
+        {
+            foreach(var nav in indexNavigationItems)
+            {
+                if (nav.Type == "embed")
+                {
+                    <MudButton Variant="Variant.Text" Href="@($"/external/{IndexName}/{nav.Id}")">@nav.Name</MudButton>
+                }
+                else
+                {
+                    <MudButton Variant="Variant.Text" Href="@nav.Url">@nav.Name</MudButton>
+                }
+            }
+        }
     </MudStack>
+    <MudSpacer />
+    <MudText Typo="Typo.button" Align="Align.Right">SICY</MudText>
 </MudAppBar>
 
 @code {
+    [CascadingParameter]
+    public RouteData? RouteData { get; set; }
+
+    private IEnumerable<IndexNavigationItem>? indexNavigationItems;
+    private string? IndexName { get; set; }
     private MudTheme Theme = new MudTheme();
+    private string? _logoPath = "images/gac-logo-en.svg";
+
+    protected override async Task OnInitializedAsync()
+    {
+        if(RouteData?.RouteValues.ContainsKey("Index") ?? false)
+        {
+            IndexName = RouteData?.RouteValues["Index"]?.ToString();
+
+            var response = await Mediator.Send(new GetIndexQuery(IndexName));
+            indexNavigationItems = response.IndexItem.NavigationItems;
+
+            if (!string.IsNullOrEmpty(response.IndexItem.Logo) &&
+                Uri.TryCreate(response.IndexItem.Logo, UriKind.Absolute, out _))
+                _logoPath = response.IndexItem.Logo;
+        }
+
+        await base.OnInitializedAsync();
+    }
 
     private void NavigateToHomePage()
     {
-        NavigationManager.NavigateTo("/");
+        NavigationManager.NavigateTo($"/{IndexName}");
     }
 
     private void NavigateToSearchPage()
     {
-        NavigationManager.NavigateTo("/search");
+        NavigationManager.NavigateTo($"/search/{IndexName}/");
     }
 
     private void NavigateToDocumentsPage()
     {
-        NavigationManager.NavigateTo("/documents");
+        NavigationManager.NavigateTo($"/documents/{IndexName}/");
     }
 }

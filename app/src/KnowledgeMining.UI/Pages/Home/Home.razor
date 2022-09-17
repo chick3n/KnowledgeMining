@@ -1,14 +1,20 @@
-﻿@page "/"
+﻿@page "/{index?}"
 
 @inject NavigationManager NavigationManager
 @inject IMediator Mediator
 
 @using KnowledgeMining.Application.Documents.Queries.GetAutocompleteSuggestions
+@using KnowledgeMining.Application.Documents.Queries.GetIndex
+@using KnowledgeMining.Domain.Entities
 
 <PageTitle>Home</PageTitle>
 
 <MudPaper Height="400px" Width="100%" Class="mud-theme-info d-flex align-center" Square="true" Elevation="0">
     <MudContainer MaxWidth="MaxWidth.Small">
+        @if(_indexItem != null) {
+            <MudText Typo="Typo.h2" Align="Align.Center">@_indexItem.Name</MudText>
+            <div style="height:40px"></div>
+        }
         <MudPaper Style="@($"background: {Theme.Palette.White}")" Elevation="1">
             <MudAutocomplete T="string" Label="What are you searching for today?" @bind-Value="searchQuery" SearchFunc="@AutoComplete"
                              ResetValueOnEmptyText="true"
@@ -32,11 +38,23 @@
 @code {
     private string? searchQuery;
 
+    [Parameter]
+    public string? Index { get; set; }
+
     private MudTheme Theme = new MudTheme();
+    private IndexItem? _indexItem;
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (string.IsNullOrWhiteSpace(Index))
+            NavigationManager.NavigateTo("/ukraine-invasion"); //remove when operationalized
+        var indexResponse = await Mediator.Send(new GetIndexQuery(Index));
+        _indexItem = indexResponse.IndexItem;
+    }
 
     private async Task<IEnumerable<string>?> AutoComplete(string value)
     {
-        var results = await Mediator.Send(new GetAutocompleteSuggestionsQuery(value));
+        var results = await Mediator.Send(new GetAutocompleteSuggestionsQuery(_indexItem.IndexName, value));
         if (results.Count() == 0)
             return null;
         return results.Prepend(value).Distinct(); 
@@ -54,7 +72,7 @@
 
     private void GoToSearchPage()
     {
-        NavigationManager.NavigateTo($"/search?q={searchQuery ?? string.Empty}");
+        NavigationManager.NavigateTo($"/search/{Index}?q={searchQuery ?? string.Empty}");
     }
 }
 
