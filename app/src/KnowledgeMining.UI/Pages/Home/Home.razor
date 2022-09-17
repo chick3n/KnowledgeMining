@@ -47,7 +47,7 @@
     protected override async Task OnInitializedAsync()
     {
         if (string.IsNullOrWhiteSpace(Index))
-            NavigationManager.NavigateTo("/ukraine-invasion"); //remove when operationalized
+            throw new ArgumentNullException(nameof(Index));
         var indexResponse = await Mediator.Send(new GetIndexQuery(Index));
         _indexItem = indexResponse.IndexItem;
     }
