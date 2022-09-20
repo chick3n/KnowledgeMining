@@ -12,6 +12,7 @@
 
 	<ItemGroup>
 		<PackageReference Include="Azure.Search.Documents" Version="11.3.0" />
+		<PackageReference Include="Azure.Security.KeyVault.Secrets" Version="4.4.0" />
 		<PackageReference Include="Azure.Storage.Blobs" Version="12.13.0" />
 		<PackageReference Include="Microsoft.AspNetCore.Routing.Abstractions" Version="2.2.0" />
 		<PackageReference Include="Microsoft.Azure.Cosmos" Version="3.30.1" />

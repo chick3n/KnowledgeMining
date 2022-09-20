@@ -25,7 +25,7 @@ namespace Microsoft.Extensions.DependencyInjection
             {
                 clientBuilder.ConfigureDefaults(configuration.GetSection("AzureDefaults"));
                 clientBuilder.UseCredential(new DefaultAzureCredential());
-
+                clientBuilder.AddSecretClient(configuration.GetSection(KMOptions.KeyVaultOptions.KeyVault));
                 clientBuilder.AddBlobServiceClient(configuration.GetSection(KMOptions.StorageOptions.Storage));
 
                 //clientBuilder.AddSearchClient(configuration.GetSection(KMOptions.SearchOptions.Search));

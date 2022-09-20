@@ -23,6 +23,7 @@ namespace Microsoft.Extensions.DependencyInjection
             services.Configure<StorageOptions>(configuration.GetSection(StorageOptions.Storage));
             services.Configure<AzureSignalROptions>(configuration.GetSection(AzureSignalROptions.SignalR));
             services.Configure<DatabaseOptions>(configuration.GetSection(DatabaseOptions.Database));
+            services.Configure<KeyVaultOptions>(configuration.GetSection(KeyVaultOptions.KeyVault));
 
             return services;
         }
