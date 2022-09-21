@@ -1,4 +1,5 @@
 ﻿using KnowledgeMining.Application.Documents.Queries.GetDocumentMetadata;
+using KnowledgeMining.Application.Documents.Queries.GetDocument;
 using KnowledgeMining.Application.Documents.Queries.GetIndex;
 using KnowledgeMining.Domain.Entities;
 using KnowledgeMining.UI.Wrappers;
@@ -6,6 +7,8 @@ using MediatR;
 using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
 using MudBlazor;
+using System.Text.Json.Nodes;
+using System.Text.Json;
 
 namespace KnowledgeMining.UI.Pages.Record
 {
@@ -17,6 +20,7 @@ namespace KnowledgeMining.UI.Pages.Record
 
         [Parameter] public string Index { get; set; } = default!;
         [Parameter] public string RecordId { get; set; } = null!;
+        
 
         //UI States
         private bool _isLoading = true;
@@ -73,6 +77,27 @@ namespace KnowledgeMining.UI.Pages.Record
                 _indexItem.FieldMapping, _indexItem.KeyField);
             _documentMetadata = wrapper.Documents().FirstOrDefault();
             _title = wrapper.GetTitle(_documentMetadata) ?? string.Empty;
+
+            if (_indexItem.Storage != null && _indexItem.Storage.AllowSync && _documentMetadata != null)
+            {
+                var storage = _indexItem.Storage;
+                if (!string.IsNullOrEmpty(storage.Container) && !string.IsNullOrEmpty(storage.Key) && !string.IsNullOrEmpty(_documentMetadata.Name))
+                {
+                    var sourceDocument =
+                        await Mediator.Send(new GetDocumentQuery(_indexItem.Storage.Key, _indexItem.Storage.Container, _documentMetadata.Name));
+
+                    if(sourceDocument.Document.Metadata != null)
+                    {
+                        if (_documentMetadata.ExtensionData == null)
+                            _documentMetadata.ExtensionData = new Dictionary<string, JsonElement>();
+
+                        foreach (var kvp in sourceDocument.Document.Metadata)
+                            _documentMetadata.ExtensionData.TryAdd(kvp.Key, JsonSerializer.SerializeToElement(kvp.Value));
+                    }
+                }
+            }
+            
+
         }
 
         //Redo

@@ -1,5 +1,6 @@
 ﻿using Azure.Storage.Blobs;
 using Azure.Storage.Blobs.Models;
+using Azure.Security.KeyVault.Secrets;
 using KnowledgeMining.Application.Common.Interfaces;
 using KnowledgeMining.Application.Common.Options;
 using KnowledgeMining.Application.Documents.Queries.GetDocuments;
@@ -7,9 +8,10 @@ using KnowledgeMining.Domain.Enums;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using System.Net;
+using Document = KnowledgeMining.Application.Documents.Queries.GetDocument.Document;
 using SearchDocument = KnowledgeMining.Application.Documents.Queries.GetDocuments.Document;
 using UploadDocument = KnowledgeMining.Application.Documents.Commands.UploadDocument.Document;
-
+using KnowledgeMining.Application.Documents.Queries.GetDocument;
 
 namespace KnowledgeMining.Infrastructure.Services.Storage
 {
@@ -20,14 +22,17 @@ namespace KnowledgeMining.Infrastructure.Services.Storage
 
         private readonly BlobServiceClient _blobServiceClient;
         private readonly StorageOptions _storageOptions;
+        private readonly SecretClient _secretClient;
 
         private readonly ILogger<StorageService> _logger;
 
         public StorageService(BlobServiceClient blobServiceClient,
+                                SecretClient secretClient,
                                  IOptions<StorageOptions> storageOptions,
                                  ILogger<StorageService> logger)
         {
             _blobServiceClient = blobServiceClient;
+            _secretClient = secretClient;
             _storageOptions = storageOptions.Value;
             _logger = logger;
         }
@@ -59,6 +64,32 @@ namespace KnowledgeMining.Infrastructure.Services.Storage
             {
                 await iterator.DisposeAsync();
             }
+        }
+
+        public async Task<GetDocumentResponse> GetDocument(string key, string container, string filename, CancellationToken cancellationToken)
+        {
+            var keyVaultResponse = await _secretClient.GetSecretAsync(key, cancellationToken: cancellationToken);
+            var client = GetBlobContainerClient(keyVaultResponse.Value.Value, container);
+            var blob = client.GetBlobClient(filename);
+
+            try
+            {
+                var properties = await blob.GetPropertiesAsync(cancellationToken: cancellationToken); 
+                
+                return new GetDocumentResponse
+                {
+                    Document = new Document(blob.Name, null, properties.Value.Metadata)
+                };
+            }
+            catch(Azure.RequestFailedException e)
+            {
+                _logger.LogCritical(e, "Failed to retrieve metadata properties from {Filename}", filename);
+            }
+
+            return new GetDocumentResponse
+            {
+                Document = new Document(blob.Name, null, null)
+            };
         }
 
         private async Task SetDocumentMetadata(BlobClient? blob, IDictionary<string, string>? metadata, CancellationToken cancellationToken)
@@ -236,6 +267,12 @@ namespace KnowledgeMining.Infrastructure.Services.Storage
         private BlobContainerClient GetBlobContainerClient(string containerName)
         {
             return _blobServiceClient.GetBlobContainerClient(containerName);
+        }
+
+        private BlobContainerClient GetBlobContainerClient(string connectionString, string container)
+        {
+            var svc = new BlobServiceClient(connectionString);
+            return svc.GetBlobContainerClient(container);
         }
     }
 }
