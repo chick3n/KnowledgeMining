@@ -81,7 +81,7 @@ namespace KnowledgeMining.Domain.Entities
             if(ExtensionData != null)
             {
                 foreach (var kvp in ExtensionData)
-                    dict.Add(kvp.Key, kvp.Value.ToString());
+                    dict.TryAdd(kvp.Key, kvp.Value.ToString());
             }
 
             return dict.Where(x => MetadataHasValue(x.Value)).ToDictionary(x => x.Key, x => x.Value);
