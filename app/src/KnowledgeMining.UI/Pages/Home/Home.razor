@@ -9,11 +9,27 @@
 
 <PageTitle>Home</PageTitle>
 
+<style>
+    .justify-title {
+        text-align: justify;
+        font-size: 49.88pt;
+        line-height: 1;
+    }
+    .justify-title:after {
+        display: inline-block;
+        width: 100%;
+    }
+</style>
+
 <MudPaper Height="400px" Width="100%" Class="mud-theme-info d-flex align-center" Square="true" Elevation="0">
     <MudContainer MaxWidth="MaxWidth.Small">
+        <div class="justify-title">
+            Document Cracker
+        </div>
         @if(_indexItem != null) {
-            <MudText Typo="Typo.h2" Align="Align.Center">@_indexItem.Name</MudText>
-            <div style="height:40px"></div>
+            <div style="width:100%">
+                <MudText Typo="Typo.h5" Align="Align.Right">@_indexItem.Name</MudText>
+            </div>
         }
         <MudPaper Style="@($"background: {Theme.Palette.White}")" Elevation="1">
             <MudAutocomplete T="string" Label="What are you searching for today?" @bind-Value="searchQuery" SearchFunc="@AutoComplete"
