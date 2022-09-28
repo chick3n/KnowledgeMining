@@ -46,7 +46,14 @@ else
                             Style="cursor: pointer;">
                             <MudCardHeader>
                                 <CardHeaderAvatar>
-                                    <MudAvatar Color="Color.Dark"><MudIcon Icon="@Icons.Custom.FileFormats.FileDocument"></MudIcon></MudAvatar>
+                                    @if(string.IsNullOrWhiteSpace(document.IconUrl)) 
+                                    {
+                                        <MudAvatar Color="Color.Dark"><MudIcon Icon="@Icons.Custom.FileFormats.FileDocument"></MudIcon></MudAvatar>
+                                    } 
+                                    else
+                                    {
+                                        <img src="@document.IconUrl" width="42" height="42" />
+                                    }
                                 </CardHeaderAvatar>
                                 <CardHeaderContent>
                                     <MudText Typo="Typo.body1">@DocumentHeader(document)</MudText>

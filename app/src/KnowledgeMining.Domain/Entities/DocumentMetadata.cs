@@ -43,6 +43,8 @@ namespace KnowledgeMining.Domain.Entities
         public string? Name { get; set; }
         [JsonPropertyName("category")]
         public string? Category { get; set; }
+        [JsonPropertyName("icon")]
+        public string? IconUrl { get; set; }
 
         [JsonExtensionData]
         public Dictionary<string, JsonElement>? ExtensionData { get; set; }
