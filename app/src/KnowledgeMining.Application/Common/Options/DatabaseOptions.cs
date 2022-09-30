@@ -10,6 +10,7 @@ namespace KnowledgeMining.Application.Common.Options
         public string DatabaseName { get; set; } = "doccracker";
         public string AppContainer { get; set; } = "app";
         public string IndexContainer { get; set; } = "indices";
+        public string MetricsContainer { get; set; } = "metrics";
         public string PartitionKey { get; set; } = "/id";
 
 

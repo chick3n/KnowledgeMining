@@ -1,0 +1,76 @@
+﻿@page "/metrics/{Index}"
+@using KnowledgePicker.WordCloud.Coloring
+
+<PageTitle>Metrics</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="mt-4">
+    <MudStack Row="true" Justify="Justify.Center" Spacing="5">
+        @if (TotalWords != null)
+        {
+            <MudPaper Elevation="1" Class="pa-3">
+                <MudStack Row="true" Spacing="1">
+                    <MudIcon Icon="@Icons.Filled.Grid4x4"  Style="font-size: 4rem;" />
+                    <MudStack Row="false"  Spacing="0">
+                        <MudText Typo="Typo.h4">@TotalWords</MudText>
+                        <MudText Typo="Typo.h5">Total Words</MudText>
+                    </MudStack>
+                </MudStack>
+            </MudPaper>
+        }
+
+        @if (TotalWordsExclude != null)
+        {
+            <MudPaper Elevation="1" Class="pa-3">
+                <MudStack Row="true" Spacing="1">
+                    <MudIcon Icon="@Icons.Filled.Grid3x3"  Style="font-size: 4rem;" />
+                    <MudStack Row="false" Spacing="0">
+                        <MudText Typo="Typo.h4">@TotalWordsExclude</MudText>
+                        <MudText Typo="Typo.h5">Total Words</MudText>
+                        <MudText Typo="Typo.caption">Excluding Stop Words</MudText>
+                    </MudStack>
+                </MudStack>
+            </MudPaper>
+        }
+    </MudStack>
+    <MudGrid>
+        @if (TopWords != null)
+        {
+            <MudItem xs="12" sm="12">
+                <svg viewBox="0,0,@WordCloudWidth,@WordCloudHeight">
+                    @foreach (var (item, fontSize) in TopWords)
+                    {
+                        const string format = "0.##"; // Use at most 2 decimal places.
+                        var x = (item.Location.X - item.Measured.Left).ToString(format);
+                        var y = (item.Location.Y - item.Measured.Top).ToString(format);
+                        var fs = fontSize.ToString(format);
+                        <text>
+                            <text transform="translate(@x, @y)" font-size="@fs" fill="@Colorizer.GetColorAsHex()">@item.Entry.Word</text>
+                        </text>
+                    }
+                </svg>
+            </MudItem>
+        }
+
+        @if (TopWordsExclude != null)
+        {
+            <MudItem xs="12" sm="12">
+                <svg viewBox="0,0,@WordCloudWidth,@WordCloudHeight">
+                    @foreach (var (item, fontSize) in TopWordsExclude)
+                    {
+                        const string format = "0.##"; // Use at most 2 decimal places.
+                        var x = (item.Location.X - item.Measured.Left).ToString(format);
+                        var y = (item.Location.Y - item.Measured.Top).ToString(format);
+                        var fs = fontSize.ToString(format);
+                        <text>
+                            <text transform="translate(@x, @y)" font-size="@fs" fill="@Colorizer.GetColorAsHex()">@item.Entry.Word</text>
+                        </text>
+                    }
+                </svg>
+            </MudItem>
+        }
+    </MudGrid>
+    
+
+    
+
+</MudContainer>
