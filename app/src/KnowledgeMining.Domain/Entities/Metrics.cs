@@ -14,5 +14,8 @@ namespace KnowledgeMining.Domain.Entities
 
         [JsonPropertyName("words")]
         public WordCount? WordCount { get; set; }
+
+        [JsonPropertyName("search")]
+        public MetricsSearch? Search { get; set; }
     }
 }
