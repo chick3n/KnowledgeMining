@@ -1,0 +1,141 @@
+﻿@page "/metrics/{Index}"
+@using KnowledgePicker.WordCloud.Coloring
+
+<PageTitle>Metrics</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.Large" Class="mt-4">
+    @if(TotalWords != null || TotalWordsExclude != null || TotalDocuments != null || IndexSize != null) 
+    {
+        <div class="metric-divider">
+            <MudText Typo="Typo.h4">@_indexItem.Name</MudText>
+            <hr/>
+            <MudStack Row="true" Justify="Justify.SpaceBetween" Spacing="5" AlignItems="AlignItems.Center">
+                @if (TotalWords != null)
+                {
+                    <MudPaper Elevation="1" Class="pa-3" MinHeight="120px">
+                        <MudStack Row="true" Spacing="1">
+                            <MudIcon Icon="@Icons.Filled.Grid4x4" Style="@("font-size: 4rem; color: " + Colorizer.GetColorAsHex())" />
+                            <MudStack Row="false"  Spacing="0">
+                                <MudText Typo="Typo.h4">@TotalWords</MudText>
+                                <MudText Typo="Typo.h5" Align="Align.Right">Total Words</MudText>
+                            </MudStack>
+                        </MudStack>
+                    </MudPaper>
+                }
+
+                @if (TotalWordsExclude != null)
+                {
+                    <MudPaper Elevation="1" Class="pa-3" MinHeight="120px">
+                        <MudStack Row="true" Spacing="1">
+                            <MudIcon Icon="@Icons.Filled.Grid3x3"  Style="@("font-size: 4rem; color: " + Colorizer.GetColorAsHex())" />
+                            <MudStack Row="false" Spacing="0">
+                                <MudText Typo="Typo.h4">@TotalWordsExclude</MudText>
+                                <MudText Typo="Typo.h5" Align="Align.Right">Total Words</MudText>
+                                <MudText Typo="Typo.caption" Align="Align.Right">Excluding Stop Words</MudText>
+                            </MudStack>
+                        </MudStack>
+                    </MudPaper>
+                }
+
+                @if (TotalDocuments != null)
+                {
+                    <MudPaper Elevation="1" Class="pa-3" MinHeight="120px">
+                        <MudStack Row="true" Spacing="1">
+                            <MudIcon Icon="@Icons.Outlined.InsertDriveFile"  Style="@("font-size: 4rem; color: " + Colorizer.GetColorAsHex())" />
+                            <MudStack Row="false" Spacing="0">
+                                <MudText Typo="Typo.h4">@TotalDocuments</MudText>
+                                <MudText Typo="Typo.h5" Align="Align.Right">Documents</MudText>
+                            </MudStack>
+                        </MudStack>
+                    </MudPaper>
+                }
+
+                @if (IndexSize != null)
+                {
+                    <MudPaper Elevation="1" Class="pa-3" MinHeight="120px">
+                        <MudStack Row="true" Spacing="1">
+                            <MudIcon Icon="@Icons.Filled.Storage"  Style="@("font-size: 4rem; color: " + Colorizer.GetColorAsHex())" />
+                            <MudStack Row="false" Spacing="0">
+                                <MudText Typo="Typo.h4">@IndexSize</MudText>
+                                <MudText Typo="Typo.h5" Align="Align.Right">Index Size</MudText>
+                            </MudStack>
+                        </MudStack>
+                    </MudPaper>
+                }
+            </MudStack>
+        </div>
+    }
+
+    @if(FileTypes != null)
+    {
+        <div class="metric-divider">
+            <MudText Typo="Typo.h5">Source(s)</MudText>
+            <hr/>
+            @for(var x=0; x<FileTypes.Count; x+=8)
+            {
+                var items = FileTypes.Skip(x).Take(8).ToList();
+                <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.FlexStart">
+                @foreach(var filetype in items)
+                {
+                    <MudPaper Elevation="1" Class="pa-3">
+                        <MudStack Row="true" Spacing="1">
+                            <MudIcon Icon="@GetFileTypeIcon(filetype.Key)"  Style="@("font-size: 2rem; color: " + Colorizer.GetColorAsHex())" />
+                            <MudStack Row="false" Spacing="0">
+                                <MudText Typo="Typo.body1">@filetype.Value.ToString("N0")</MudText>
+                                <MudText Typo="Typo.caption" Align="Align.Right">@filetype.Key</MudText>
+                            </MudStack>
+                        </MudStack>
+                    </MudPaper>
+                }
+                </MudStack>
+            }
+        </div>
+    }
+
+    @if(TopWordsExclude != null || TopWords != null) 
+    {
+        <MudText Typo="Typo.h5">Word Cloud</MudText>
+        <hr/>
+        <MudGrid>
+            @if (TopWordsExclude != null)
+            {
+                <MudItem xs="12" sm="12">
+                    <svg viewBox="0,0,@WordCloudWidth,@WordCloudHeight">
+                        @foreach (var (item, fontSize) in TopWordsExclude)
+                        {
+                            const string format = "0.##"; // Use at most 2 decimal places.
+                            var x = (item.Location.X - item.Measured.Left).ToString(format);
+                            var y = (item.Location.Y - item.Measured.Top).ToString(format);
+                            var fs = fontSize.ToString(format);
+                            <text>
+                                <text transform="translate(@x, @y)" font-size="@fs" fill="@Colorizer.GetColorAsHex()">@item.Entry.Word</text>
+                            </text>
+                        }
+                    </svg>
+                </MudItem>
+            }
+            else if (TopWords != null)
+            {
+                <MudItem xs="12" sm="12">
+                    <svg viewBox="0,0,@WordCloudWidth,@WordCloudHeight">
+                        @foreach (var (item, fontSize) in TopWords)
+                        {
+                            const string format = "0.##"; // Use at most 2 decimal places.
+                            var x = (item.Location.X - item.Measured.Left).ToString(format);
+                            var y = (item.Location.Y - item.Measured.Top).ToString(format);
+                            var fs = fontSize.ToString(format);
+                            <text>
+                                <text transform="translate(@x, @y)" font-size="@fs" fill="@Colorizer.GetColorAsHex()">@item.Entry.Word</text>
+                            </text>
+                        }
+                    </svg>
+                </MudItem>
+            }
+        
+        </MudGrid>
+    }
+    
+
+    
+
+</MudContainer>

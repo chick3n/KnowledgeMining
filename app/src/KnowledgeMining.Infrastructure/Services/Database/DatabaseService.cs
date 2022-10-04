@@ -68,6 +68,31 @@ namespace KnowledgeMining.Infrastructure.Services.Database
             throw new NotImplementedException();
         }
 
+        public async Task<Metrics> GetMetrics(string metricsName, CancellationToken cancellationToken)
+        {
+            _ = metricsName ?? throw new ArgumentNullException(nameof(metricsName));
 
+            var fileName = $"{metricsName.ToLower()}.json";
+            var cache_key = $"metrics_{fileName}";
+            
+
+            _cache.TryGetValue<Metrics>(cache_key, out var metrics);
+
+            if (metrics == null)
+            {
+                var client = _blobServiceClient.GetBlobContainerClient(_options.MetricsContainer);
+                var blob = client.GetBlobClient(fileName);
+
+                var exists = await blob.ExistsAsync(cancellationToken);
+                if (!exists) throw new ArgumentOutOfRangeException($"Metrics {fileName} does not exist");
+
+                var blobFile = await blob.DownloadContentAsync(cancellationToken);
+                metrics = blobFile.Value.Content.ToObjectFromJson<Metrics>();
+                if (metrics == null) throw new JsonException($"Metrics {fileName} cannot be deserialized");
+                SetCachedItem(cache_key, metrics);
+            }
+
+            return metrics;
+        }
     }
 }

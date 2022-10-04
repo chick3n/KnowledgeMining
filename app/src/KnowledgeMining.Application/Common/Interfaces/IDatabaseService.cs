@@ -11,5 +11,6 @@ namespace KnowledgeMining.Application.Common.Interfaces
     {
         public Task<IEnumerable<IndexItem>> GetIndices(CancellationToken cancellationToken);
         public Task<IndexItem> GetIndex(string indexName, CancellationToken cancellationToken);
+        public Task<Metrics> GetMetrics(string metricsName, CancellationToken cancellationToken);
     }
 }
