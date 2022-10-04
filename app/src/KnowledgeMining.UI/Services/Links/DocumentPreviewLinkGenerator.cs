@@ -42,12 +42,7 @@ namespace KnowledgeMining.UI.Services.Links
 
         public string GenerateDocumentPreviewUrl(DocumentMetadata document)
         {
-            if (string.IsNullOrWhiteSpace(document.SourcePath))
-                return GenerateDocumentPreviewUrl(document.Name);
-
-            var sourcePath = CleanSourcePath(document.SourcePath);
-
-            return GenerateDocumentPreviewUrl(sourcePath);
+            return GenerateDocumentPreviewUrl(document.SourcePath);
         }
 
         public string GenerateDocumentPreviewUrl(string documentName)

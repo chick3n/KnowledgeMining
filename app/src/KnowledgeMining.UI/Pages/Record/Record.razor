@@ -1,4 +1,5 @@
 ﻿@page "/record/{Index}/{RecordId}"
+@using KnowledgeMining.UI.Pages.Record.Components
 
 
 
@@ -19,25 +20,25 @@
         </MudItem>
     </MudGrid>
     <MudGrid>
-        <MudItem xs="2">            
-            <MudPaper>
-                <MudList Clickable="true" @bind-SelectedItem="_selectedItem" @bind-SelectedValue="_selectedValue">
-                    <MudListItem Text="Transcript" Value="1"/>
-                    <MudListItem Text="Metadata" Value="4" />
-                    @if(!string.IsNullOrEmpty(_documentMetadata?.SourcePath))
-                    {
-                        @if (IsUrlPath())
+        <MudItem xs="2">    
+            @if (!_isLoading)
+            {
+                <MudPaper>
+                    <MudList Clickable="true" @bind-SelectedItem="_selectedItem" @bind-SelectedValue="_selectedValue">
+                    
+                        <MudListItem Text="Transcript" Value="1"/>
+                        @if (!string.IsNullOrEmpty(_documentMetadata?.SourcePath))
                         {
-                            <MudListItem Text="Website" Value="2" Icon="@Icons.Material.Outlined.Link"
-                                OnClick="@(async () => await jsRuntime.InvokeAsync<object>("open", _documentMetadata.SourcePath, "_blank"))" />
+                            @if (IsUrlPath())
+                            {
+                                <MudListItem Text="Document" Value="2" />
+                            }
                         }
-                        else
-                        {    
-                            <MudListItem Text="Document Preview" Value="3"/>
-                        }
-                    }
-                </MudList>
-            </MudPaper>
+                        <MudListItem Text="Metadata" Value="4" />
+                    
+                    </MudList>
+                </MudPaper>
+            }
         </MudItem>
         <MudItem xs="10">
             @if(_documentMetadata != null && _isLoading == false)
@@ -72,12 +73,9 @@
                 else if((int)_selectedValue == 2)
                 {
                     <MudPaper MinHeight="@_contentMinHeight" Class="p-2">
-                        <div><a href="@_documentMetadata.SourcePath" target="_blank">@_documentMetadata.SourcePath</a></div>
+                        <div>Source: <a href="@_documentMetadata.SourcePath" target="_blank">@_documentMetadata.SourcePath</a></div>
+                        <DocumentViewerComponent Document="_documentMetadata"></DocumentViewerComponent>
                     </MudPaper>
-                }
-                else if((int)_selectedValue == 3)
-                {
-                    @*<DocumentViewerComponent Document="_documentMetadata"></DocumentViewerComponent>*@
                 }
                 else if((int)_selectedValue == 4)
                 {

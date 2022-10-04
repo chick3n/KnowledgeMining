@@ -6,11 +6,10 @@ namespace KnowledgeMining.UI.Api
 {
     public static class DownloadFileEndpoint
     {
-        public const string Route = "{index}/api/documents/download/{fileName}";
+        public const string Route = "/download/{fileName}";
         public const string EndpointName = "download";
 
         public static async Task<IResult> DownloadInlineFile(
-            string index,
             string fileName,
             IStorageService storageService,
             CancellationToken cancellationToken)

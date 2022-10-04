@@ -39,10 +39,8 @@ a, .btn-link {
 }
 
 .file-container {
-    max-width: 95.6vw;
-    max-height: 51vh;
-    width: 95.6vw;
-    height: 51vh;
+    width: 100%;
+    height: 75vh;
     background-color: white !important;
     color: black;
     border: none;
