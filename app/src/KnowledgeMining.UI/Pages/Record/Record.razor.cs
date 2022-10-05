@@ -120,6 +120,18 @@ namespace KnowledgeMining.UI.Pages.Record
             
         }
 
+        private string? UriEncodedSourcePath()
+        {
+            if(_documentMetadata != null && !string.IsNullOrWhiteSpace(_documentMetadata?.SourcePath))
+            {
+                if (Uri.TryCreate(_documentMetadata?.SourcePath, UriKind.Absolute, out var uri))
+                {
+                    return uri.AbsoluteUri;
+                }
+            }
+            return null;
+        }
+
         private bool IsUrlPath()
         {
             if (!string.IsNullOrWhiteSpace(_documentMetadata?.SourcePath))
@@ -128,6 +140,20 @@ namespace KnowledgeMining.UI.Pages.Record
                 {
                     return uri.Scheme.Equals("http", StringComparison.CurrentCultureIgnoreCase) ||
                         uri.Scheme.Equals("https", StringComparison.CurrentCultureIgnoreCase);
+                }
+            }
+
+            return false;
+        }
+
+        private bool IsPreviewType()
+        {
+            if (!string.IsNullOrWhiteSpace(_documentMetadata?.SourcePath))
+            {
+                var ext = Path.GetExtension(_documentMetadata?.SourcePath);
+                switch(ext?.ToLower() ?? string.Empty)
+                {
+                    case ".pdf": return true;
                 }
             }
 
