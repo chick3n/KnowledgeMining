@@ -31,7 +31,15 @@
                         {
                             @if (IsUrlPath())
                             {
-                                <MudListItem Text="Document" Value="2" />
+                                if (IsPreviewType())
+                                {
+                                    <MudListItem Text="Preview" Value="2"/>
+                                }
+                                else
+                                {
+                                    <MudListItem Text="Source" Value="2"
+                                        OnClick="@(async () => await jsRuntime.InvokeAsync<object>("open", UriEncodedSourcePath(), "_blank"))"/>
+                                }
                             }
                         }
                         <MudListItem Text="Metadata" Value="4" />
@@ -73,7 +81,7 @@
                 else if((int)_selectedValue == 2)
                 {
                     <MudPaper MinHeight="@_contentMinHeight" Class="p-2">
-                        <div>Source: <a href="@_documentMetadata.SourcePath" target="_blank">@_documentMetadata.SourcePath</a></div>
+                        <div>Source: <a href="@UriEncodedSourcePath()" target="_blank">@_documentMetadata.SourcePath</a></div>
                         <DocumentViewerComponent Document="_documentMetadata"></DocumentViewerComponent>
                     </MudPaper>
                 }
