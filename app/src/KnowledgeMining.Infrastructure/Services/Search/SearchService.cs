@@ -68,7 +68,7 @@ namespace KnowledgeMining.Infrastructure.Services.Search
             };
 
             var response = await GetSearchClient(indexName)
-                .AutocompleteAsync(searchText, _searchOptions.SuggesterName, options, cancellationToken);
+                .AutocompleteAsync(GenerateSearchText(searchText), _searchOptions.SuggesterName, options, cancellationToken);
 
 
             return response.Value.Results.Select(r => r.Text).Distinct();
@@ -80,7 +80,7 @@ namespace KnowledgeMining.Infrastructure.Services.Search
             var searchOptions = GenerateSearchOptions(request, searchSchema);
             
             var searchResults = await GetSearchClient(request.Index.IndexName)
-                .SearchAsync<DocumentMetadata>(request.SearchText, searchOptions, cancellationToken);
+                .SearchAsync<DocumentMetadata>(GenerateSearchText(request.SearchText), searchOptions, cancellationToken);
 
             if (searchResults == null || searchResults?.Value == null)
             {
@@ -135,7 +135,7 @@ namespace KnowledgeMining.Infrastructure.Services.Search
 
         private string EscapeSpecialCharacters(string searchText)
         {
-            return Regex.Replace(searchText, @"([-+&|!(){}\[\]^""~?:/\\])", @"\$1", RegexOptions.CultureInvariant | RegexOptions.IgnoreCase | RegexOptions.Compiled);
+            return Regex.Replace(searchText, @"([&!#{}\[\]^""~?:/\\])", @"\$1", RegexOptions.CultureInvariant | RegexOptions.IgnoreCase | RegexOptions.Compiled);
         }
 
         public async Task<EntityMap> GenerateEntityMap(string indexName,
@@ -388,6 +388,16 @@ namespace KnowledgeMining.Infrastructure.Services.Search
                 }
             }
             return results;
+        }
+
+        private string GenerateSearchText(string query)
+        {
+            if (!string.IsNullOrWhiteSpace(query))
+            {
+                return EscapeSpecialCharacters(query);
+            }
+
+            return query;
         }
 
         private Azure.Search.Documents.SearchOptions GenerateSearchOptions(
