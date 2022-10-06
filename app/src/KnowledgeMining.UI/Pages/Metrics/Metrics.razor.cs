@@ -1,16 +1,9 @@
 ﻿using KnowledgeMining.Application.Documents.Queries.GetDatabaseItem;
 using KnowledgeMining.Application.Documents.Queries.GetIndex;
 using KnowledgeMining.Domain.Entities;
-using KnowledgePicker.WordCloud;
-using KnowledgePicker.WordCloud.Coloring;
-using KnowledgePicker.WordCloud.Drawing;
-using KnowledgePicker.WordCloud.Layouts;
-using KnowledgePicker.WordCloud.Primitives;
-using KnowledgePicker.WordCloud.Sizers;
 using MediatR;
 using Microsoft.AspNetCore.Components;
 using MudBlazor;
-using SkiaSharp;
 using MetricsData = KnowledgeMining.Domain.Entities.Metrics;
 
 namespace KnowledgeMining.UI.Pages.Metrics
@@ -24,17 +17,15 @@ namespace KnowledgeMining.UI.Pages.Metrics
         //Functional
         private IndexItem? _indexItem;
         private MetricsData? _metrics;
+        private Random _random = new Random();
 
         //Display
 
         //Word Count
         public string? TotalWords;
         public string? TotalWordsExclude;
-        public IEnumerable<(LayoutItem Item, double FontSize)>? TopWords;
-        public IEnumerable<(LayoutItem Item, double FontSize)>? TopWordsExclude;
-        public int WordCloudWidth = 1024;
-        public int WordCloudHeight = 256;
-        public IColorizer Colorizer = new RandomColorizer();
+        public Dictionary<string, int>? TopWords;
+        public Dictionary<string, int>? TopWordsExclude;
 
         //Search
         public string? TotalDocuments;
@@ -84,8 +75,8 @@ namespace KnowledgeMining.UI.Pages.Metrics
             {
                 TotalWords = _metrics.WordCount.Count?.ToString("N0");
                 TotalWordsExclude = _metrics.WordCount.CountExcludeStopWords?.ToString("N0");
-                TopWords = GenerateWordCloud(_metrics.WordCount.Top);
-                TopWordsExclude = GenerateWordCloud(_metrics.WordCount.TopExcludeStopWords);
+                TopWords = _metrics.WordCount.Top;
+                TopWordsExclude = _metrics.WordCount.TopExcludeStopWords;
             }
 
             if (_metrics.Search != null)
@@ -97,26 +88,9 @@ namespace KnowledgeMining.UI.Pages.Metrics
             }
         }
 
-        private IEnumerable<(LayoutItem Item, double FontSize)>? GenerateWordCloud(Dictionary<string, int>? wordFreq)
+        private string GetColorAsHex()
         {
-            if (wordFreq == null) return null;
-
-            IEnumerable<WordCloudEntry> wordEntries = wordFreq.Select(p => new WordCloudEntry(p.Key, p.Value));
-
-            var wordCloud = new WordCloudInput(wordEntries)
-            {
-                Width = WordCloudWidth,
-                Height = WordCloudHeight,
-                MinFontSize = 8,
-                MaxFontSize = 32
-            };
-
-            var sizer = new LogSizer(wordCloud);
-            using var engine = new SkGraphicEngine(sizer, wordCloud);
-            var layout = new SpiralLayout(wordCloud);
-            var wcg = new WordCloudGenerator<SKBitmap>(wordCloud, engine, layout);
-
-            return wcg.Arrange();
+            return string.Format("#{0:X6}", _random.Next(0x1000000));
         }
 
         private string GetFileTypeIcon(string filetype)

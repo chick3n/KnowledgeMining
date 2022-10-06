@@ -1,5 +1,4 @@
 ﻿@page "/metrics/{Index}"
-@using KnowledgePicker.WordCloud.Coloring
 
 <PageTitle>Metrics</PageTitle>
 
@@ -14,7 +13,7 @@
                 {
                     <MudPaper Elevation="1" Class="pa-3" MinHeight="120px">
                         <MudStack Row="true" Spacing="1">
-                            <MudIcon Icon="@Icons.Filled.Grid4x4" Style="@("font-size: 4rem; color: " + Colorizer.GetColorAsHex())" />
+                            <MudIcon Icon="@Icons.Filled.Grid4x4" Style="@("font-size: 4rem; color: " + GetColorAsHex())" />
                             <MudStack Row="false"  Spacing="0">
                                 <MudText Typo="Typo.h4">@TotalWords</MudText>
                                 <MudText Typo="Typo.h5" Align="Align.Right">Total Words</MudText>
@@ -27,7 +26,7 @@
                 {
                     <MudPaper Elevation="1" Class="pa-3" MinHeight="120px">
                         <MudStack Row="true" Spacing="1">
-                            <MudIcon Icon="@Icons.Filled.Grid3x3"  Style="@("font-size: 4rem; color: " + Colorizer.GetColorAsHex())" />
+                            <MudIcon Icon="@Icons.Filled.Grid3x3"  Style="@("font-size: 4rem; color: " + GetColorAsHex())" />
                             <MudStack Row="false" Spacing="0">
                                 <MudText Typo="Typo.h4">@TotalWordsExclude</MudText>
                                 <MudText Typo="Typo.h5" Align="Align.Right">Total Words</MudText>
@@ -41,7 +40,7 @@
                 {
                     <MudPaper Elevation="1" Class="pa-3" MinHeight="120px">
                         <MudStack Row="true" Spacing="1">
-                            <MudIcon Icon="@Icons.Outlined.InsertDriveFile"  Style="@("font-size: 4rem; color: " + Colorizer.GetColorAsHex())" />
+                            <MudIcon Icon="@Icons.Outlined.InsertDriveFile"  Style="@("font-size: 4rem; color: " + GetColorAsHex())" />
                             <MudStack Row="false" Spacing="0">
                                 <MudText Typo="Typo.h4">@TotalDocuments</MudText>
                                 <MudText Typo="Typo.h5" Align="Align.Right">Documents</MudText>
@@ -54,7 +53,7 @@
                 {
                     <MudPaper Elevation="1" Class="pa-3" MinHeight="120px">
                         <MudStack Row="true" Spacing="1">
-                            <MudIcon Icon="@Icons.Filled.Storage"  Style="@("font-size: 4rem; color: " + Colorizer.GetColorAsHex())" />
+                            <MudIcon Icon="@Icons.Filled.Storage"  Style="@("font-size: 4rem; color: " + GetColorAsHex())" />
                             <MudStack Row="false" Spacing="0">
                                 <MudText Typo="Typo.h4">@IndexSize</MudText>
                                 <MudText Typo="Typo.h5" Align="Align.Right">Index Size</MudText>
@@ -79,7 +78,7 @@
                 {
                     <MudPaper Elevation="1" Class="pa-3">
                         <MudStack Row="true" Spacing="1">
-                            <MudIcon Icon="@GetFileTypeIcon(filetype.Key)"  Style="@("font-size: 2rem; color: " + Colorizer.GetColorAsHex())" />
+                            <MudIcon Icon="@GetFileTypeIcon(filetype.Key)"  Style="@("font-size: 2rem; color: " + GetColorAsHex())" />
                             <MudStack Row="false" Spacing="0">
                                 <MudText Typo="Typo.body1">@filetype.Value.ToString("N0")</MudText>
                                 <MudText Typo="Typo.caption" Align="Align.Right">@filetype.Key</MudText>
@@ -94,41 +93,29 @@
 
     @if(TopWordsExclude != null || TopWords != null) 
     {
-        <MudText Typo="Typo.h5">Word Cloud</MudText>
+        <MudText Typo="Typo.h5">Top Words</MudText>
         <hr/>
         <MudGrid>
             @if (TopWordsExclude != null)
             {
                 <MudItem xs="12" sm="12">
-                    <svg viewBox="0,0,@WordCloudWidth,@WordCloudHeight">
-                        @foreach (var (item, fontSize) in TopWordsExclude)
+                    <ol>
+                        @foreach(var topWordKvp in TopWordsExclude.OrderByDescending(x => x.Value))
                         {
-                            const string format = "0.##"; // Use at most 2 decimal places.
-                            var x = (item.Location.X - item.Measured.Left).ToString(format);
-                            var y = (item.Location.Y - item.Measured.Top).ToString(format);
-                            var fs = fontSize.ToString(format);
-                            <text>
-                                <text transform="translate(@x, @y)" font-size="@fs" fill="@Colorizer.GetColorAsHex()">@item.Entry.Word</text>
-                            </text>
+                            <li>@topWordKvp.Key @topWordKvp.Value</li>
                         }
-                    </svg>
+                    </ol>
                 </MudItem>
             }
             else if (TopWords != null)
             {
                 <MudItem xs="12" sm="12">
-                    <svg viewBox="0,0,@WordCloudWidth,@WordCloudHeight">
-                        @foreach (var (item, fontSize) in TopWords)
+                    <ol>
+                        @foreach(var topWordKvp in TopWords.OrderByDescending(x => x.Value))
                         {
-                            const string format = "0.##"; // Use at most 2 decimal places.
-                            var x = (item.Location.X - item.Measured.Left).ToString(format);
-                            var y = (item.Location.Y - item.Measured.Top).ToString(format);
-                            var fs = fontSize.ToString(format);
-                            <text>
-                                <text transform="translate(@x, @y)" font-size="@fs" fill="@Colorizer.GetColorAsHex()">@item.Entry.Word</text>
-                            </text>
+                            <li>@topWordKvp.Key @topWordKvp.Value</li>
                         }
-                    </svg>
+                    </ol>
                 </MudItem>
             }
         
