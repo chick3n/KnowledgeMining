@@ -48,6 +48,8 @@ namespace KnowledgeMining.UI.Pages.Search
             Month,
             Custom
         };
+        private DateTime? _minDate = null;
+        private DateTime? _maxDate = null;
 
         private string[] excludeFacets = new string[] { BlobMetadata.Mission, BlobMetadata.DocumentType };
         private TimeSpanType _timeSpanSelectedType = TimeSpanType.Any;
@@ -78,6 +80,16 @@ namespace KnowledgeMining.UI.Pages.Search
         {
             var indexResponse = await Mediator.Send(new GetIndexQuery(Index));
             _indexItem = indexResponse.IndexItem;
+            ConfigureUI();
+        }
+
+        private void ConfigureUI()
+        {
+            if (_indexItem?.Configuration?.TimeSpan != null)
+            {
+                _minDate = _indexItem.Configuration.TimeSpan.Start ?? null;
+                _maxDate = _indexItem.Configuration.TimeSpan.End ?? null;
+            }
         }
 
         protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -360,7 +372,9 @@ namespace KnowledgeMining.UI.Pages.Search
         {
             _timeSpanSelectedType = TimeSpanType.Custom;
             if (_timespanPicker != null)
+            {
                 _timespanPicker.Open();
+            }
         }
 
         private string DateTimeStandardFormat(DateTime d)

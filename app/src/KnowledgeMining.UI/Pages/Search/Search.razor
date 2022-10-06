@@ -82,6 +82,8 @@
     <MudDateRangePicker @ref="_timespanPicker" class="hide-input"
                     PickerVariant="PickerVariant.Dialog" 
                     Label="Time span" 
+                    MinDate="_minDate"
+                    MaxDate="_maxDate"
                     DateRangeChanged="@TimeSpanCustomRangeChanged" />
 </MudContainer>
 

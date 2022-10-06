@@ -29,5 +29,7 @@ namespace KnowledgeMining.Domain.Entities
         public IndexItemFieldMapping? FieldMapping { get; set; }
         [JsonPropertyName("facets")]
         public IEnumerable<IndexItemFacet> Facets { get; set; } = Enumerable.Empty<IndexItemFacet>();
+        [JsonPropertyName("configuration")]
+        public IndexItemConfiguration? Configuration { get; set; }
     }
 }

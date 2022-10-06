@@ -164,7 +164,7 @@ namespace KnowledgeMining.UI.Services.State
             if (SearchText.Trim().Equals("*"))
                 return string.Empty;
 
-            return SearchText;
+            return Uri.EscapeDataString(SearchText);
         }
     }
 }
