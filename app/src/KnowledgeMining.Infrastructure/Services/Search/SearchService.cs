@@ -78,9 +78,10 @@ namespace KnowledgeMining.Infrastructure.Services.Search
         {
             var searchSchema = await GenerateSearchSchema(request.Index.IndexName, cancellationToken);
             var searchOptions = GenerateSearchOptions(request, searchSchema);
-            
+            var searchText = GenerateSearchText(request.SearchText);
+
             var searchResults = await GetSearchClient(request.Index.IndexName)
-                .SearchAsync<DocumentMetadata>(GenerateSearchText(request.SearchText), searchOptions, cancellationToken);
+                .SearchAsync<DocumentMetadata>(searchText, searchOptions, cancellationToken);
 
             if (searchResults == null || searchResults?.Value == null)
             {
@@ -135,7 +136,7 @@ namespace KnowledgeMining.Infrastructure.Services.Search
 
         private string EscapeSpecialCharacters(string searchText)
         {
-            return Regex.Replace(searchText, @"([&!#{}\[\]^""~?:/\\])", @"\$1", RegexOptions.CultureInvariant | RegexOptions.IgnoreCase | RegexOptions.Compiled);
+            return Regex.Replace(searchText, @"([-+&|!#(){}\[\]^~?:/\\])", @"\$1", RegexOptions.CultureInvariant | RegexOptions.IgnoreCase | RegexOptions.Compiled);
         }
 
         public async Task<EntityMap> GenerateEntityMap(string indexName,
