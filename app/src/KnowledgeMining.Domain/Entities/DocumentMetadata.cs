@@ -63,8 +63,11 @@ namespace KnowledgeMining.Domain.Entities
             return Id;
         }
 
-        public string? GetValue(string key)
+        public string? GetValue(string key, string seperator = ",", string dateTimeFormat = "yyyy-MM-dd")
         {
+            dateTimeFormat = dateTimeFormat ?? "yyyy-MM-dd";
+            seperator = seperator ?? ",";
+
             switch(key)
             {
                 case "@search.score":
@@ -72,29 +75,29 @@ namespace KnowledgeMining.Domain.Entities
                 case "id":
                     return Id;
                 case "keyPhrases":
-                    return KeyPhrases != null ? string.Join(',', KeyPhrases) : null;
+                    return KeyPhrases != null ? string.Join(seperator, KeyPhrases) : null;
                 case "organizations":
-                    return Organizations != null ? string.Join(',', Organizations) : null;
+                    return Organizations != null ? string.Join(seperator, Organizations) : null;
                 case "persons":
-                    return Persons != null ? string.Join(',', Persons) : null;
+                    return Persons != null ? string.Join(seperator, Persons) : null;
                 case "locations":
-                    return Locations != null ? string.Join(',', Locations) : null;
+                    return Locations != null ? string.Join(seperator, Locations) : null;
                 case "topics":
-                    return Topics != null ? string.Join(',', Topics) : null;
+                    return Topics != null ? string.Join(seperator, Topics) : null;
                 case "text":
-                    return Text != null ? string.Join(',', Text) : null;
+                    return Text != null ? string.Join(seperator, Text) : null;
                 case "content":
                     return Content;
                 case "layoutText":
-                    return Topics != null ? string.Join(',', Topics) : null;
+                    return Topics != null ? string.Join(seperator, Topics) : null;
                 case "imageTags":
-                    return Topics != null ? string.Join(',', Topics) : null;
+                    return Topics != null ? string.Join(seperator, Topics) : null;
                 case "merged_content":
                     return MergedContent;
                 case "summary":
                     return Summary;
                 case "datetime":
-                    return DateTime?.ToString();
+                    return DateTime?.ToString(dateTimeFormat);
                 case "title":
                     return Title;
                 case "sourceType":

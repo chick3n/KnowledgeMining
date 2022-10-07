@@ -44,6 +44,7 @@ namespace KnowledgeMining.UI.Wrappers
                 documentMetadata.Title = GetValue(d.Title, d.ExtensionData, "title");
                 documentMetadata.Name = GetValue(d.Name, d.ExtensionData, "name");
                 documentMetadata.Category = GetValue(d.Category, d.ExtensionData, "category");
+                documentMetadata.Topics = GetValue(d.Topics, d.ExtensionData, "topics");
                 documentMetadata.Id = d.GetKeyValue(KeyFieldName);
                 documentMetadata.IconUrl = GetValue(d.IconUrl, d.ExtensionData, "icon");
             }

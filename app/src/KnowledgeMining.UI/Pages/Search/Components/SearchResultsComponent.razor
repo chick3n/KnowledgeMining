@@ -206,7 +206,7 @@ else
         var values = new List<string>();
         foreach(var footerField in DocumentFooterFields)
         {
-            var fieldValue = document.GetValue(footerField);
+            var fieldValue = document.GetValue(footerField, seperator: " · ");
 
             if(!string.IsNullOrWhiteSpace(fieldValue))
             {
