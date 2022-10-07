@@ -11,5 +11,8 @@ namespace KnowledgeMining.Domain.Entities
     {
         [JsonPropertyName("timespan")]
         public IndexItemConfigurationTimeSpan? TimeSpan { get; set; }
+
+        [JsonPropertyName("display")]
+        public IndexConfigurationDisplay? Display { get; set; }
     }
 }

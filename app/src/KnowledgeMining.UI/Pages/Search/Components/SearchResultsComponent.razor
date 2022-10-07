@@ -59,19 +59,6 @@ else
                                     <MudText Typo="Typo.body1">@DocumentHeader(document)</MudText>
                                     <MudText Typo="Typo.body2">@DocumentSubHeader(document)</MudText>
                                 </CardHeaderContent>
-                                <CardHeaderActions>
-                                    <MudMenu Icon="@Icons.Material.Outlined.Info">
-                                        <MudMenuItem Class="cursor-help">Score: @document.SearchScore</MudMenuItem>
-                                        @if(!string.IsNullOrEmpty(document.Name))
-                                        {
-                                            <MudMenuItem Class="cursor-help">File: @document.Name</MudMenuItem>
-                                        }
-                                        @if(!string.IsNullOrEmpty(document.Category)) 
-                                        {
-                                            <MudMenuItem Class="cursor-help">Type: @document.Category</MudMenuItem>
-                                        }
-                                        </MudMenu>
-                                </CardHeaderActions>
                             </MudCardHeader>
                             <MudCardContent>
                                 <div class="d-flex flex-row gap-10">
@@ -87,6 +74,21 @@ else
                                     </div>
                                 </div>
                             </MudCardContent>
+                            @if(DocumentFooterValues(document) != null) 
+                            {
+                                var footerValues = DocumentFooterValues(document);
+                                <MudCardActions>
+                                    @for(var x = 0; x<footerValues.Length; x++) 
+                                    {
+                                        var index = x; //Needed due to razor for loops issue
+                                        <MudText Typo="Typo.caption" Style="color:gray">@footerValues[index]</MudText>
+                                        @if(x+1 < footerValues.Length)
+                                        {
+                                            <span>&nbsp;·&nbsp;</span>
+                                        }
+                                    }
+                                </MudCardActions> 
+                            }
                         </MudCard>
                     </a>
                 </MudItem>
@@ -107,6 +109,8 @@ else
 @code {
     [Parameter]
     public DocumentMetadataWrapper DocumentWrapper { get; set; }
+    [Parameter]
+    public string[]? DocumentFooterFields { get; set; }
     [Parameter]
     public long? TotalCount { get; set; }
     [Parameter]
@@ -192,12 +196,26 @@ else
         return text;
     }
 
-    private string DocumentFooter(DocumentMetadata document)
+    private string[]? DocumentFooterValues(DocumentMetadata document)
     {
-        if (!string.IsNullOrWhiteSpace(document.Name))
-            return document.Name;
+        if (DocumentFooterFields == null || DocumentFooterFields.Length == 0)
+        {
+            return null;   
+        }
 
-        return string.Empty;
+        var values = new List<string>();
+        foreach(var footerField in DocumentFooterFields)
+        {
+            var fieldValue = document.GetValue(footerField);
+
+            if(!string.IsNullOrWhiteSpace(fieldValue))
+            {
+                values.Add(fieldValue);
+            }
+        }
+
+        return values.ToArray();
+
     }
 
     

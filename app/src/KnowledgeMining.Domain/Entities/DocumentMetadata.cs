@@ -63,6 +63,58 @@ namespace KnowledgeMining.Domain.Entities
             return Id;
         }
 
+        public string? GetValue(string key)
+        {
+            switch(key)
+            {
+                case "@search.score":
+                    return SearchScore.ToString();
+                case "id":
+                    return Id;
+                case "keyPhrases":
+                    return KeyPhrases != null ? string.Join(',', KeyPhrases) : null;
+                case "organizations":
+                    return Organizations != null ? string.Join(',', Organizations) : null;
+                case "persons":
+                    return Persons != null ? string.Join(',', Persons) : null;
+                case "locations":
+                    return Locations != null ? string.Join(',', Locations) : null;
+                case "topics":
+                    return Topics != null ? string.Join(',', Topics) : null;
+                case "text":
+                    return Text != null ? string.Join(',', Text) : null;
+                case "content":
+                    return Content;
+                case "layoutText":
+                    return Topics != null ? string.Join(',', Topics) : null;
+                case "imageTags":
+                    return Topics != null ? string.Join(',', Topics) : null;
+                case "merged_content":
+                    return MergedContent;
+                case "summary":
+                    return Summary;
+                case "datetime":
+                    return DateTime?.ToString();
+                case "title":
+                    return Title;
+                case "sourceType":
+                    return SourceType;
+                case "sourcePath":
+                    return SourcePath;
+                case "name":
+                    return Name;
+                case "category":
+                    return Category;
+                case "icon":
+                    return IconUrl;
+            }
+
+            if (ExtensionData != null && ExtensionData.ContainsKey(key))
+                return ExtensionData[key].ToString();
+
+            return null; 
+        }
+
         public IDictionary<string, object?> ToDictionary()
         {
             var dict = new Dictionary<string, object?>()

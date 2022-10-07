@@ -64,6 +64,7 @@
                     <MudTabPanel @ref="_searchResultsPanel" Text="@_searchResultsLabel">
                         <SearchResultsComponent @ref="_searchResultsComponent"
                             DocumentWrapper="@GetDocumentMetadataWrapper()"
+                            DocumentFooterFields="@_indexItem.Configuration?.Display?.Footer"
                             IsLoading="@_isSearching" TotalCount="@_searchState.TotalCount" TotalPages="@_searchState.TotalPages" 
                             NavigateTo="@($"/record/{Index}/")" OnPageSelectedChanged="@SearchPageSelected" 
                             PageSelected="@_selectedPage"></SearchResultsComponent>
