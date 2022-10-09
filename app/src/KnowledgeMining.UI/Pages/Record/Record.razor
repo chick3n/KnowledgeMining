@@ -1,7 +1,26 @@
 ﻿@page "/record/{Index}/{RecordId}"
 @using KnowledgeMining.UI.Pages.Record.Components
 
-
+<style>
+    .record_divider {
+        margin-bottom: 20px;
+    }
+    .record_title {
+        padding-bottom: 10px;
+    }
+    .document-title-overflow {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    .mudbutton-text-left {
+        justify-content: normal !important;
+        text-transform: none !important;
+    }
+    .mudbutton-text-left > span {
+        text-align: left;
+    }
+</style>
 
 <PageTitle>Record</PageTitle>
 <MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="mt-4">
@@ -13,9 +32,36 @@
             }
         </MudItem>
         <MudItem xs="0" sm="10">
-            @if(_documentMetadata != null && _isLoading == false)
+            @if(!_isLoading)
             {
-                <MudButton Disabled>@_title</MudButton>
+                @if(!string.IsNullOrEmpty(_title) || !string.IsNullOrEmpty(_documentMetadata?.SourcePath))
+                {
+                    <MudStack Row="true">
+                        @if(string.IsNullOrWhiteSpace(_documentMetadata.IconUrl)) 
+                        {
+                            <MudAvatar Color="Color.Dark"><MudIcon Icon="@Icons.Custom.FileFormats.FileDocument"></MudIcon></MudAvatar>
+                        } 
+                        else
+                        {
+                            <img src="@_documentMetadata.IconUrl" class="document-icon" />
+                        }                            
+                        <MudText Typo="Typo.h6" Class="document-title-overflow">@_title</MudText>
+                    </MudStack>
+                }
+            }
+            else 
+            {
+                <MudCard Elevation="0">
+                    <MudCardHeader>
+                        <CardHeaderAvatar>
+                            <MudSkeleton SkeletonType="SkeletonType.Circle" Animation="Animation.Wave" Height="40px" Width="40px"/>
+                        </CardHeaderAvatar>
+                        <CardHeaderContent>
+                            <MudSkeleton Animation="Animation.Wave" />
+                            <MudSkeleton Animation="Animation.Wave" Width="60%" />
+                        </CardHeaderContent>
+                    </MudCardHeader>
+                </MudCard>
             }
         </MudItem>
     </MudGrid>
@@ -25,44 +71,95 @@
             {
                 <MudPaper>
                     <MudList Clickable="true" @bind-SelectedItem="_selectedItem" @bind-SelectedValue="_selectedValue">
-                    
-                        <MudListItem Text="Transcript" Value="1"/>
+                        <MudListItem Text="Record" Value="@LIST_ITEM_VALUE_RECORD" />
                         @if (!string.IsNullOrEmpty(_documentMetadata?.SourcePath))
                         {
                             @if (IsUrlPath())
                             {
                                 if (IsPreviewType())
                                 {
-                                    <MudListItem Text="Preview" Value="2"/>
+                                    <MudListItem Text="Preview" Value="@LIST_ITEM_VALUE_SOURCE"/>
                                 }
                                 else
                                 {
-                                    <MudListItem Text="Source" Value="2"
+                                    <MudListItem Text="Source" Value="@LIST_ITEM_VALUE_SOURCE"
                                         OnClick="@(async () => await jsRuntime.InvokeAsync<object>("open", UriEncodedSourcePath(), "_blank"))"/>
                                 }
                             }
                         }
-                        <MudListItem Text="Metadata" Value="4" />
-                    
-                    </MudList>
+                        <MudListItem Text="Metadata" Value="@LIST_ITEM_VALUE_METADATA" />
+                    </MudList>                    
+                </MudPaper>
+                @if(!string.IsNullOrEmpty(_documentMetadata?.SourcePath))
+                {
+                    <MudPaper Elevation="0" Style="margin-top: 20px">
+                        <MudBadge Icon="@Icons.Outlined.Link" Color="Color.Info" Overlap="true" Bordered="true" Style="width: 100%">
+                            <MudButton Href="@_documentMetadata?.SourcePath" Color="Color.Dark" Class="mudbutton-text-left mud-typography-body1"
+                                Variant="Variant.Filled" DisableElevation="false" FullWidth="true">Source</MudButton>
+                        </MudBadge>
+                    </MudPaper>
+                }
+            }
+            else
+            {
+                <MudPaper Elevation="0">
+                    <MudSkeleton SkeletonType="SkeletonType.Rectangle" Animation="Animation.Wave" Height="110px" />
                 </MudPaper>
             }
         </MudItem>
         <MudItem xs="10">
             @if(_documentMetadata != null && _isLoading == false)
             {
-                @if((int)_selectedValue == 1)
+                @if((int)_selectedValue == LIST_ITEM_VALUE_RECORD)
                 {
+                    @if(!string.IsNullOrEmpty(_title) || !string.IsNullOrEmpty(_documentMetadata?.SourcePath))
+                    {
+                        <div class="record_divider">
+                            <MudText Typo="Typo.h6">Details</MudText>
+                            <hr />
+                            <MudStack Row="false" Spacing="1">
+                                @if(_documentMetadata?.DateTime != null)
+                                {
+                                    <MudText Typo="Typo.body2" Class="document-title-overflow">
+                                        @_documentMetadata?.DateTime?.ToString("yyyy-MM-dd")
+                                    </MudText>
+                                }
+                                @if (!string.IsNullOrEmpty(_documentMetadata?.SourcePath))
+                                {
+                                    <MudText Typo="Typo.body2" Class="document-title-overflow">
+                                        <a href="@UriEncodedSourcePath()">@_documentMetadata.SourcePath</a>
+                                    </MudText>
+                                }
+                            </MudStack>
+                        </div>
+                    }
+
+                    @if (!string.IsNullOrWhiteSpace(_documentMetadata?.Summary))
+                    {
+                        <div class="record_divider">
+                            <MudText Typo="Typo.h6">Summary</MudText>
+                            <hr />
+                            <MudPaper Class="p-2" Elevation="0">
+                                <pre style="overflow-x: auto; overflow-y: scroll; white-space: pre-wrap; word-wrap: break-word; ">
+                                <MudHighlighter Text="@_documentMetadata!.Summary"  Style="background-color: darkblue; font-weight:bold; color: white"></MudHighlighter>
+                                </pre>
+                            </MudPaper>
+                        </div>
+                    }
+
+                    <div class="record_divider">
+                        <MudText Typo="Typo.h6">Transcript</MudText>
+                        <hr />
                         <MudGrid>
                             <MudItem xs="12" sm="8">
-                                <MudPaper MinHeight="@_contentMinHeight" Class="p-2">
-                                    <pre style="max-height: 70vh; overflow-x: auto; overflow-y: scroll; white-space: pre-wrap; word-wrap: break-word; ">
+                                <MudPaper Class="p-2" Elevation="0" Style="border-right: 1px solid #eee; border-radius: 0;">
+                                    <pre style="overflow-x: auto; overflow-y: scroll; white-space: pre-wrap; word-wrap: break-word; ">
                                     <MudHighlighter Text="@_documentMetadata!.Content" HighlightedText="@_textToHighlight" Style="background-color: darkblue; font-weight:bold; color: white"></MudHighlighter>
                                     </pre>
                                 </MudPaper>
                             </MudItem>
                             <MudItem xs="12" sm="4">
-                                <div class="d-flex flex-column flex-shrink-1">
+                                <div class="d-flex flex-column flex-shrink-1" style="position:sticky; top: 70px;">
                                     <MudTextField T="string" Immediate="true" Placeholder="Search in transcript" 
                                         ValueChanged="UpdateTextToHighlight" Variant="Variant.Outlined"></MudTextField>
                                     <MudChipSet SelectedChipChanged="UpdateTextToHighlight" Filter="true" Class="d-flex flex-wrap">
@@ -77,44 +174,49 @@
                                 </div>
                             </MudItem>
                         </MudGrid>
+                    </div>
                 }
-                else if((int)_selectedValue == 2)
+                else if((int)_selectedValue == LIST_ITEM_VALUE_SOURCE)
                 {
-                    <MudPaper MinHeight="@_contentMinHeight" Class="p-2">
-                        <div>Source: <a href="@UriEncodedSourcePath()" target="_blank">@_documentMetadata.SourcePath</a></div>
+                    <MudPaper Class="p-2" Elevation="0">
                         <DocumentViewerComponent Document="_documentMetadata"></DocumentViewerComponent>
                     </MudPaper>
                 }
-                else if((int)_selectedValue == 4)
+                else if((int)_selectedValue == LIST_ITEM_VALUE_METADATA)
                 {
-                    <MudTable Items="@_documentMetadata!.ToDictionary()" Height="@_contentMinHeight" Hover="true" 
+                    <MudTable Items="@_documentMetadata!.ToDictionary()" Hover="true"  Elevation="0"
                         Breakpoint="Breakpoint.Sm" HorizontalScrollbar="true" Virtualize="true" FixedHeader="true">
-                        <HeaderContent>
-                            <MudTh>Property</MudTh>
-                            <MudTh>Value</MudTh>
-                        </HeaderContent>
-                        <RowTemplate>
-                            <MudTd DataLabel="Property" Style="vertical-align:top;">@context.Key</MudTd>
-                            <MudTd DataLabel="Value" >
-                                @if (context.Value != null && _documentMetadata.IsMetadataValueAnArray(context.Value))
+                    <HeaderContent>
+                        <MudTh>Property</MudTh>
+                        <MudTh>Value</MudTh>
+                    </HeaderContent>
+                    <RowTemplate>
+                        <MudTd DataLabel="Property" Style="vertical-align:top;">@context.Key</MudTd>
+                        <MudTd DataLabel="Value" >
+                            @if (context.Value != null && _documentMetadata.IsMetadataValueAnArray(context.Value))
+                            {
+                                <ul>
+                                @foreach(var item in ((IEnumerable<string>)context.Value))
                                 {
-                                    <ul>
-                                    @foreach(var item in ((IEnumerable<string>)context.Value))
-                                    {
-                                        <li style="list-style-type: circle">@item</li>
-                                    }
-                                    </ul>
+                                    <li style="list-style-type: circle">@item</li>
                                 }
-                                else
-                                {
-                                    @_documentMetadata.ConvertMetadataValueToString(context.Value)
-                                }
-                            </MudTd>
-                        </RowTemplate>
-                    </MudTable>
+                                </ul>
+                            }
+                            else
+                            {
+                                @_documentMetadata.ConvertMetadataValueToString(context.Value)
+                            }
+                        </MudTd>
+                    </RowTemplate>
+                </MudTable>
                 }
-            }            
-            <MudProgressCircular Color="Color.Primary" Size="Size.Large" Indeterminate="@_isLoading" />
+            }
+            else
+            {
+                <MudCard Elevation="0">
+                    <MudSkeleton SkeletonType="SkeletonType.Rectangle" Animation="Animation.Wave" Height="250px" />
+                </MudCard>
+            }
         </MudItem>
     </MudGrid>
 </MudContainer>

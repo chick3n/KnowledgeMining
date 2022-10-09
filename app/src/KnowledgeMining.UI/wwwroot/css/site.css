@@ -89,3 +89,8 @@ a, .btn-link {
 .metric-divider {
     margin-bottom: 80px;
 }
+
+.document-icon {
+    width: 42px;
+    height: 42px;
+}

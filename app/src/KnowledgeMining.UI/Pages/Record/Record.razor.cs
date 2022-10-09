@@ -30,12 +30,15 @@ namespace KnowledgeMining.UI.Pages.Record
 
         //UI
         private string _title = string.Empty;
-        private string _contentMinHeight = "85vh";
 
         //Functional
         private DocumentMetadata? _documentMetadata;
         private IndexItem? _indexItem;
         private string? _textToHighlight;
+
+        private const int LIST_ITEM_VALUE_RECORD = 1;
+        private const int LIST_ITEM_VALUE_SOURCE = 3;
+        private const int LIST_ITEM_VALUE_METADATA = 4;
 
         protected override async Task OnInitializedAsync()
         {
@@ -52,8 +55,28 @@ namespace KnowledgeMining.UI.Pages.Record
             {
                 _canNavigateBack = await jsRuntime.InvokeAsync<bool>("HasHistory");
                 await GetRecordDetails();
+                SetDefaultListItem();
                 FinishedLoading();
                 StateHasChanged();
+            }
+        }
+
+        private void SetDefaultListItem()
+        {
+            if(_documentMetadata != null)
+            {
+                if(!string.IsNullOrEmpty(_documentMetadata.Summary))
+                {
+                    _selectedValue = LIST_ITEM_VALUE_RECORD;
+                }
+                else if(!string.IsNullOrEmpty(_documentMetadata.Content))
+                {
+                    _selectedValue = LIST_ITEM_VALUE_RECORD;
+                }
+                else
+                {
+                    _selectedValue = LIST_ITEM_VALUE_SOURCE;
+                }
             }
         }
 
