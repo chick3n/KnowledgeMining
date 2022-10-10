@@ -1,5 +1,6 @@
 ﻿@using KnowledgeMining.Application.Documents.Queries.SearchDocuments
 @using System.Text.RegularExpressions
+@using KnowledgeMining.UI.Helpers
 @using KnowledgeMining.UI.Services.State
 @using KnowledgeMining.UI.Wrappers
 
@@ -66,7 +67,7 @@ else
                                         <MudHighlighter Class="mud-dark-text"
                                              Style="background-color:transparent;font-weight:bold"
                                              Text="@DocumentSummary(document)"
-                                             HighlightedTexts="@DocumentWrapper.RelevantWords" />
+                                             HighlightedTexts="@SearchTokenizer.Tokens" />
                                         <MudText Typo="Typo.body2"></MudText>
                                     </div>
 
@@ -113,6 +114,8 @@ else
 @code {
     [Parameter]
     public DocumentMetadataWrapper DocumentWrapper { get; set; }
+    [Parameter]
+    public SearchTokenizer SearchTokenizer { get; set; } = new SearchTokenizer(string.Empty);
     [Parameter]
     public string[]? DocumentFooterFields { get; set; }
     [Parameter]
@@ -176,8 +179,14 @@ else
 
     private string DocumentSummary(DocumentMetadata document)
     {
-        var summary = DocumentWrapper.GetRelevantDocumentContent(document, SummaryLength) ??
-            document.Summary ?? string.Empty;
+        if(!string.IsNullOrEmpty(document.Content) && SearchTokenizer.HasTokens) {
+            var searchTextRelevance = new SearchTextRelevance(SearchTokenizer, document.Content);
+            var relevantSection = searchTextRelevance.MostRelevantSection(SummaryLength);
+            if (relevantSection != null)
+                return relevantSection;
+        }
+
+        var summary = document.Summary ?? string.Empty;
 
         if (string.IsNullOrWhiteSpace(summary))
             summary = document.Content ?? string.Empty;
