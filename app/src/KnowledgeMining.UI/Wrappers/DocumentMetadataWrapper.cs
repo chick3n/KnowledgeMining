@@ -1,5 +1,6 @@
 ﻿using KnowledgeMining.Domain.Entities;
 using System.Text.Json;
+using System.Text.RegularExpressions;
 
 namespace KnowledgeMining.UI.Wrappers
 {
@@ -7,16 +8,34 @@ namespace KnowledgeMining.UI.Wrappers
     {
 
         public DocumentMetadataWrapper(
-            IEnumerable<DocumentMetadata> documentMetadata, IndexItemFieldMapping indexItemFieldMapping, string? keyFieldName)
+            IEnumerable<DocumentMetadata> documentMetadata, IndexItemFieldMapping indexItemFieldMapping, string? keyFieldName,
+            string? searchQuery = null)
         {
             DocumentMetadata = documentMetadata;
             IndexItemFieldMapping = indexItemFieldMapping;
             KeyFieldName = keyFieldName;
+            RelevantWords = TokenizeRelevantWords(searchQuery);
         }
 
         public IEnumerable<DocumentMetadata> DocumentMetadata { get; set; }
         public IndexItemFieldMapping IndexItemFieldMapping { get; set; } = new IndexItemFieldMapping();
         public string? KeyFieldName { get; set; }
+        public string[]? RelevantWords { get; set; }
+
+        private string[]? TokenizeRelevantWords(string query)
+        {
+            if (string.IsNullOrEmpty(query))
+                return null;
+
+            query = query.ToLower()
+                .Replace("*", string.Empty)
+                .Replace(" or ", string.Empty)
+                .Replace(" and ", string.Empty)
+                .Replace(" not ", string.Empty);
+
+            return new string(query.ToCharArray().Where(x => !char.IsPunctuation(x)).ToArray())
+                .Split(' ');
+        }
 
         public IEnumerable<DocumentMetadata> Documents()
         {
@@ -109,6 +128,90 @@ namespace KnowledgeMining.UI.Wrappers
                 return altTitle;
 
             return string.Empty;
+        }
+
+        public string? GetRelevantDocumentContent(DocumentMetadata document, int length)
+        {
+            if (RelevantWords == null || document == null)
+                return null;
+
+            if (RelevantWords.Length == 0)
+                return null;
+
+            if(!string.IsNullOrEmpty(document.Content))
+            {
+                if (document.Content.Length <= length)
+                    return document.Content;
+
+                var indexes = new List<(int, int)>();
+
+                foreach(var token in RelevantWords)
+                {
+                    var tokenIndexes = GetRelevantIndexes(document.Content, token);
+                    if (tokenIndexes != null)
+                        indexes.AddRange(tokenIndexes);
+                }
+
+                var range = GetRelevantRangeOfContent(length, indexes.ToArray()); 
+                if(range != null && range.Value.Item1 <= document.Content.Length && range.Value.Item2 <= document.Content.Length)
+                {
+                    return document.Content.Substring(range.Value.Item1, (range.Value.Item2 - range.Value.Item1));
+                }
+            }
+
+            return null;
+        }
+
+        private (int,int)[]? GetRelevantIndexes(string content, string token)
+        {
+            var indexes = new List<(int, int)>();
+
+            var lastIndex = 0;
+            do
+            {
+                var index = content.IndexOf(token, lastIndex);
+                if (index > -1)
+                    indexes.Add((index, token.Length));
+                else break;
+
+                lastIndex = index+1;
+            } while (lastIndex > -1);
+
+            return indexes.Count > 0 ?
+                indexes.ToArray() : null;
+        }
+
+        private (int, int)? GetRelevantRangeOfContent(int contentLength, (int, int)[] positions)
+        {
+            var orderedPositions = positions.OrderBy(x => x.Item1);
+            (int, int, int)? bestMatch = null;
+
+            for(var x=0; x<positions.Length; x++)
+            {
+                var position = positions[x];
+                var tokenCount = 0;
+                var start = position.Item1;
+                var end = start;
+
+                for(var y=x; y<positions.Length; y++)
+                {
+                    var position2 = positions[y];
+                    end = position2.Item1 + position2.Item2;
+
+                    if ((end - start) < contentLength)
+                        tokenCount++;
+                    else
+                        break;
+                }
+
+                if (bestMatch == null || (bestMatch != null && bestMatch.Value.Item3 < tokenCount))
+                    bestMatch = (start, end, tokenCount);
+            }
+
+            if(bestMatch == null)
+                return null;
+
+            return (bestMatch.Value.Item1, bestMatch.Value.Item2);
         }
     }
 }

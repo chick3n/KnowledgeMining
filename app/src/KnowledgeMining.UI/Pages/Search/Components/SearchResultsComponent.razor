@@ -63,7 +63,11 @@ else
                             <MudCardContent>
                                 <div class="d-flex flex-row gap-10">
                                     <div class="flex-grow-1" style="min-width: 50%; max-width:50%">
-                                        <MudText Typo="Typo.body2">@DocumentSummary(document)</MudText>
+                                        <MudHighlighter Class="mud-dark-text"
+                                             Style="background-color:transparent;font-weight:bold"
+                                             Text="@DocumentSummary(document)"
+                                             HighlightedTexts="@DocumentWrapper.RelevantWords" />
+                                        <MudText Typo="Typo.body2"></MudText>
                                     </div>
 
                                     <div class="flex-grow-1">
@@ -172,7 +176,8 @@ else
 
     private string DocumentSummary(DocumentMetadata document)
     {
-        var summary = document.Summary ?? string.Empty;
+        var summary = DocumentWrapper.GetRelevantDocumentContent(document, SummaryLength) ??
+            document.Summary ?? string.Empty;
 
         if (string.IsNullOrWhiteSpace(summary))
             summary = document.Content ?? string.Empty;
