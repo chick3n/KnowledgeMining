@@ -143,7 +143,6 @@ namespace KnowledgeMining.UI.Pages.Record
             _moreLikeThis = new DocumentMetadataWrapper(
                 moreLikeThis.Documents
                     .OrderByDescending(x => x.SearchScore)
-                    .DistinctBy(x=> x.Id)
                     .Take(5),
                 _indexItem.FieldMapping, _indexItem.KeyField);
 

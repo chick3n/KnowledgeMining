@@ -141,7 +141,7 @@
                         <div class="record_divider">   
                             <MudText Typo="Typo.h6">Related Documents</MudText>
                             <hr />
-                            @foreach (var document in _moreLikeThis.Documents())
+                            @foreach (var document in _moreLikeThis.Documents().DistinctBy(x => x.Id))
                             {
                                 <MudLink Typo="Typo.body2" Href="@($"/record/{Index}/{document.Id}")" style="display:block">
                                     @_moreLikeThis.GetTitle(document)
