@@ -77,11 +77,22 @@ namespace KnowledgeMining.Infrastructure.Services.Search
             return response.Value.Results.Select(r => r.Text).Distinct();
         }
 
-        public async Task<MoreLikeThis> MoreLikeThis(string indexName, string documentId, CancellationToken cancellationToken)
+        public async Task<MoreLikeThis> MoreLikeThis(string indexName, string documentId, string[] select, string[] searchOn,
+            CancellationToken cancellationToken)
         {
             var apiVersion = "api-version=2021-04-30-Preview";
             var client = _httpClientFactory.CreateClient(Application.Common.Options.SearchOptions.Search);
             var url = $"/indexes/{indexName}/docs?{apiVersion}&moreLikeThis={documentId}";
+
+            if(select != null && select.Length > 0)
+            {
+                url += "&$select=" + string.Join(",", select.Select(x => Uri.EscapeDataString(x)));
+            }
+
+            if (searchOn != null && searchOn.Length > 0)
+            {
+                url += "&$search=" + string.Join(",", searchOn.Select(x => Uri.EscapeDataString(x)));
+            }
 
             var response = await client.GetAsync(url, cancellationToken);
             if(response.IsSuccessStatusCode)

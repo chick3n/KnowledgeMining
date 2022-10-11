@@ -23,7 +23,9 @@ namespace KnowledgeMining.Application.Documents.Queries.SearchDocuments
         public async Task<MoreLikeThisResponse> Handle(MoreLikeThisQuery request, CancellationToken cancellationToken)
         {
             var results = await _searchService.MoreLikeThis(request.IndexName,
-                request.Key, 
+                request.Key,
+                request.Select,
+                request.SearchOn,
                 cancellationToken);
 
             return new MoreLikeThisResponse()
