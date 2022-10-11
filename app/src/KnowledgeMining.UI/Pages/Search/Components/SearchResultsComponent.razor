@@ -57,7 +57,7 @@ else
                                     }
                                 </CardHeaderAvatar>
                                 <CardHeaderContent>
-                                    <MudText Typo="Typo.body1">@DocumentHeader(document)</MudText>
+                                    <MudText Typo="Typo.body1">@((MarkupString)DocumentHeader(document))</MudText>
                                     <MudText Typo="Typo.body2">@DocumentSubHeader(document)</MudText>
                                 </CardHeaderContent>
                             </MudCardHeader>
@@ -168,6 +168,10 @@ else
 
     private string DocumentHeader(DocumentMetadata document)
     {
+        if(document.HasHighlights("title"))
+        {
+            return document.Highlights["title"].First();
+        }
         return DocumentWrapper.GetTitle(document)!;
     }
 
@@ -190,7 +194,9 @@ else
 
         if(document.Highlights != null && document.Highlights.ContainsKey("content"))
         {
-            var contentHighlights = document.Highlights["content"];
+            var contentHighlights = document.Highlights["content"]
+                .Distinct()
+                .ToList();
             if(contentHighlights.Count > 0)
             {
                 return string.Join("<br/>...<br/>", contentHighlights.Take(3));
@@ -201,12 +207,6 @@ else
 
     private string DocumentSummary(DocumentMetadata document)
     {
-        //if(!string.IsNullOrEmpty(document.Content) && SearchTokenizer.HasTokens) {
-        //    var searchTextRelevance = new SearchTextRelevance(SearchTokenizer, document.Content);
-        //    var relevantSection = searchTextRelevance.MostRelevantSection(SummaryLength);
-        //    if (relevantSection != null)
-        //        return relevantSection;
-        //}
         var summary = document.Summary ?? string.Empty;
 
         if (string.IsNullOrWhiteSpace(summary))

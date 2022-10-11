@@ -429,6 +429,7 @@ namespace KnowledgeMining.Infrastructure.Services.Search
 
 
             options.HighlightFields.Add("content");
+            options.HighlightFields.Add("title");
             /*foreach (string h in schema.SearchableFields)
             {
                 options.HighlightFields.Add(h);

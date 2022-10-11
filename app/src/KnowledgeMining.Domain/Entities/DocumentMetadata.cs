@@ -193,5 +193,15 @@ namespace KnowledgeMining.Domain.Entities
 
             return str;
         }
+
+        public bool HasHighlights(string? key = null)
+        {
+            if (Highlights == null) return false;
+
+            if (key == null)
+                return Highlights != null && Highlights.Count > 0;
+
+            return Highlights != null && Highlights.ContainsKey(key) && Highlights[key].Count > 0;
+        }
     }
 }
