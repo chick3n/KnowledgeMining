@@ -5,6 +5,8 @@ namespace KnowledgeMining.Domain.Entities
 {
     public class DocumentMetadata
     {
+        [JsonPropertyName("@search.highlights")]
+        public IDictionary<string, IList<string>>? Highlights { get; set; }
         [JsonPropertyName("@search.score")]
         public double SearchScore { get; set; }
         [JsonPropertyName("id")]

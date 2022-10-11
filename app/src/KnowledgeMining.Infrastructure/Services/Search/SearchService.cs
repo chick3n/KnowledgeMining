@@ -428,10 +428,11 @@ namespace KnowledgeMining.Infrastructure.Services.Search
             }
 
 
-            foreach (string h in schema.SearchableFields)
+            options.HighlightFields.Add("content");
+            /*foreach (string h in schema.SearchableFields)
             {
                 options.HighlightFields.Add(h);
-            }
+            }*/
 
             // Filter Query
             var filterBuilder = new List<string>();

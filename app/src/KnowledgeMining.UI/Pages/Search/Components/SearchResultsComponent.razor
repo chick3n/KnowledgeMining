@@ -1,8 +1,8 @@
 ﻿@using KnowledgeMining.Application.Documents.Queries.SearchDocuments
 @using System.Text.RegularExpressions
-@using KnowledgeMining.UI.Helpers
 @using KnowledgeMining.UI.Services.State
 @using KnowledgeMining.UI.Wrappers
+@using System.Text
 
 @inject NavigationManager NavManager
 @inject StateService StateService
@@ -64,11 +64,12 @@ else
                             <MudCardContent>
                                 <div class="d-flex flex-row gap-10">
                                     <div class="flex-grow-1" style="min-width: 50%; max-width:50%">
-                                        <MudHighlighter Class="mud-dark-text"
+                                        @*<MudHighlighter Class="mud-dark-text"
                                              Style="background-color:transparent;font-weight:bold"
                                              Text="@DocumentSummary(document)"
                                              HighlightedTexts="@SearchTokenizer.Tokens" />
-                                        <MudText Typo="Typo.body2"></MudText>
+                                        <MudText Typo="Typo.body2"></MudText>*@
+                                        @((MarkupString)DocumentPreviewText(document))
                                     </div>
 
                                     <div class="flex-grow-1">
@@ -114,8 +115,6 @@ else
 @code {
     [Parameter]
     public DocumentMetadataWrapper DocumentWrapper { get; set; }
-    [Parameter]
-    public SearchTokenizer SearchTokenizer { get; set; } = new SearchTokenizer(string.Empty);
     [Parameter]
     public string[]? DocumentFooterFields { get; set; }
     [Parameter]
@@ -177,15 +176,37 @@ else
         return document.DateTime?.ToLongDateString() ?? string.Empty;
     }
 
+    private string DocumentPreviewText(DocumentMetadata document)
+    {
+        var previewText = DocumentHighlightedText(document);
+        if (previewText != null)
+            return previewText;
+        return DocumentSummary(document);
+    }
+
+    private string? DocumentHighlightedText(DocumentMetadata document)
+    {
+        // only handle content field highlights
+
+        if(document.Highlights != null && document.Highlights.ContainsKey("content"))
+        {
+            var contentHighlights = document.Highlights["content"];
+            if(contentHighlights.Count > 0)
+            {
+                return string.Join("<br/>...<br/>", contentHighlights.Take(3));
+            }
+        }
+        return null;
+    }
+
     private string DocumentSummary(DocumentMetadata document)
     {
-        if(!string.IsNullOrEmpty(document.Content) && SearchTokenizer.HasTokens) {
-            var searchTextRelevance = new SearchTextRelevance(SearchTokenizer, document.Content);
-            var relevantSection = searchTextRelevance.MostRelevantSection(SummaryLength);
-            if (relevantSection != null)
-                return relevantSection;
-        }
-
+        //if(!string.IsNullOrEmpty(document.Content) && SearchTokenizer.HasTokens) {
+        //    var searchTextRelevance = new SearchTextRelevance(SearchTokenizer, document.Content);
+        //    var relevantSection = searchTextRelevance.MostRelevantSection(SummaryLength);
+        //    if (relevantSection != null)
+        //        return relevantSection;
+        //}
         var summary = document.Summary ?? string.Empty;
 
         if (string.IsNullOrWhiteSpace(summary))

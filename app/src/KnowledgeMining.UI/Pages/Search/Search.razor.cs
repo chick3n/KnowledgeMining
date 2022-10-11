@@ -14,8 +14,6 @@ using MudBlazor;
 using KnowledgeMining.UI.Pages.Search.Components;
 using Microsoft.AspNetCore.Components.Web;
 using MediatR;
-using Microsoft.AspNetCore.Components.Routing;
-using KnowledgeMining.UI.Helpers;
 
 namespace KnowledgeMining.UI.Pages.Search
 {
@@ -71,7 +69,6 @@ namespace KnowledgeMining.UI.Pages.Search
         private const string LABEL_ORDERBY_BEST_MATCH = "Best Match";
         private const string LABEL_ORDERBY_DATE = "Date";
         private string _sortLabel = LABEL_ORDERBY_BEST_MATCH;
-        private SearchTokenizer _searchTokenizer = new SearchTokenizer(string.Empty);
 
         private MudTabs? _mainBodyTabs;
         private MudTabPanel? _searchResultsPanel;
@@ -247,8 +244,6 @@ namespace KnowledgeMining.UI.Pages.Search
             _searchState.TotalPages = (int)response.TotalPages;
             _searchState.Facets = SummarizeFacets(response.Facets.ToArray());
             _searchState.KeyField = response.KeyField;
-
-            _searchTokenizer = new SearchTokenizer(SearchText);
 
             UpdateSearchResultsLabelWithDocumentCount(_searchState.TotalCount);
 
