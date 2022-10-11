@@ -9,6 +9,7 @@ using Microsoft.JSInterop;
 using MudBlazor;
 using System.Text.Json.Nodes;
 using System.Text.Json;
+using KnowledgeMining.Application.Documents.Queries.SearchDocuments;
 
 namespace KnowledgeMining.UI.Pages.Record
 {
@@ -35,6 +36,7 @@ namespace KnowledgeMining.UI.Pages.Record
         private DocumentMetadata? _documentMetadata;
         private IndexItem? _indexItem;
         private string? _textToHighlight;
+        private DocumentMetadataWrapper? _moreLikeThis;
 
         private const int LIST_ITEM_VALUE_RECORD = 1;
         private const int LIST_ITEM_VALUE_SOURCE = 3;
@@ -55,6 +57,7 @@ namespace KnowledgeMining.UI.Pages.Record
             {
                 _canNavigateBack = await jsRuntime.InvokeAsync<bool>("HasHistory");
                 await GetRecordDetails();
+                await GetMoreLikeThis();
                 SetDefaultListItem();
                 FinishedLoading();
                 StateHasChanged();
@@ -121,6 +124,21 @@ namespace KnowledgeMining.UI.Pages.Record
             }
             
 
+        }
+
+        private async Task GetMoreLikeThis()
+        {
+            var indexKey = _indexItem?.KeyField ?? throw new ArgumentNullException("IndexConfig.Key");
+            var indexName = _indexItem?.Id ?? throw new ArgumentNullException("IndexConfig.Id");
+
+            var moreLikeThis = await Mediator.Send(new MoreLikeThisQuery(indexName, 
+                RecordId,
+                new[] { "title", indexKey },
+                new[] { "content" }));
+
+            _moreLikeThis = new DocumentMetadataWrapper(
+                moreLikeThis.Documents.OrderByDescending(x => x.SearchScore),
+                _indexItem.FieldMapping, _indexItem.KeyField);
         }
 
         //Redo

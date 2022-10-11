@@ -13,5 +13,6 @@ namespace KnowledgeMining.Application.Common.Interfaces
         Task<DocumentMetadata> GetDocumentDetails(string indexName, string documentId, CancellationToken cancellationToken);
         Task<EntityMap> GenerateEntityMap(string indexName, string? q, IEnumerable<string> facetNames, int maxLevels, int maxNodes, CancellationToken cancellationToken);
         ValueTask QueueIndexerJob(CancellationToken cancellationToken);
+        Task<MoreLikeThis> MoreLikeThis(string indexName, string documentId, CancellationToken cancellationToken);
     }
 }

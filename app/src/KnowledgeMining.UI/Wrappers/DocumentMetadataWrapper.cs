@@ -24,6 +24,8 @@ namespace KnowledgeMining.UI.Wrappers
             return DocumentMetadata.Select(x => ToDocumentMetadata(x)).ToList();
         }
 
+        public bool HasDocuments => DocumentMetadata.Any();
+
         private DocumentMetadata ToDocumentMetadata(DocumentMetadata d)
         {
             var documentMetadata = new DocumentMetadata();

@@ -100,6 +100,24 @@
                     </MudPaper>
                 }
 
+                @if(_moreLikeThis != null && _moreLikeThis.HasDocuments)
+                {
+                    <MudPaper Elevation="1" Style="margin-top: 20px">
+                        <ul>
+                            <li style="border-bottom-right-radius: 0px; border-bottom-left-radius: 0px"
+                                class="mud-button-root mud-button mud-button-filled mud-button-filled-dark mud-button-filled-size-medium mud-width-full mud-ripple mudbutton-text-left mud-typography-body1">Related Documents</li>
+                            @foreach(var document in _moreLikeThis.Documents())
+                            {
+                                <li class="mud-list-item-gutters mt-2">
+                                    <MudLink Typo="Typo.caption" Style="display:block; border-bottom: 1px solid #eee"
+                                        Href="@($"/record/{Index}/{document.Id}")">
+                                        @_moreLikeThis.GetTitle(document)
+                                    </MudLink>
+                                </li>
+                            }
+                        </ul>
+                    </MudPaper>
+                }
 
             }
             else

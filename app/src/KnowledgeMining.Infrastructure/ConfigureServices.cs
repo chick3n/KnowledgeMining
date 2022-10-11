@@ -33,6 +33,18 @@ namespace Microsoft.Extensions.DependencyInjection
                 //clientBuilder.AddSearchIndexerClient(configuration.GetSection(KMOptions.SearchOptions.Search));
             });
 
+            services.AddHttpClient(KMOptions.SearchOptions.Search, client =>
+            {
+                var endpoint = configuration
+                    .GetSection(KMOptions.SearchOptions.Search).GetValue<string>(nameof(KMOptions.SearchOptions.Endpoint));
+                var apiKey = configuration
+                    .GetSection(KMOptions.SearchOptions.Search)
+                    .GetValue<string>("Credential:Key");
+                client.BaseAddress = new Uri(endpoint, UriKind.Absolute);
+                //client.DefaultRequestHeaders.Add("Content-Type", "application/json");
+                client.DefaultRequestHeaders.Add("api-key", apiKey);
+            });
+
             services.AddScoped<ISearchService, SearchService>();
             services.AddScoped<IStorageService, StorageService>();
             services.AddScoped<IDatabaseService, DatabaseService>();

@@ -14,6 +14,7 @@ using KnowledgeMining.UI.Services.Search.Models;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using System.Text;
+using System.Text.Json;
 using System.Text.RegularExpressions;
 using System.Threading.Channels;
 
@@ -23,6 +24,7 @@ namespace KnowledgeMining.Infrastructure.Services.Search
     {
         private readonly SearchIndexClient _searchIndexClient;
         private readonly ChannelWriter<SearchIndexerJobContext> _jobChannel;
+        private readonly IHttpClientFactory _httpClientFactory;
 
         private readonly Application.Common.Options.SearchOptions _searchOptions;
         private readonly EntityMapOptions _entityMapOptions;
@@ -30,6 +32,7 @@ namespace KnowledgeMining.Infrastructure.Services.Search
         private readonly ILogger _logger;
 
         public SearchService(SearchIndexClient searchIndexClient,
+                             IHttpClientFactory httpClientFactory,
                              ChannelWriter<SearchIndexerJobContext> jobChannel,
                              IOptions<Application.Common.Options.SearchOptions> searchOptions,
                              IOptions<EntityMapOptions> entityMapOptions,
@@ -37,7 +40,7 @@ namespace KnowledgeMining.Infrastructure.Services.Search
         {
             _searchIndexClient = searchIndexClient;
             _jobChannel = jobChannel;
-
+            _httpClientFactory = httpClientFactory;
             _searchOptions = searchOptions.Value;
             _entityMapOptions = entityMapOptions.Value;
 
@@ -72,6 +75,22 @@ namespace KnowledgeMining.Infrastructure.Services.Search
 
 
             return response.Value.Results.Select(r => r.Text).Distinct();
+        }
+
+        public async Task<MoreLikeThis> MoreLikeThis(string indexName, string documentId, CancellationToken cancellationToken)
+        {
+            var apiVersion = "api-version=2021-04-30-Preview";
+            var client = _httpClientFactory.CreateClient(Application.Common.Options.SearchOptions.Search);
+            var url = $"/indexes/{indexName}/docs?{apiVersion}&moreLikeThis={documentId}";
+
+            var response = await client.GetAsync(url, cancellationToken);
+            if(response.IsSuccessStatusCode)
+            {
+                using var contentStream = await response.Content.ReadAsStreamAsync();
+                return await JsonSerializer.DeserializeAsync<MoreLikeThis>(contentStream);
+            }
+
+            return new MoreLikeThis();
         }
 
         public async Task<SearchDocumentsResponse> SearchDocuments(SearchDocumentsQuery request, CancellationToken cancellationToken)
