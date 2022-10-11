@@ -21,10 +21,11 @@ namespace KnowledgeMining.UI.Pages.Record
 
         [Parameter] public string Index { get; set; } = default!;
         [Parameter] public string RecordId { get; set; } = null!;
-        
+
 
         //UI States
-        private bool _isLoading = true;
+        private bool _documentMetadataIsLoading = true;
+        private bool _relatedDocumentMetadataIsLoading = true;
         private MudListItem _selectedItem;
         private object _selectedValue = 1;
         private bool _canNavigateBack = false;
@@ -56,37 +57,34 @@ namespace KnowledgeMining.UI.Pages.Record
             if(firstRender)
             {
                 _canNavigateBack = await jsRuntime.InvokeAsync<bool>("HasHistory");
-                await GetRecordDetails();
-                await GetMoreLikeThis();
-                SetDefaultListItem();
-                FinishedLoading();
                 StateHasChanged();
             }
         }
 
-        private void SetDefaultListItem()
+        protected override Task OnParametersSetAsync()
         {
-            if(_documentMetadata != null)
-            {
-                if(!string.IsNullOrEmpty(_documentMetadata.Summary))
-                {
-                    _selectedValue = LIST_ITEM_VALUE_RECORD;
-                }
-                else if(!string.IsNullOrEmpty(_documentMetadata.Content))
-                {
-                    _selectedValue = LIST_ITEM_VALUE_RECORD;
-                }
-                else
-                {
-                    _selectedValue = LIST_ITEM_VALUE_SOURCE;
-                }
-            }
+            if(_documentMetadataIsLoading)
+                GetRecordDetails().ConfigureAwait(false);
+
+            if(_relatedDocumentMetadataIsLoading)
+                GetMoreLikeThis().ConfigureAwait(false);
+
+            return base.OnParametersSetAsync();
         }
 
-        private void FinishedLoading()
+        public override Task SetParametersAsync(ParameterView parameters)
         {
-            _isLoading = false;
+            if(parameters.TryGetValue<string>("RecordId", out var recordId))
+            {
+                if(RecordId == null || !RecordId.Equals(recordId))
+                {
+                    _documentMetadataIsLoading = _relatedDocumentMetadataIsLoading = true;
+                }
+            }
+
+            return base.SetParametersAsync(parameters);
         }
+
 
         private async Task GetIndexItem()
         {
@@ -98,6 +96,8 @@ namespace KnowledgeMining.UI.Pages.Record
 
         private async Task GetRecordDetails()
         {
+            _documentMetadataIsLoading = true;
+
             var documentMetadata = await Mediator.Send(new GetDocumentMetadataQuery(_indexItem!.IndexName!, RecordId));
             var wrapper = new DocumentMetadataWrapper(new DocumentMetadata[] { documentMetadata },
                 _indexItem.FieldMapping, _indexItem.KeyField);
@@ -122,12 +122,16 @@ namespace KnowledgeMining.UI.Pages.Record
                     }
                 }
             }
-            
 
+            _documentMetadataIsLoading = false;
+
+            StateHasChanged();
         }
 
         private async Task GetMoreLikeThis()
         {
+            _relatedDocumentMetadataIsLoading = true;
+
             var indexKey = _indexItem?.KeyField ?? throw new ArgumentNullException("IndexConfig.Key");
             var indexName = _indexItem?.Id ?? throw new ArgumentNullException("IndexConfig.Id");
 
@@ -139,6 +143,10 @@ namespace KnowledgeMining.UI.Pages.Record
             _moreLikeThis = new DocumentMetadataWrapper(
                 moreLikeThis.Documents.OrderByDescending(x => x.SearchScore),
                 _indexItem.FieldMapping, _indexItem.KeyField);
+
+            _relatedDocumentMetadataIsLoading = false;
+
+            StateHasChanged();
         }
 
         //Redo

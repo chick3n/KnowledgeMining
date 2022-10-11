@@ -26,13 +26,10 @@
 <MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="mt-4">
     <MudGrid>
         <MudItem xs="12" sm="2">
-            @if (_canNavigateBack)
-            {
-                <MudButton StartIcon="@Icons.Material.Filled.ArrowBack" Title="Back" Color="Color.Inherit" OnClick="GoBack">Back</MudButton>
-            }
+            <MudButton Disabled="@(!_canNavigateBack)" StartIcon="@Icons.Material.Filled.ArrowBack" Title="Back" Color="Color.Inherit" OnClick="GoBack">Back</MudButton>
         </MudItem>
         <MudItem xs="0" sm="10">
-            @if(!_isLoading)
+            @if(!_documentMetadataIsLoading)
             {
                 @if(!string.IsNullOrEmpty(_title) || !string.IsNullOrEmpty(_documentMetadata?.SourcePath))
                 {
@@ -51,23 +48,16 @@
             }
             else 
             {
-                <MudCard Elevation="0">
-                    <MudCardHeader>
-                        <CardHeaderAvatar>
-                            <MudSkeleton SkeletonType="SkeletonType.Circle" Animation="Animation.Wave" Height="40px" Width="40px"/>
-                        </CardHeaderAvatar>
-                        <CardHeaderContent>
-                            <MudSkeleton Animation="Animation.Wave" />
-                            <MudSkeleton Animation="Animation.Wave" Width="60%" />
-                        </CardHeaderContent>
-                    </MudCardHeader>
-                </MudCard>
+                <MudStack Row="true">
+                    <MudSkeleton Animation="Animation.Wave" SkeletonType="SkeletonType.Circle" Width="42px" Height="42px" />
+                    <MudSkeleton Animation="Animation.Wave" Height="42px" Width="100%" />
+                </MudStack>
             }
         </MudItem>
     </MudGrid>
     <MudGrid>
         <MudItem xs="2">    
-            @if (!_isLoading)
+            @if (!_documentMetadataIsLoading)
             {
                 <MudPaper>
                     <MudList Clickable="true" @bind-SelectedItem="_selectedItem" @bind-SelectedValue="_selectedValue">
@@ -79,11 +69,6 @@
                                 if (IsPreviewType())
                                 {
                                     <MudListItem Text="Preview" Value="@LIST_ITEM_VALUE_SOURCE"/>
-                                }
-                                else
-                                {
-                                    <MudListItem Text="Source" Value="@LIST_ITEM_VALUE_SOURCE"
-                                        OnClick="@(async () => await jsRuntime.InvokeAsync<object>("open", UriEncodedSourcePath(), "_blank"))"/>
                                 }
                             }
                         }
@@ -99,38 +84,26 @@
                         </MudBadge>
                     </MudPaper>
                 }
-
-                @if(_moreLikeThis != null && _moreLikeThis.HasDocuments)
-                {
-                    <MudPaper Elevation="1" Style="margin-top: 20px">
-                        <ul>
-                            <li style="border-bottom-right-radius: 0px; border-bottom-left-radius: 0px"
-                                class="mud-button-root mud-button mud-button-filled mud-button-filled-dark mud-button-filled-size-medium mud-width-full mud-ripple mudbutton-text-left mud-typography-body1">Related Documents</li>
-                            @foreach(var document in _moreLikeThis.Documents())
-                            {
-                                <li class="mud-list-item-gutters mt-2">
-                                    <MudLink Typo="Typo.caption" Style="display:block; border-bottom: 1px solid #eee"
-                                        Href="@($"/record/{Index}/{document.Id}")">
-                                        @_moreLikeThis.GetTitle(document)
-                                    </MudLink>
-                                </li>
-                            }
-                        </ul>
-                    </MudPaper>
-                }
-
             }
             else
             {
                 <MudPaper Elevation="0">
-                    <MudSkeleton SkeletonType="SkeletonType.Rectangle" Animation="Animation.Wave" Height="110px" />
+                    <MudSkeleton SkeletonType="SkeletonType.Rectangle" Animation="Animation.Wave" Height="160px" />
+                    <br />
+                    <MudSkeleton SkeletonType="SkeletonType.Rectangle" Animation="Animation.Wave" Height="36px" />
                 </MudPaper>
             }
         </MudItem>
         <MudItem xs="10">
-            @if(_documentMetadata != null && _isLoading == false)
+            @if((int)_selectedValue == LIST_ITEM_VALUE_RECORD)
             {
-                @if((int)_selectedValue == LIST_ITEM_VALUE_RECORD)
+                @if(_documentMetadataIsLoading)
+                {
+                    <div class="record_divider">
+                    <MudSkeleton Animation="Animation.Wave" SkeletonType="SkeletonType.Rectangle" Height="110px" />
+                    </div>
+                }
+                else
                 {
                     @if(!string.IsNullOrEmpty(_title) || !string.IsNullOrEmpty(_documentMetadata?.SourcePath))
                     {
@@ -153,7 +126,38 @@
                             </MudStack>
                         </div>
                     }
+                }
 
+                @if(_documentMetadataIsLoading || _relatedDocumentMetadataIsLoading)
+                {
+                    <div class="record_divider">
+                    <MudSkeleton Animation="Animation.Wave" SkeletonType="SkeletonType.Rectangle" Height="85px" />
+                    </div>
+                }
+                else 
+                {
+                    @if (_moreLikeThis != null && _moreLikeThis.HasDocuments)
+                    {
+                        <div class="record_divider">   
+                            <MudText Typo="Typo.h6">Related Documents</MudText>
+                            <hr />
+                            @foreach (var document in _moreLikeThis.Documents())
+                            {
+                                <MudLink Typo="Typo.body2" Href="@($"/record/{Index}/{document.Id}")" style="display:block">
+                                    @_moreLikeThis.GetTitle(document)
+                                </MudLink>
+                            }
+                        </div>
+                    }
+                }
+
+
+                @if (_documentMetadataIsLoading)
+                {
+                    <MudSkeleton Animation="Animation.Wave" SkeletonType="SkeletonType.Rectangle" Height="400px" />
+                }
+                else
+                {
                     @if (!string.IsNullOrWhiteSpace(_documentMetadata?.Summary))
                     {
                         <div class="record_divider">
@@ -161,7 +165,7 @@
                             <hr />
                             <MudPaper Class="p-2" Elevation="0">
                                 <pre style="overflow-x: auto; overflow-y: scroll; white-space: pre-wrap; word-wrap: break-word; ">
-                                <MudHighlighter Text="@_documentMetadata!.Summary"  Style="background-color: darkblue; font-weight:bold; color: white"></MudHighlighter>
+                                    <MudHighlighter Text="@_documentMetadata!.Summary"  Style="background-color: darkblue; font-weight:bold; color: white"></MudHighlighter>
                                 </pre>
                             </MudPaper>
                         </div>
@@ -174,7 +178,7 @@
                             <MudItem xs="12" sm="8">
                                 <MudPaper Class="p-2" Elevation="0" Style="border-right: 1px solid #eee; border-radius: 0;">
                                     <pre style="overflow-x: auto; overflow-y: scroll; white-space: pre-wrap; word-wrap: break-word; ">
-                                    <MudHighlighter Text="@_documentMetadata!.Content" HighlightedText="@_textToHighlight" Style="background-color: darkblue; font-weight:bold; color: white"></MudHighlighter>
+                                        <MudHighlighter Text="@_documentMetadata!.Content" HighlightedText="@_textToHighlight" Style="background-color: darkblue; font-weight:bold; color: white"></MudHighlighter>
                                     </pre>
                                 </MudPaper>
                             </MudItem>
@@ -196,46 +200,48 @@
                         </MudGrid>
                     </div>
                 }
-                else if((int)_selectedValue == LIST_ITEM_VALUE_SOURCE)
+            }
+            else if((int)_selectedValue == LIST_ITEM_VALUE_SOURCE)
+            {
+                <MudPaper Class="p-2" Elevation="0">
+                    <DocumentViewerComponent Document="_documentMetadata"></DocumentViewerComponent>
+                </MudPaper>
+            }
+            else if((int)_selectedValue == LIST_ITEM_VALUE_METADATA)
+            {
+                @if(_documentMetadataIsLoading)
                 {
-                    <MudPaper Class="p-2" Elevation="0">
-                        <DocumentViewerComponent Document="_documentMetadata"></DocumentViewerComponent>
-                    </MudPaper>
+                    <MudSkeleton Animation="Animation.Wave" />
+                    <MudSkeleton Animation="Animation.Wave" SkeletonType="SkeletonType.Rectangle" Height="500" />
                 }
-                else if((int)_selectedValue == LIST_ITEM_VALUE_METADATA)
+                else 
                 {
                     <MudTable Items="@_documentMetadata!.ToDictionary()" Hover="true"  Elevation="0"
-                        Breakpoint="Breakpoint.Sm" HorizontalScrollbar="true" Virtualize="true" FixedHeader="true">
-                    <HeaderContent>
-                        <MudTh>Property</MudTh>
-                        <MudTh>Value</MudTh>
-                    </HeaderContent>
-                    <RowTemplate>
-                        <MudTd DataLabel="Property" Style="vertical-align:top;">@context.Key</MudTd>
-                        <MudTd DataLabel="Value" >
-                            @if (context.Value != null && _documentMetadata.IsMetadataValueAnArray(context.Value))
-                            {
-                                <ul>
-                                @foreach(var item in ((IEnumerable<string>)context.Value))
+                    Breakpoint="Breakpoint.Sm" HorizontalScrollbar="true" Virtualize="true" FixedHeader="true">
+                        <HeaderContent>
+                            <MudTh>Property</MudTh>
+                            <MudTh>Value</MudTh>
+                        </HeaderContent>
+                        <RowTemplate>
+                            <MudTd DataLabel="Property" Style="vertical-align:top;">@context.Key</MudTd>
+                            <MudTd DataLabel="Value" >
+                                @if (context.Value != null && _documentMetadata.IsMetadataValueAnArray(context.Value))
                                 {
-                                    <li style="list-style-type: circle">@item</li>
+                                    <ul>
+                                    @foreach(var item in ((IEnumerable<string>)context.Value))
+                                    {
+                                        <li style="list-style-type: circle">@item</li>
+                                    }
+                                    </ul>
                                 }
-                                </ul>
-                            }
-                            else
-                            {
-                                @_documentMetadata.ConvertMetadataValueToString(context.Value)
-                            }
-                        </MudTd>
-                    </RowTemplate>
-                </MudTable>
+                                else
+                                {
+                                    @_documentMetadata.ConvertMetadataValueToString(context.Value)
+                                }
+                            </MudTd>
+                        </RowTemplate>
+                    </MudTable>
                 }
-            }
-            else
-            {
-                <MudCard Elevation="0">
-                    <MudSkeleton SkeletonType="SkeletonType.Rectangle" Animation="Animation.Wave" Height="250px" />
-                </MudCard>
             }
         </MudItem>
     </MudGrid>
