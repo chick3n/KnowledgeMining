@@ -42,9 +42,8 @@ else
             @foreach (var document in DocumentWrapper.Documents())
             {
                 <MudItem xs="12" sm="12">
-                    <a href="@($"{NavigateTo}{document.Id}")">
-                        <MudCard Outlined="true"
-                            Style="cursor: pointer;">
+                    
+                        <MudCard Outlined="true">
                             <MudCardHeader>
                                 <CardHeaderAvatar>
                                     @if(string.IsNullOrWhiteSpace(document.IconUrl)) 
@@ -57,18 +56,13 @@ else
                                     }
                                 </CardHeaderAvatar>
                                 <CardHeaderContent>
-                                    <MudText Typo="Typo.body1">@((MarkupString)DocumentHeader(document))</MudText>
-                                    <MudText Typo="Typo.body2">@DocumentSubHeader(document)</MudText>
+                                    <MudLink Href="@($"{NavigateTo}{document.Id}")" Underline="Underline.None" Typo="Typo.body1" Style="display:block; width:100%">@((MarkupString)DocumentHeader(document))</MudLink>
+                                    <MudLink Href="@($"{NavigateTo}{document.Id}")" Underline="Underline.None" Typo="Typo.body2" Style="display:block; width:100%">@DocumentSubHeader(document)</MudLink>
                                 </CardHeaderContent>
                             </MudCardHeader>
                             <MudCardContent>
                                 <div class="d-flex flex-row gap-10">
                                     <div class="flex-grow-1" style="min-width: 50%; max-width:50%">
-                                        @*<MudHighlighter Class="mud-dark-text"
-                                             Style="background-color:transparent;font-weight:bold"
-                                             Text="@DocumentSummary(document)"
-                                             HighlightedTexts="@SearchTokenizer.Tokens" />
-                                        <MudText Typo="Typo.body2"></MudText>*@
                                         @((MarkupString)DocumentPreviewText(document))
                                     </div>
 
@@ -96,7 +90,6 @@ else
                                 </MudCardActions> 
                             }
                         </MudCard>
-                    </a>
                 </MudItem>
             }
         </MudGrid>
