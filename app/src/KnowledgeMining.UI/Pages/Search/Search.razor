@@ -51,12 +51,13 @@
         <MudItem xs="12">
         <MudDivider Light="true" />
         </MudItem>
-        <MudItem xs="12" md="2" hidden="@_showDocumentDetails">    
-                <FacetsFilterComponent 
-                    @ref="_facetsFilterComponent"
-                    Facets="@_searchState.Facets"
-                    OnFacetSelectedChanged="UpdateSearchFacetsAndSearch"
-                    IndexItem="_indexItem"></FacetsFilterComponent>
+        <MudItem xs="12" md="2">
+            <FacetsFilterComponent 
+                @ref="_facetsFilterComponent"
+                Facets="@_searchState.Facets"
+                IsLoading="@_isSearching"
+                OnFacetSelectedChanged="UpdateSearchFacetsAndSearch"
+                IndexItem="_indexItem"></FacetsFilterComponent>
         </MudItem>
         <MudItem xs="12" md="10" hidden="@_showDocumentDetails">
             <MudTabs @ref="_mainBodyTabs" Elevation="0" Outlined="true" Rounded="true" ApplyEffectsToContainer="true" PanelClass="pa-6" Class="">

@@ -91,7 +91,7 @@ namespace KnowledgeMining.UI.Pages.Search
             }
         }
 
-        protected override async Task OnAfterRenderAsync(bool firstRender)
+        /*protected override async Task OnAfterRenderAsync(bool firstRender)
         {
             await base.OnAfterRenderAsync(firstRender);
 
@@ -103,18 +103,27 @@ namespace KnowledgeMining.UI.Pages.Search
                     await SearchDocuments(request);
                 }
             }
+        }*/
+
+        protected override Task OnParametersSetAsync()
+        {
+            if (_isSearching)
+                SearchDocuments().ConfigureAwait(false);                
+
+            return base.OnParametersSetAsync();
         }
 
-        protected override async Task OnParametersSetAsync()
+        public override Task SetParametersAsync(ParameterView parameters)
         {
-            await base.OnParametersSetAsync();
-
-            if (!string.IsNullOrEmpty(Hash) && !Hash.Equals(_currentHash))
+            if (parameters.TryGetValue<string>("Hash", out var hash))
             {
-                _currentHash = Hash;
-                await SearchDocumentsFromHash(Hash);
-                StateHasChanged();
+                if (Hash == null || !Hash.Equals(hash))
+                {
+                    _isSearching = true;
+                }
             }
+
+            return base.SetParametersAsync(parameters);
         }
 
         #region UI
@@ -122,7 +131,7 @@ namespace KnowledgeMining.UI.Pages.Search
         private async Task SearchIfButtonClicked(MouseEventArgs args)
         {
             var request = new SearchDocumentsQuery(_indexItem, SearchText, _selectedPage, poligonString, _selectedFacets, _selectedFilters, _orderBy);
-            await SearchDocuments(request);
+            await BeginSearchDocuments(request);
         }
 
         private async Task SearchIfEnterPressed(KeyboardEventArgs e)
@@ -130,14 +139,14 @@ namespace KnowledgeMining.UI.Pages.Search
             if (e.Code == "Enter" || e.Code == "NumpadEnter")
             {
                 var request = new SearchDocumentsQuery(_indexItem, SearchText, _selectedPage, poligonString, _selectedFacets, _selectedFilters, _orderBy);
-                await SearchDocuments(request);
+                await BeginSearchDocuments(request);
             }
         }
 
         private async Task SearchIfClearClicked(MouseEventArgs e)
         {
             var request = new SearchDocumentsQuery(_indexItem, SearchText, _selectedPage, poligonString, _selectedFacets, _selectedFilters, _orderBy);
-            await SearchDocuments(request);
+            await BeginSearchDocuments(request);
         }
 
         private DocumentMetadataWrapper GetDocumentMetadataWrapper()
@@ -195,17 +204,17 @@ namespace KnowledgeMining.UI.Pages.Search
 
             var request = new SearchDocumentsQuery(_indexItem, SearchText, _selectedPage, poligonString, _selectedFacets, _selectedFilters, _orderBy);
 
-            await SearchDocuments(request);
+            await BeginSearchDocuments(request);
         }
 
         private async Task SearchPageSelected(int page)
         {
             _selectedPage = page;
             var request = new SearchDocumentsQuery(_indexItem, SearchText, _selectedPage, poligonString, _selectedFacets, _selectedFilters, _orderBy);
-            await SearchDocuments(request);
+            await BeginSearchDocuments(request);
         }
 
-        private async Task SearchDocuments(SearchDocumentsQuery request)
+        private async Task BeginSearchDocuments(SearchDocumentsQuery request)
         {
             SwitchToSearchResultsTab();
             var hash = StateService.GenerateHash(SearchQueryStateModel.Hash(request));
@@ -213,15 +222,42 @@ namespace KnowledgeMining.UI.Pages.Search
         }
 
 
-        private async Task SearchDocumentsFromHash(string hash)
+        private async Task SearchDocuments()
         {
+            if (string.IsNullOrEmpty(Hash))
+                await SearchDocumentsEmpty();
+            else 
+                await SearchDocumentsFromHash();
+        }
+
+        private async Task SearchDocumentsEmpty()
+        {
+            _selectedPage = 0;
+            poligonString = string.Empty;
+            _selectedFacets.Clear();
+            _selectedFilters.Clear();
+            _orderBy = DefaultSortByFilters();
+            _timeSpanSelectedType = TimeSpanType.Any;
+            _facetsFilterComponent?.ClearFacets();
+            _sortLabel = LABEL_ORDERBY_BEST_MATCH;
+
+            UpdateTimeSpanMenu();
+
+            var request =
+                new SearchDocumentsQuery(_indexItem, SearchText, _selectedPage, poligonString, _selectedFacets, _selectedFilters, _orderBy);
+
+            await SearchDocuments(request);
+        }
+
+        private async Task SearchDocumentsFromHash()
+        { 
             SwitchToSearchResultsTab();
 
             _isSearching = true;
 
             UpdateSearchResultsLabelWithDocumentCount(default);
 
-            var stateModel = StateService.DecodeHash(hash);
+            var stateModel = StateService.DecodeHash(Hash);
             var searchQueryStateModel = new SearchQueryStateModel(stateModel);
 
 
@@ -236,6 +272,11 @@ namespace KnowledgeMining.UI.Pages.Search
             }
             var request = new SearchDocumentsQuery(_indexItem, SearchText, _selectedPage, poligonString, _selectedFacets, _selectedFilters, _orderBy);
 
+            await SearchDocuments(request);
+        }
+
+        private async Task SearchDocuments(SearchDocumentsQuery request)
+        {
             var response = await Mediator.Send(request);
 
             _searchState.Documents = response.Documents;
@@ -248,7 +289,10 @@ namespace KnowledgeMining.UI.Pages.Search
             UpdateSearchResultsLabelWithDocumentCount(_searchState.TotalCount);
 
             _isSearching = false;
+
+            StateHasChanged();
         }
+
 
         private IEnumerable<SummarizedFacet> SummarizeFacets(SummarizedFacet[] facets)
         {
@@ -465,22 +509,12 @@ namespace KnowledgeMining.UI.Pages.Search
 
             var request = new SearchDocumentsQuery(_indexItem, SearchText, _selectedPage, poligonString, _selectedFacets, _selectedFilters, _orderBy);
 
-            await SearchDocuments(request);
+            await BeginSearchDocuments(request);
         }
 
         private async Task ClearSearch(MouseEventArgs args)
         {
-            _selectedPage = 0;
-            poligonString = string.Empty;
-            _selectedFacets.Clear();
-            _selectedFilters.Clear();
-            _orderBy = DefaultSortByFilters();
-            _timeSpanSelectedType = TimeSpanType.Any;
-            _facetsFilterComponent?.ClearFacets();
-            _sortLabel = LABEL_ORDERBY_BEST_MATCH;
-
-            UpdateTimeSpanMenu();
-            await SearchDocuments(new SearchDocumentsQuery(_indexItem, SearchText, _selectedPage, poligonString, _selectedFacets, _selectedFilters, _orderBy));
+            NavManager.NavigateTo($"/search/{Index}", forceLoad: false);
         }
 
         private async Task OrderByCallback(FacetFilter? facet)
@@ -489,7 +523,7 @@ namespace KnowledgeMining.UI.Pages.Search
             {
                 _orderBy.RemoveAll(x => x.Name.Equals(facet.Name));
                 _orderBy.Add(facet);
-                await SearchDocuments(new SearchDocumentsQuery(_indexItem, SearchText, _selectedPage, poligonString, _selectedFacets, _selectedFilters, _orderBy));
+                await BeginSearchDocuments(new SearchDocumentsQuery(_indexItem, SearchText, _selectedPage, poligonString, _selectedFacets, _selectedFilters, _orderBy));
             }
         }
 
@@ -508,6 +542,9 @@ namespace KnowledgeMining.UI.Pages.Search
                 if (!order.Equals(defaultOrder))
                     filtersCount += 1;
             }
+
+            if (!string.IsNullOrWhiteSpace(SearchText))
+                filtersCount += 1;
 
             return filtersCount == 0;
         }

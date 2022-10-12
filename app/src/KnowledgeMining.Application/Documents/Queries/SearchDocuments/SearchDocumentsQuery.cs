@@ -22,9 +22,9 @@ namespace KnowledgeMining.Application.Documents.Queries.SearchDocuments
                              string query,
                              int page,
                              string polygonString,
-                             IEnumerable<FacetFilter> facetFilters,
-                             IEnumerable<FacetFilter> fieldFilters,
-                             IEnumerable<FacetFilter> order)
+                             IEnumerable<FacetFilter>? facetFilters,
+                             IEnumerable<FacetFilter>? fieldFilters,
+                             IEnumerable<FacetFilter>? order)
         {
             Index = index;
             SearchText = string.IsNullOrWhiteSpace(query) ? "*" : query.Replace("?", string.Empty);

@@ -12,29 +12,38 @@
     }
 </style>
 
-@foreach (var aggregateFacet in Facets?.OrderBy(x => x.Name) ?? Enumerable.Empty<SummarizedFacet>())
+@if(IsLoading)
 {
-    var selectedAggregateFacets = aggregateFacet.Values?.Where(x => IsSelected(x)).ToList() 
-        ?? new List<Facet>();
+    <MudPaper Class="pl-2 pr-2 pt-4" Height="56px">
+        <MudSkeleton Animation="Animation.Wave" SkeletonType="SkeletonType.Text" Height="28px" />
+    </MudPaper>
+}
+else
+{
+    @foreach (var aggregateFacet in Facets?.OrderBy(x => x.Name) ?? Enumerable.Empty<SummarizedFacet>())
+    {
+        var selectedAggregateFacets = aggregateFacet.Values?.Where(x => IsSelected(x)).ToList() 
+            ?? new List<Facet>();
 
-    <MudExpansionPanels Class="mb-6">
-        <MudExpansionPanel Text="@($"{aggregateFacet.Name?.SplitCamelCase().ToTitleCase()} ({aggregateFacet.Values?.Count()})")" 
-            Disabled="@(aggregateFacet.Values?.Any() is false)" Class="@(aggregateFacet.Count > 10 ? "expander-facets" : string.Empty)">
+        <MudExpansionPanels Class="mb-6">
+            <MudExpansionPanel Text="@($"{aggregateFacet.Name?.SplitCamelCase().ToTitleCase()} ({aggregateFacet.Values?.Count()})")" 
+                Disabled="@(aggregateFacet.Values?.Any() is false)" Class="@(aggregateFacet.Count > 10 ? "expander-facets" : string.Empty)">
 
-            @foreach (var facet in GetFacets(aggregateFacet))
-            {
-                <div>
-                <MudTooltip Text="@GetFacetValueDescription(facet.Name, facet.Value)" 
-                    Arrow="true" Placement="Placement.Right">
-                    <MudCheckBox T="bool" 
-                        Label="@GetFacetLabel(facet)"
-                        Checked="@IsSelected(facet)" 
-                        CheckedChanged="@(isSelected => HandleCheckedChanged(facet, isSelected))" />
-                </MudTooltip>
-                </div>
-            }
-        </MudExpansionPanel>
-    </MudExpansionPanels>
+                @foreach (var facet in GetFacets(aggregateFacet))
+                {
+                    <div>
+                    <MudTooltip Text="@GetFacetValueDescription(facet.Name, facet.Value)" 
+                        Arrow="true" Placement="Placement.Right">
+                        <MudCheckBox T="bool" 
+                            Label="@GetFacetLabel(facet)"
+                            Checked="@IsSelected(facet)" 
+                            CheckedChanged="@(isSelected => HandleCheckedChanged(facet, isSelected))" />
+                    </MudTooltip>
+                    </div>
+                }
+            </MudExpansionPanel>
+        </MudExpansionPanels>
+    }
 }
 
 @code {
@@ -48,6 +57,9 @@
 
     [Parameter]
     public IndexItem? IndexItem { get; set; }
+
+    [Parameter]
+    public bool IsLoading { get; set; } = true;
 
     public void ClearFacets()
     {
