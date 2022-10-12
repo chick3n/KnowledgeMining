@@ -220,8 +220,8 @@ else
             return text;
 
         text = text.ReplaceLineEndings();
-        text = Regex.Replace(text, "\\t|\\r|\\n", string.Empty);
-        return text;
+        //text = Regex.Replace(text, "\\t|\\r|\\n", string.Empty);
+        return text.PreWrap();
     }
 
     private string[]? DocumentFooterValues(DocumentMetadata document)

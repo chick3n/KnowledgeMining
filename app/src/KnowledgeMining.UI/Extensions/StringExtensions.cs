@@ -34,5 +34,12 @@ namespace KnowledgeMining.UI.Extensions
 
             return Path.GetExtension(@string).ToLowerInvariant();
         }
+
+        public static string PreWrap(this string @string)
+        {
+            return @string.Replace("\\t", "\t")
+                    .Replace("\\r\\n", "\n")
+                    .Replace("\\n", "\n");
+        }
     }
 }

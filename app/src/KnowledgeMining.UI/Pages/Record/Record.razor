@@ -165,7 +165,7 @@
                             <hr />
                             <MudPaper Class="p-2" Elevation="0">
                                 <pre style="overflow-x: auto; overflow-y: scroll; white-space: pre-wrap; word-wrap: break-word; ">
-                                    <MudHighlighter Text="@_documentMetadata!.Summary"  Style="background-color: darkblue; font-weight:bold; color: white"></MudHighlighter>
+                                    @_documentMetadata!.Summary.PreWrap()
                                 </pre>
                             </MudPaper>
                         </div>
