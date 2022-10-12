@@ -9,22 +9,33 @@
 <MudAppBar Style="@($"color: {Theme.Palette.Black};background: {Theme.Palette.White}")" Elevation="1">
     <MudStack Spacing="4" Row="true">
         <MudImage Src="@_logoPath" Height="25" Elevation="0" onclick="@(() => NavigateToHomePage())" />
-        <MudButton Variant="Variant.Text" OnClick="NavigateToSearchPage">Search</MudButton>
+        <MudButton Variant="Variant.Text" Href="@($"/search/{IndexName}/")" Target="_self">Search</MudButton>
         @*<MudButton Variant="Variant.Text" OnClick="@NavigateToDocumentsPage">Documents</MudButton>*@
         @if(indexNavigationItems != null)
         {
             foreach(var nav in indexNavigationItems)
             {
-                if (nav.Type == "embed")
+                @if(nav.Key.Equals("<unknown>"))
                 {
-                    <MudButton Variant="Variant.Text" Href="@($"/external/{IndexName}/{nav.Id}")">@nav.Name</MudButton>
+                    foreach(var link in nav.Value)
+                    {
+                        <MudButton Variant="Variant.Text" Href="@link.Url" Target="_self">@link.Name</MudButton>
+                    }
                 }
                 else
-                {
-                    <MudButton Variant="Variant.Text" Href="@nav.Url">@nav.Name</MudButton>
+                {    
+                    <MudMenu AnchorOrigin="Origin.BottomLeft" 
+                        FullWidth="true" Label="@nav.Key" ButtonType="ButtonType.Button" Variant="Variant.Text">
+                        @foreach(var link in nav.Value)
+                        {
+                            <MudButton Variant="Variant.Text" Href="@link.Url" Target="_self">@link.Name</MudButton>
+                        }
+                    </MudMenu>
                 }
+                
             }
         }
+        
     </MudStack>
 </MudAppBar>
 
@@ -32,7 +43,7 @@
     [CascadingParameter]
     public RouteData? RouteData { get; set; }
 
-    private IEnumerable<IndexNavigationItem>? indexNavigationItems;
+    private Dictionary<string, List<IndexNavigationItem>>? indexNavigationItems;
     private string? IndexName { get; set; }
     private MudTheme Theme = new MudTheme();
     private string? _logoPath = "images/gac-logo-en.svg";
@@ -44,7 +55,10 @@
             IndexName = RouteData?.RouteValues["Index"]?.ToString();
 
             var response = await Mediator.Send(new GetIndexQuery(IndexName));
-            indexNavigationItems = response.IndexItem.NavigationItems;
+            indexNavigationItems = response.IndexItem.NavigationItems?
+                .GroupBy(x => x.Group ?? "<unknown>")
+                .OrderBy(x => x.Key)
+                .ToDictionary(x => x.Key, x => x.ToList());
 
             if (!string.IsNullOrEmpty(response.IndexItem.Logo) &&
                 Uri.TryCreate(response.IndexItem.Logo, UriKind.Absolute, out _))

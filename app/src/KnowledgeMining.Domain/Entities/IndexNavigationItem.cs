@@ -21,5 +21,7 @@ namespace KnowledgeMining.Domain.Entities
         public string Height { get; set; }
         [JsonPropertyName("type")]
         public string Type { get; set; }
+        [JsonPropertyName("group")]
+        public string? Group { get; set; }
     }
 }
