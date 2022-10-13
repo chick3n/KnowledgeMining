@@ -1,9 +1,11 @@
 ﻿@using KnowledgeMining.Application.Documents.Queries.GetIndex
 @using KnowledgeMining.Domain.Entities
+@using KnowledgeMining.UI.Services.State
 @using MediatR
 
 @inject NavigationManager NavigationManager;
 @inject IMediator Mediator;
+@inject DocumentCartService CartService;
 
 
 <MudAppBar Style="@($"color: {Theme.Palette.Black};background: {Theme.Palette.White}")" Elevation="1">
@@ -36,9 +38,19 @@
                 }
                 
             }
-        }
-        
+        }        
     </MudStack>
+    <MudSpacer />
+    @if(_cartCount != null) 
+    {
+        <MudBadge Content="@_cartCount" Color="Color.Primary" Overlap="true" Bordered="true" Class="mx-6 my-4">
+            <MudIcon Icon="@Icons.Material.Outlined.ShoppingCart" Color="Color.Default" />
+        </MudBadge>
+    }
+    else 
+    {
+        <MudIconButton Icon="@Icons.Material.Outlined.ShoppingCart" Color="Color.Default" />
+    }
 </MudAppBar>
 
 @code {
@@ -49,6 +61,7 @@
     private string? IndexName { get; set; }
     private MudTheme Theme = new MudTheme();
     private string? _logoPath = "images/gac-logo-en.svg";
+    private int? _cartCount;
 
     protected override async Task OnInitializedAsync()
     {
@@ -65,9 +78,40 @@
             if (!string.IsNullOrEmpty(response.IndexItem.Logo) &&
                 Uri.TryCreate(response.IndexItem.Logo, UriKind.Absolute, out _))
                 _logoPath = response.IndexItem.Logo;
+
+            CartService.OnCartChanged += CartChanged;
         }
 
         await base.OnInitializedAsync();
+    }
+
+    protected override Task OnAfterRenderAsync(bool firstRender)
+    {
+        if(firstRender)
+        {
+            Initialize().ConfigureAwait(false);
+        }
+
+        return base.OnAfterRenderAsync(firstRender);
+    }
+
+    private async Task CartChanged(DocumentCartEvent documentCartEvent)
+    {
+        if (documentCartEvent?.Items?.Count != _cartCount)
+        {
+            _cartCount = documentCartEvent?.Items?.Count;
+            StateHasChanged();
+        }
+    }
+
+    private async Task Initialize()
+    {
+        var cartItems = await CartService.GetAll(IndexName);
+        if (cartItems?.Count != _cartCount)
+        {
+            _cartCount = cartItems?.Count;
+            StateHasChanged();
+        }
     }
 
     private void NavigateToHomePage()
