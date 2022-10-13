@@ -63,11 +63,13 @@ else
                             <MudCardContent>
                                 <div class="d-flex flex-row gap-10">
                                     <div class="flex-grow-1" style="min-width: 50%; max-width:50%">
+                                        <pre style="overflow-x: auto; overflow-y: scroll; white-space: pre-wrap; word-wrap: break-word; font-size: inherit">
                                         @((MarkupString)DocumentPreviewText(document))
+                                        </pre>
                                     </div>
 
                                     <div class="flex-grow-1">
-                                        @foreach (var keyPhrase in DocumentWrapper.GetCloudWords(document).Take(8) ?? Enumerable.Empty<string>())
+                                        @foreach (var keyPhrase in DocumentWrapper.GetCloudWords(document).Take(6) ?? Enumerable.Empty<string>())
                                         {
                                             <MudChip Color="Color.Info"><MudText Typo="Typo.body2">@keyPhrase</MudText></MudChip>
                                         }

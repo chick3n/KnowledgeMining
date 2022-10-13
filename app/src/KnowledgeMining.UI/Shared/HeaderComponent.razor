@@ -19,13 +19,15 @@
                 {
                     foreach(var link in nav.Value)
                     {
-                        <MudButton Variant="Variant.Text" Href="@link.Url" Target="_self">@link.Name</MudButton>
+                        <MudButton 
+                            Variant="Variant.Text" Href="@link.Url" Target="_self">@link.Name</MudButton>
                     }
                 }
                 else
                 {    
                     <MudMenu AnchorOrigin="Origin.BottomLeft" 
-                        FullWidth="true" Label="@nav.Key" ButtonType="ButtonType.Button" Variant="Variant.Text">
+                        FullWidth="true" Label="@nav.Key"  EndIcon="@Icons.Outlined.ArrowDropDown" 
+                        ButtonType="ButtonType.Button" Variant="Variant.Text">
                         @foreach(var link in nav.Value)
                         {
                             <MudButton Variant="Variant.Text" Href="@link.Url" Target="_self">@link.Name</MudButton>
