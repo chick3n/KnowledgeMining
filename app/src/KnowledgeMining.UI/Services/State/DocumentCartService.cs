@@ -29,31 +29,52 @@ namespace KnowledgeMining.UI.Services.State
                 await OnCartChanged.Invoke(documentCartEvent);
         }
 
-        public async Task<bool> Add(string index, string value)
+        public async Task<bool> Add(string index, string title, string recordId)
         {
             var key = Key(index);
             var items = await GetAll(index);
             if (items == null)
             {
-                items = new List<string>();
+                items = new List<DocumentCartItem>();
             }
             
-            if (!items.Contains(value))
+            if (!items.Any(x => x?.RecordId?.Equals(recordId) ?? false))
             {
-                items.Add(value);
-                await _localStorageService.SetItemAsync<IList<string>>(key, items);
-                await Notify(new DocumentCartEvent(CartAction.Add, value, items));
+                var item = new DocumentCartItem { RecordId = recordId, Title = title };
+                items.Add(item);
+                await _localStorageService.SetItemAsync<IList<DocumentCartItem>>(key, items);
+                await Notify(new DocumentCartEvent(CartAction.Add, item, items));
                 return true;
             }
 
             return false;
         }
 
-        public async Task<IList<string>> GetAll(string index)
+        public async Task<IList<DocumentCartItem>> GetAll(string index)
         {
             var key = Key(index);
-            var items = await _localStorageService.GetItemAsync<IList<string>>(key);
+            var items = await _localStorageService.GetItemAsync<IList<DocumentCartItem>>(key);
             return items;
+        }
+
+        public async Task<DocumentCartItem?> Remove(string index, string recordId)
+        {
+            var key = Key(index);
+            var items = await GetAll(index);
+            if(items != null)
+            {
+                var item = items.FirstOrDefault(x => x?.RecordId?.Equals(recordId) ?? false);
+                if (item != null)
+                {
+                    items.Remove(item);
+                    await _localStorageService.SetItemAsync<IList<DocumentCartItem>>(key, items);
+                    await Notify(new DocumentCartEvent(CartAction.Add, item, items));
+                }
+
+                return item;
+            }
+
+            return null;
         }
     }
 }

@@ -63,7 +63,7 @@ else
                                 </CardHeaderContent>
                                 <CardHeaderActions>
                                     <MudIconButton Icon="@Icons.Material.Outlined.AddShoppingCart"
-                                        OnClick="@(() => AddToCart(document.Id))"
+                                        OnClick="@(() => AddToCart(DocumentWrapper.GetTitle(document), document.Id))"
                                         Color="Color.Default" />
                                 </CardHeaderActions>
                             </MudCardHeader>
@@ -256,9 +256,9 @@ else
 
     }
 
-    private async Task AddToCart(string recordId)
+    private async Task AddToCart(string title, string recordId)
     {
-        var result = await CartService.Add(IndexName, recordId);
+        var result = await CartService.Add(IndexName, title, recordId);
         if(result)
         {
             Snackbar.Add("Added to cart!", Severity.Success);

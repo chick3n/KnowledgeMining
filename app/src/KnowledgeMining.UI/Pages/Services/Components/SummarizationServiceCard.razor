@@ -1,0 +1,32 @@
+﻿@using KnowledgeMining.UI.Pages.Services.Models
+
+<MudCard>
+    <MudCardMedia Image="@ImageUrl" Height="200" />
+    <MudCardContent Style="width:400px; height:150px">
+        <MudText Typo="Typo.h5">@Title</MudText>
+        @if (Subtitle != null)
+        {
+            <MudText Typo="Typo.subtitle1">@Subtitle</MudText>
+        }
+        <MudText Typo="Typo.body2">@Description</MudText>
+    </MudCardContent>
+    <MudCardActions>
+        <MudButton Disabled="@Disabled" Variant="Variant.Text" Color="Color.Primary" OnClick="OnQueueClicked">Queue</MudButton>
+    </MudCardActions>
+</MudCard>
+
+@code {
+    [Parameter] public string? IndexName { get; set; }
+    [Parameter] public string? ImageUrl { get; set; }
+    [Parameter] public string? Title { get; set; }
+    [Parameter] public string? Description { get; set; }
+    [Parameter] public bool Disabled { get; set; }
+    [Parameter] public string? Subtitle { get; set; }
+
+    [Parameter] public EventCallback<ServiceAction> OnAction { get; set; }
+
+
+    private async Task OnQueueClicked() => await OnAction.InvokeAsync(ServiceAction.Start);
+
+    
+}

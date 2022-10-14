@@ -11,7 +11,7 @@ namespace KnowledgeMining.Application.Common.Interfaces
         Task<GetDocumentsResponse> GetDocuments(string? searchPrefix, int pageSize, string? continuationToken, CancellationToken cancellationToken);
         Task<GetDocumentResponse> GetDocument(string key, string container, string filename, CancellationToken cancellationToken);
         Task SetDocumentTraits(SearchDocument document, DocumentTraits traits, CancellationToken cancellationToken);
-        Task<IEnumerable<SearchDocument>> UploadDocuments(IEnumerable<UploadDocument> documents, CancellationToken cancellationToken);
+        Task<IEnumerable<SearchDocument>> UploadDocuments(string containerName, IEnumerable<UploadDocument> documents, CancellationToken cancellationToken);
         ValueTask<byte[]> DownloadDocument(string documentName, CancellationToken cancellationToken);
         ValueTask<byte[]> DownloadSource(string documentName, CancellationToken cancellationToken);
         ValueTask DeleteDocument(string documentName, CancellationToken cancellationToken);

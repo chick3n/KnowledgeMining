@@ -1,0 +1,34 @@
+﻿@using KnowledgeMining.UI.Pages.Services.Models
+
+<MudStack Row="true" Spacing="9" AlignItems="AlignItems.Center" Justify="Justify.Center">
+    
+    <SummarizationServiceCard Title="Extractive summarization" 
+        Description="Produces a summary by extracting salient sentences within the document."
+        ImageUrl="/images/extractive-text-summarization.jpg"
+        OnAction="OnExtractiveSummarizationAction"
+        />
+
+    <SummarizationServiceCard Title="Abstractive summarization" 
+        Subtitle="Coming Soon"
+        Description="Generates a summary that may not use the same words as those in the document, but captures the main idea."
+        ImageUrl="/images/abstractive-text-summarization.jpg"
+        OnAction="OnAbstractiveSummarizationAction"
+        Disabled="true" />
+
+</MudStack>
+
+@code {
+    [Parameter] public EventCallback<ServiceEvent> OnServiceEvent { get; set; }
+
+    private async Task OnExtractiveSummarizationAction(ServiceAction action) =>
+        await InvokeServiceEvent(new ServiceEvent(action, ServiceType.ExtractiveSummary));
+
+    private async Task OnAbstractiveSummarizationAction(ServiceAction action) =>
+        await InvokeServiceEvent(new ServiceEvent(action, ServiceType.AbstractiveSummary));
+
+    private async Task InvokeServiceEvent(ServiceEvent serviceEvent)
+    {
+        if(OnServiceEvent.HasDelegate)
+            await OnServiceEvent.InvokeAsync(serviceEvent);
+    }
+}

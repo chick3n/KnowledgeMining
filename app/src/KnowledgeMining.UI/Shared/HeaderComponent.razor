@@ -44,12 +44,13 @@
     @if(_cartCount != null) 
     {
         <MudBadge Content="@_cartCount" Color="Color.Primary" Overlap="true" Bordered="true" Class="mx-6 my-4">
-            <MudIcon Icon="@Icons.Material.Outlined.ShoppingCart" Color="Color.Default" />
+            <MudButton StartIcon="@Icons.Filled.VerticalSplit" Href="@($"/services/{IndexName}")" Variant="Variant.Outlined"
+                Color="Color.Default">Documents</MudButton>
         </MudBadge>
     }
     else 
     {
-        <MudIconButton Icon="@Icons.Material.Outlined.ShoppingCart" Color="Color.Default" />
+        <MudIconButton Icon="@Icons.Filled.VerticalSplit" Href="@($"/services/{IndexName}")" Color="Color.Default" />
     }
 </MudAppBar>
 

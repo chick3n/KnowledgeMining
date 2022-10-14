@@ -195,7 +195,7 @@
                         f.File.ContentType, 
                         GetFileTags(f), 
                         f.File.OpenReadStream(maxAllowedSize: 10485760)));
-            results = await Mediator.Send(new UploadDocumentCommand(documentToUpload));
+            results = await Mediator.Send(new UploadDocumentCommand("documents", documentToUpload));
 
             var missingUploads = _files.Select(x => x.File.Name).Except(results.Select(x => x.Name));
             if (missingUploads.Count() > 0)

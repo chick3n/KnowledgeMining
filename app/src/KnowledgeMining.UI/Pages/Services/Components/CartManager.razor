@@ -1,0 +1,30 @@
+﻿@using KnowledgeMining.UI.Services.State
+
+<MudTable Items="@Items" Hover="true" Breakpoint="Breakpoint.Sm" 
+    Loading="@true" LoadingProgressColor="Color.Info">
+    <RowTemplate>
+        <MudTd>@context.Title</MudTd>
+        <MudTd><MudIconButton Icon="@Icons.Filled.Remove" OnClick="(async () => await OnRemovedClicked(context))" /></MudTd>
+    </RowTemplate>
+    <NoRecordsContent>
+        <MudText>You have no documents queued.</MudText>
+    </NoRecordsContent>
+    <LoadingContent>
+         <MudSkeleton Animation="Animation.Wave" SkeletonType="SkeletonType.Rectangle" Height="200px" />
+    </LoadingContent>
+</MudTable>
+
+@code {
+
+    [Parameter] public IList<DocumentCartItem>? Items { get; set; }
+    [Parameter] public EventCallback<DocumentCartEvent> OnRemoved { get; set; }
+
+    private async Task OnRemovedClicked(DocumentCartItem documentCartItem)
+    {
+        if (Items != null) 
+        {
+            Items.Remove(documentCartItem);
+            await OnRemoved.InvokeAsync(new DocumentCartEvent(CartAction.Delete, documentCartItem, Items));
+        }
+    }
+}
