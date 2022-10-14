@@ -13,5 +13,14 @@
         AbstractiveSummary
     }
 
+    public enum ServiceState
+    {
+        Unknown,
+        Pending,
+        InProgress,
+        Complete,
+        Error
+    }
+
     public record ServiceEvent(ServiceAction Action, ServiceType Service);
 }

@@ -54,7 +54,7 @@ namespace KnowledgeMining.UI.Services.State
         {
             var key = Key(index);
             var items = await _localStorageService.GetItemAsync<IList<DocumentCartItem>>(key);
-            return items;
+            return items ?? new List<DocumentCartItem>();
         }
 
         public async Task<DocumentCartItem?> Remove(string index, string recordId)
@@ -75,6 +75,13 @@ namespace KnowledgeMining.UI.Services.State
             }
 
             return null;
+        }
+
+        public async Task Clear(string index)
+        {
+            var key = Key(index);
+            await _localStorageService.RemoveItemAsync(key);
+            await Notify(new DocumentCartEvent(CartAction.Clear, null, new List<DocumentCartItem>()));
         }
     }
 }

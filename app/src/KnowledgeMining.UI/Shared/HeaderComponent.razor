@@ -41,17 +41,10 @@
         }        
     </MudStack>
     <MudSpacer />
-    @if(_cartCount != null) 
-    {
-        <MudBadge Content="@_cartCount" Color="Color.Primary" Overlap="true" Bordered="true" Class="mx-6 my-4">
-            <MudButton StartIcon="@Icons.Filled.VerticalSplit" Href="@($"/services/{IndexName}")" Variant="Variant.Outlined"
-                Color="Color.Default">Documents</MudButton>
-        </MudBadge>
-    }
-    else 
-    {
-        <MudIconButton Icon="@Icons.Filled.VerticalSplit" Href="@($"/services/{IndexName}")" Color="Color.Default" />
-    }
+    <MudBadge Content="@(_cartCount ?? 0)" Color="Color.Primary" Overlap="true" Bordered="true" Class="mx-6 my-4">
+        <MudButton StartIcon="@Icons.Filled.VerticalSplit" Href="@($"/services/{IndexName}")" Variant="Variant.Outlined"
+            Color="Color.Default">Documents</MudButton>
+    </MudBadge>
 </MudAppBar>
 
 @code {

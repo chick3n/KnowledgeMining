@@ -1,7 +1,9 @@
-﻿using Azure.Storage.Blobs;
+﻿using Azure.Data.Tables;
+using Azure.Storage.Blobs;
 using KnowledgeMining.Application.Common.Interfaces;
 using KnowledgeMining.Application.Common.Options;
 using KnowledgeMining.Domain.Entities;
+using KnowledgeMining.Domain.Entities.Jobs;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -20,13 +22,18 @@ namespace KnowledgeMining.Infrastructure.Services.Database
         private readonly DatabaseOptions _options;
         private readonly ILogger<DatabaseService> _logger;
         private readonly IMemoryCache _cache;
+        private readonly TableServiceClient _tableServiceClient;
+
+        private const string TABLE_JOBS = "jobs";
 
         public DatabaseService(BlobServiceClient blobServiceClient,
+                                TableServiceClient tableServiceClient,
                                 IMemoryCache memoryCache,
                                  IOptions<DatabaseOptions> options,
                                  ILogger<DatabaseService> logger)
         {
             _blobServiceClient = blobServiceClient;
+            _tableServiceClient = tableServiceClient;
             _options = options.Value;
             _cache = memoryCache;
             _logger = logger;
@@ -93,6 +100,25 @@ namespace KnowledgeMining.Infrastructure.Services.Database
             }
 
             return metrics;
+        }
+
+        public async Task CreateDocumentJob(DocumentRequest documentRequest, CancellationToken cancellationToken = default)
+        {
+            var entity = new Models.Job
+            {
+                PartitionKey = documentRequest.IndexConfig,
+                RowKey = documentRequest.Id,
+                Timestamp = DateTimeOffset.UtcNow,
+                CreatedBy = documentRequest.CreatedBy,
+                CreatedOn = DateTimeOffset.Now,
+                State = documentRequest.State,
+                ETag = new Azure.ETag("1")
+            };
+
+            //var entity = new TableEntity(documentRequest.IndexConfig, documentRequest.Id);
+            //var table = new TableClient("DefaultEndpointsProtocol=https;AccountName=stgdemodocuments;AccountKey=qgADEdeW+4AI2QXbtwXa0/KBhdRIIudV2rlBp5vA0hffy0WLfxG/rdYhcsg/tLKdh0MAux4astrM+AStfyHNxg==;EndpointSuffix=core.windows.net", "jobs");
+            await _tableServiceClient.GetTableClient(TABLE_JOBS)
+                .AddEntityAsync(entity, cancellationToken);
         }
     }
 }

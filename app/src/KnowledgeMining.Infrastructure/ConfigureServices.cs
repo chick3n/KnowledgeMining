@@ -12,6 +12,7 @@ using Microsoft.Extensions.Azure;
 using Microsoft.Extensions.Configuration;
 using System.Threading.Channels;
 using Microsoft.Extensions.Options;
+using KnowledgeMining.Infrastructure.Services.Queue;
 
 namespace Microsoft.Extensions.DependencyInjection
 {
@@ -31,6 +32,11 @@ namespace Microsoft.Extensions.DependencyInjection
                 //clientBuilder.AddSearchClient(configuration.GetSection(KMOptions.SearchOptions.Search));
                 clientBuilder.AddSearchIndexClient(configuration.GetSection(KMOptions.SearchOptions.Search));
                 //clientBuilder.AddSearchIndexerClient(configuration.GetSection(KMOptions.SearchOptions.Search));
+                clientBuilder.AddQueueServiceClient(configuration.GetSection(KMOptions.QueueOptions.Queue));
+
+                //Extension has issue grabing connectionstring from config, doing manually now
+                var connString = configuration.GetSection("Database:ConnectionString").Get<string>();
+                clientBuilder.AddTableServiceClient(connString);
             });
 
             services.AddHttpClient(KMOptions.SearchOptions.Search, client =>
@@ -48,6 +54,7 @@ namespace Microsoft.Extensions.DependencyInjection
             services.AddScoped<ISearchService, SearchService>();
             services.AddScoped<IStorageService, StorageService>();
             services.AddScoped<IDatabaseService, DatabaseService>();
+            services.AddScoped<IQueueService, QueueService>();
 
 
             services.AddSingleton(Channel.CreateUnbounded<SearchIndexerJobContext>(new UnboundedChannelOptions() { SingleWriter = true, SingleReader = true }));

@@ -11,7 +11,11 @@
         <MudText Typo="Typo.body2">@Description</MudText>
     </MudCardContent>
     <MudCardActions>
-        <MudButton Disabled="@Disabled" Variant="Variant.Text" Color="Color.Primary" OnClick="OnQueueClicked">Queue</MudButton>
+        <MudButton Disabled="@Disabled" Variant="Variant.Text" Color="Color.Primary" OnClick="OnQueueClicked">Start</MudButton>
+        @if(_statusUpdate != null)
+        {
+            <MudText Typo="Typo.caption">@_statusUpdate</MudText>
+        }
     </MudCardActions>
 </MudCard>
 
@@ -25,8 +29,16 @@
 
     [Parameter] public EventCallback<ServiceAction> OnAction { get; set; }
 
+    //UI
+    private string? _statusUpdate;
 
-    private async Task OnQueueClicked() => await OnAction.InvokeAsync(ServiceAction.Start);
+    private async Task OnQueueClicked() {
+        Disabled = true;
+        _statusUpdate = "In progress...";
+        StateHasChanged();
+
+        await OnAction.InvokeAsync(ServiceAction.Start);
+    }
 
     
 }
