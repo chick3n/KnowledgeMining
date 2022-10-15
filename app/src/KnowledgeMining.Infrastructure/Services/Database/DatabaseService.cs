@@ -116,8 +116,6 @@ namespace KnowledgeMining.Infrastructure.Services.Database
                 ETag = new Azure.ETag("1")
             };
 
-            //var entity = new TableEntity(documentRequest.IndexConfig, documentRequest.Id);
-            //var table = new TableClient("DefaultEndpointsProtocol=https;AccountName=stgdemodocuments;AccountKey=qgADEdeW+4AI2QXbtwXa0/KBhdRIIudV2rlBp5vA0hffy0WLfxG/rdYhcsg/tLKdh0MAux4astrM+AStfyHNxg==;EndpointSuffix=core.windows.net", "jobs");
             await _tableServiceClient.GetTableClient(TABLE_JOBS)
                 .AddEntityAsync(entity, cancellationToken);
         }
