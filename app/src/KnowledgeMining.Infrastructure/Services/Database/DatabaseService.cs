@@ -112,6 +112,7 @@ namespace KnowledgeMining.Infrastructure.Services.Database
                 CreatedBy = documentRequest.CreatedBy,
                 CreatedOn = DateTimeOffset.Now,
                 State = documentRequest.State,
+                Action = documentRequest.Action,
                 ETag = new Azure.ETag("1")
             };
 
@@ -119,6 +120,31 @@ namespace KnowledgeMining.Infrastructure.Services.Database
             //var table = new TableClient("DefaultEndpointsProtocol=https;AccountName=stgdemodocuments;AccountKey=qgADEdeW+4AI2QXbtwXa0/KBhdRIIudV2rlBp5vA0hffy0WLfxG/rdYhcsg/tLKdh0MAux4astrM+AStfyHNxg==;EndpointSuffix=core.windows.net", "jobs");
             await _tableServiceClient.GetTableClient(TABLE_JOBS)
                 .AddEntityAsync(entity, cancellationToken);
+        }
+
+        public async Task<IList<DocumentRequest>> GetDocumentJobs(string indexName, CancellationToken cancellationToken = default)
+        {
+            var jobs = new List<DocumentRequest>();
+            var results = _tableServiceClient.GetTableClient(TABLE_JOBS)
+                    .QueryAsync<Models.Job>(x => x.PartitionKey.Equals(indexName), maxPerPage: 100,
+                        cancellationToken: cancellationToken);
+
+            await foreach(var page in results.AsPages())
+            {
+                foreach (var entity in page.Values) {
+                    jobs.Add(new DocumentRequest
+                    {
+                        Action = entity.Action,
+                        CreatedBy = entity.CreatedBy,
+                        CreatedOn = entity.CreatedOn.Ticks,
+                        Id = entity.RowKey,
+                        IndexConfig = entity.PartitionKey,
+                        State = entity.State
+                    });
+                }
+            }
+
+            return jobs;
         }
     }
 }

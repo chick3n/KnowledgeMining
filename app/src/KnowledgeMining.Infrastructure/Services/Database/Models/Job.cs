@@ -14,6 +14,7 @@ namespace KnowledgeMining.Infrastructure.Services.Database.Models
         public string RowKey { get; set; }
         public string State { get; set; }
         public string CreatedBy { get; set; }
+        public string Action { get; set; }
         public DateTimeOffset CreatedOn { get; set; }
         public DateTimeOffset? Timestamp { get; set; }
         public ETag ETag { get; set; }

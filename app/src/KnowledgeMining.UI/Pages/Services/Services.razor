@@ -2,6 +2,7 @@
 @using KnowledgeMining.Application.Documents.Commands.SendMessageToQueue
 @using KnowledgeMining.Application.Documents.Commands.UploadDocument
 @using KnowledgeMining.Application.Documents.Queries.GetIndex
+@using KnowledgeMining.Application.Documents.Queries.Jobs
 @using KnowledgeMining.Domain.Entities
 @using KnowledgeMining.Domain.Entities.Jobs
 @using KnowledgeMining.UI.Pages.Services.Components
@@ -15,9 +16,19 @@
 {
     <CartManager Items="@documentCartItems" OnRemoved="OnCartItemRemoved" />
 
+    <MudContainer Fixed="true">
+        <MudIcon Icon="@Icons.Filled.KeyboardArrowDown" Color="Color.Tertiary" Size="Size.Large" 
+            Style="margin-left: auto; margin-right: auto; display: block" />
+    </MudContainer>
+
     <ServiceSelection OnServiceEvent="OnServiceEvent" />
 
-    <Jobs Items="documentJobs" />
+    <MudContainer Fixed="true">
+        <MudIcon Icon="@Icons.Filled.KeyboardDoubleArrowDown" Color="Color.Tertiary" Size="Size.Large"
+            Style="margin-left: auto; margin-right: auto; display: block" />
+    </MudContainer>
+
+    <Jobs Items="documentJobs" IndexName="@Index" OnRefresh="@InitializeJobs" />
 }
 
 @code {
@@ -55,6 +66,38 @@
         return base.OnAfterRenderAsync(firstRender);
     }
 
+    #region Jobs
+
+    private async Task InitializeJobs()
+    {
+        if(Mediator != null) 
+        {
+            documentJobs = await Mediator.Send(new GetDocumentJobsQuery(Index));
+        }
+        else
+        {
+            documentJobs = Enumerable.Empty<DocumentRequest>();
+        }
+        StateHasChanged();
+    }
+
+    #endregion
+
+    #region Cart 
+
+    private async Task InitializeCart()
+    {
+        if(CartService != null) 
+        {
+            documentCartItems = await CartService.GetAll(Index);
+        }
+        else
+        {
+            documentCartItems = new List<DocumentCartItem>();
+        }
+        StateHasChanged();
+    }
+
     private async Task OnCartItemRemoved(DocumentCartEvent documentCartEvent)
     {
         if(CartService != null)
@@ -70,31 +113,7 @@
         }
     }
 
-    private async Task InitializeJobs()
-    {
-        if(CartService != null) 
-        {
-            //var response = await Mediator.Send(new GetDocumentsQuery("jobs", null, 1000, null));
-        }
-        else
-        {
-            //documentCartItems = new List<DocumentCartItem>();
-        }
-        //StateHasChanged();
-    }
-
-    private async Task InitializeCart()
-    {
-        if(CartService != null) 
-        {
-            documentCartItems = await CartService.GetAll(Index);
-        }
-        else
-        {
-            documentCartItems = new List<DocumentCartItem>();
-        }
-        StateHasChanged();
-    }
+    #endregion
 
     private async Task OnServiceEvent(ServiceEvent serviceEvent) 
     {
@@ -134,11 +153,17 @@
                     CreatedBy = authState.User.Identity.Name
                 };
 
-            await Mediator.Send(new NewDocumentRequestCommand(new Domain.Entities.Messages.DocumentRequestMessage
+            var response = await Mediator.Send(new NewDocumentRequestCommand(new Domain.Entities.Messages.DocumentRequestMessage
             {
                 DocumentRequest = serviceRequest,
                 expirationTime = DateTime.UtcNow.AddDays(12)
             }));
+
+            if(response.messageId != null)
+            {
+                documentJobs = null;
+                _ = InitializeJobs().ConfigureAwait(false);
+            }
         }
     }
 

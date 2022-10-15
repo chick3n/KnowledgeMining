@@ -10,9 +10,10 @@ namespace KnowledgeMining.Application.Common.Interfaces
 {
     public interface IDatabaseService
     {
-        public Task<IEnumerable<IndexItem>> GetIndices(CancellationToken cancellationToken);
-        public Task<IndexItem> GetIndex(string indexName, CancellationToken cancellationToken);
-        public Task<Metrics> GetMetrics(string metricsName, CancellationToken cancellationToken);
-        public Task CreateDocumentJob(DocumentRequest documentRequest, CancellationToken cancellationToken);
+        Task<IEnumerable<IndexItem>> GetIndices(CancellationToken cancellationToken);
+        Task<IndexItem> GetIndex(string indexName, CancellationToken cancellationToken);
+        Task<Metrics> GetMetrics(string metricsName, CancellationToken cancellationToken);
+        Task CreateDocumentJob(DocumentRequest documentRequest, CancellationToken cancellationToken);
+        Task<IList<DocumentRequest>> GetDocumentJobs(string indexName, CancellationToken cancellationToken);
     }
 }
