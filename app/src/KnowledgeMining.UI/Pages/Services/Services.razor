@@ -1,4 +1,4 @@
-﻿@page "/services/{Index}/{ServiceId?}"
+﻿@page "/services/{Index}"
 @using KnowledgeMining.Application.Documents.Commands.DocumentRequest
 @using KnowledgeMining.Application.Documents.Commands.UploadDocument
 @using KnowledgeMining.Application.Documents.Queries.GetIndex
@@ -12,24 +12,21 @@
 @using System.Text
 
 
-@if(string.IsNullOrEmpty(ServiceId))
-{
-    <CartManager Items="@documentCartItems" OnRemoved="OnCartItemRemoved" />
+<CartManager Items="@documentCartItems" OnRemoved="OnCartItemRemoved" />
 
-    <MudContainer Fixed="true">
-        <MudIcon Icon="@Icons.Filled.KeyboardArrowDown" Color="Color.Tertiary" Size="Size.Large" 
-            Style="margin-left: auto; margin-right: auto; display: block" />
-    </MudContainer>
+<MudContainer Fixed="true">
+    <MudIcon Icon="@Icons.Filled.KeyboardArrowDown" Color="Color.Tertiary" Size="Size.Large" 
+        Style="margin-left: auto; margin-right: auto; display: block" />
+</MudContainer>
 
-    <ServiceSelection OnServiceEvent="OnServiceEvent" />
+<ServiceSelection OnServiceEvent="OnServiceEvent" />
 
-    <MudContainer Fixed="true">
-        <MudIcon Icon="@Icons.Filled.KeyboardDoubleArrowDown" Color="Color.Tertiary" Size="Size.Large"
-            Style="margin-left: auto; margin-right: auto; display: block" />
-    </MudContainer>
+<MudContainer Fixed="true">
+    <MudIcon Icon="@Icons.Filled.KeyboardDoubleArrowDown" Color="Color.Tertiary" Size="Size.Large"
+        Style="margin-left: auto; margin-right: auto; display: block" />
+</MudContainer>
 
-    <Jobs Items="documentJobs" IndexName="@Index" OnRefresh="@InitializeJobs" />
-}
+<Jobs Items="documentJobs" IndexName="@Index" OnRefresh="@InitializeJobs" />
 
 @code {
     [Inject] public ISnackbar Snackbar { get; set; }
@@ -38,7 +35,6 @@
     [Inject] public AuthenticationStateProvider? AuthenticationState { get; set; }
 
     [Parameter] public string Index { get; set; }
-    [Parameter] public string? ServiceId { get; set; }
 
     //functional
     private IndexItem _indexItem;
