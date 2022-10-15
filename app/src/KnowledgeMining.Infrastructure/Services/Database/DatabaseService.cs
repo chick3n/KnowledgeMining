@@ -154,6 +154,7 @@ namespace KnowledgeMining.Infrastructure.Services.Database
                         Action = entity.Action,
                         CreatedBy = entity.CreatedBy,
                         CreatedOn = entity.CreatedOn.Ticks,
+                        CreatedOnOffset = entity.CreatedOn.Offset.Ticks,
                         Id = entity.RowKey,
                         IndexConfig = entity.PartitionKey,
                         State = entity.State
@@ -162,6 +163,47 @@ namespace KnowledgeMining.Infrastructure.Services.Database
             }
 
             return jobs;
+        }
+
+        public async Task<DocumentJobRequest> GetDocumentJob(string indexName, string id, CancellationToken cancellationToken = default)
+        {
+            var result = await _tableServiceClient.GetTableClient(TABLE_JOBS)
+                    .GetEntityAsync<Models.Job>(indexName, id, cancellationToken: cancellationToken);
+
+            if (result == null || result.Value == null)
+                throw new FileNotFoundException($"Job {indexName}/{id} cannot be found.");
+
+            var documentJobRequest = new DocumentJobRequest
+            {
+                Action = result.Value.Action,
+                CreatedBy = result.Value.CreatedBy,
+                CreatedOn = result.Value.CreatedOn.Ticks,
+                CreatedOnOffset = result.Value.CreatedOn.Offset.Ticks,
+                Id = result.Value.RowKey,
+                IndexConfig = result.Value.PartitionKey,
+                State = result.Value.State
+            };
+
+            var documents = new List<DocumentItem>();
+
+            var documentsResult = _tableServiceClient.GetTableClient(TABLE_JOBDOCUMENTS)
+                .QueryAsync<Models.JobDocument>(x => x.PartitionKey.Equals(id), maxPerPage: 100, cancellationToken: cancellationToken);
+
+            await foreach (var page in documentsResult.AsPages())
+            {
+                foreach (var entity in page.Values)
+                {
+                    documents.Add(new DocumentItem
+                    {
+                        Id = entity.RowKey,
+                        Title = entity.Title
+                    });
+                }
+            }
+
+            documentJobRequest.Documents = documents;
+
+            return documentJobRequest;
         }
     }
 }

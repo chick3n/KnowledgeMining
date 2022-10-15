@@ -15,5 +15,6 @@ namespace KnowledgeMining.Application.Common.Interfaces
         Task<Metrics> GetMetrics(string metricsName, CancellationToken cancellationToken);
         Task<bool> CreateDocumentJob(DocumentJobRequest documentRequest, CancellationToken cancellationToken);
         Task<IList<DocumentJobRequest>> GetDocumentJobs(string indexName, CancellationToken cancellationToken);
+        Task<DocumentJobRequest> GetDocumentJob(string indexName, string id, CancellationToken cancellationToken);
     }
 }

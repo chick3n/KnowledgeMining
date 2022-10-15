@@ -25,7 +25,10 @@ namespace KnowledgeMining.Domain.Entities.Jobs
         public string State { get; set; } = "Unknown";
 
         [JsonPropertyName("createdOn")]
-        public long? CreatedOn { get; set; } //DateTimeOffset.Now.Ticks
+        public long? CreatedOn { get; set; } //DateTimeOffset.Ticks
+
+        [JsonPropertyName("createdOnOffset")]
+        public long? CreatedOnOffset { get; set; } //DateTimeOffset.Offset.Ticks
 
         [JsonPropertyName("documents")]
         public IEnumerable<DocumentItem> Documents { get; set; } = Enumerable.Empty<DocumentItem>();
