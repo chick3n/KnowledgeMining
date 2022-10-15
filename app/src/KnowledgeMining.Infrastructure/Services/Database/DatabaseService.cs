@@ -25,6 +25,7 @@ namespace KnowledgeMining.Infrastructure.Services.Database
         private readonly TableServiceClient _tableServiceClient;
 
         private const string TABLE_JOBS = "jobs";
+        private const string TABLE_JOBDOCUMENTS = "jobDocuments";
 
         public DatabaseService(BlobServiceClient blobServiceClient,
                                 TableServiceClient tableServiceClient,
@@ -102,7 +103,7 @@ namespace KnowledgeMining.Infrastructure.Services.Database
             return metrics;
         }
 
-        public async Task CreateDocumentJob(DocumentRequest documentRequest, CancellationToken cancellationToken = default)
+        public async Task<bool> CreateDocumentJob(DocumentJobRequest documentRequest, CancellationToken cancellationToken = default)
         {
             var entity = new Models.Job
             {
@@ -116,13 +117,31 @@ namespace KnowledgeMining.Infrastructure.Services.Database
                 ETag = new Azure.ETag("1")
             };
 
-            await _tableServiceClient.GetTableClient(TABLE_JOBS)
+            var response = await _tableServiceClient.GetTableClient(TABLE_JOBS)
                 .AddEntityAsync(entity, cancellationToken);
+            if (response.IsError)
+            {
+                //Todo capture logging the issue
+                return false;
+            }
+
+            foreach(var documentItem in documentRequest.Documents)
+            {
+                var documentEntity = 
+                    new Models.JobDocument { PartitionKey = documentRequest.Id, RowKey = documentItem.Id, Title = documentItem.Title };
+                response = await _tableServiceClient.GetTableClient(TABLE_JOBDOCUMENTS)
+                    .AddEntityAsync(documentEntity, cancellationToken);
+
+                if (response.IsError)
+                    return false; //Todo capture logging and clean up rows
+            }
+
+            return true;
         }
 
-        public async Task<IList<DocumentRequest>> GetDocumentJobs(string indexName, CancellationToken cancellationToken = default)
+        public async Task<IList<DocumentJobRequest>> GetDocumentJobs(string indexName, CancellationToken cancellationToken = default)
         {
-            var jobs = new List<DocumentRequest>();
+            var jobs = new List<DocumentJobRequest>();
             var results = _tableServiceClient.GetTableClient(TABLE_JOBS)
                     .QueryAsync<Models.Job>(x => x.PartitionKey.Equals(indexName), maxPerPage: 100,
                         cancellationToken: cancellationToken);
@@ -130,7 +149,7 @@ namespace KnowledgeMining.Infrastructure.Services.Database
             await foreach(var page in results.AsPages())
             {
                 foreach (var entity in page.Values) {
-                    jobs.Add(new DocumentRequest
+                    jobs.Add(new DocumentJobRequest
                     {
                         Action = entity.Action,
                         CreatedBy = entity.CreatedBy,

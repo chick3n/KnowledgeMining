@@ -13,7 +13,7 @@ namespace KnowledgeMining.Application.Common.Interfaces
         Task<IEnumerable<IndexItem>> GetIndices(CancellationToken cancellationToken);
         Task<IndexItem> GetIndex(string indexName, CancellationToken cancellationToken);
         Task<Metrics> GetMetrics(string metricsName, CancellationToken cancellationToken);
-        Task CreateDocumentJob(DocumentRequest documentRequest, CancellationToken cancellationToken);
-        Task<IList<DocumentRequest>> GetDocumentJobs(string indexName, CancellationToken cancellationToken);
+        Task<bool> CreateDocumentJob(DocumentJobRequest documentRequest, CancellationToken cancellationToken);
+        Task<IList<DocumentJobRequest>> GetDocumentJobs(string indexName, CancellationToken cancellationToken);
     }
 }

@@ -8,10 +8,9 @@ using System.Threading.Tasks;
 
 namespace KnowledgeMining.Domain.Entities.Messages
 {
-    public class DocumentRequestMessage
-    {
-        public DateTimeOffset expirationTime { get; set; }
-
-        public DocumentRequest? DocumentRequest { get; set; }
-    }
+    public record DocumentJobRequestMessage(DateTimeOffset expirationTime,
+        string? Id,
+        string? IndexConfig,
+        string? Action
+        );
 }

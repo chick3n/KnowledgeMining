@@ -28,7 +28,7 @@ namespace KnowledgeMining.Infrastructure.Services.Queue
             _queueOptions = queueOptions.Value;
         }
 
-        public async Task<QueueReceipt> SendDocumentRequest(string message, CancellationToken cancellationToken = default)
+        public async Task<QueueReceipt> SendDocumentJobRequest(string message, CancellationToken cancellationToken = default)
         {
             _ = _queueOptions.DocumentRequests ?? throw new ArgumentNullException(nameof(_queueOptions.DocumentRequests));
 

@@ -5,10 +5,11 @@ using KnowledgeMining.Domain.Entities.Messages;
 using KnowledgeMining.Domain.Entities;
 using System.Text.Json;
 using System.Text;
+using KnowledgeMining.Domain.Entities.Jobs;
 
-namespace KnowledgeMining.Application.Documents.Commands.SendMessageToQueue
+namespace KnowledgeMining.Application.Documents.Commands.DocumentRequest
 {
-    public readonly record struct NewDocumentRequestCommand(DocumentRequestMessage Message) : 
+    public readonly record struct NewDocumentRequestCommand(DocumentJobRequest Job) : 
         IRequest<QueueReceipt>;
 
     public class NewDocumentRequestCommandHandler : IRequestHandler<NewDocumentRequestCommand, QueueReceipt>
@@ -28,16 +29,19 @@ namespace KnowledgeMining.Application.Documents.Commands.SendMessageToQueue
 
         public async Task<QueueReceipt> Handle(NewDocumentRequestCommand request, CancellationToken cancellationToken)
         {
-            var message = request.Message.DocumentRequest;
-            var payload = JsonSerializer.Serialize(message);
+            var job = request.Job;
+            var payload = JsonSerializer.Serialize(new DocumentJobRequestMessage(DateTimeOffset.UtcNow.AddDays(7),
+                job.Id,
+                job.IndexConfig,
+                job.Action));
 
-            using var mem = new MemoryStream(Encoding.UTF8.GetBytes(payload));
-            var uploadDocument = new RequestDocument(message.Id, "application/json", null, mem);
-            await _storageService.UploadDocuments("jobs", new RequestDocument[] { uploadDocument }, cancellationToken);
-
-            await _databaseService.CreateDocumentJob(message, cancellationToken);            
-            var receipt = await _queueService.SendDocumentRequest(payload);
-            return receipt;
+            var dbSuccess = await _databaseService.CreateDocumentJob(job, cancellationToken);
+            if (dbSuccess)
+            {
+                var receipt = await _queueService.SendDocumentJobRequest(payload);
+                return receipt;
+            }
+            return new QueueReceipt(null);
         }
     }
 }

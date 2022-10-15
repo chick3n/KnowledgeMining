@@ -1,5 +1,5 @@
 ﻿@page "/services/{Index}/{ServiceId?}"
-@using KnowledgeMining.Application.Documents.Commands.SendMessageToQueue
+@using KnowledgeMining.Application.Documents.Commands.DocumentRequest
 @using KnowledgeMining.Application.Documents.Commands.UploadDocument
 @using KnowledgeMining.Application.Documents.Queries.GetIndex
 @using KnowledgeMining.Application.Documents.Queries.Jobs
@@ -32,6 +32,7 @@
 }
 
 @code {
+    [Inject] public ISnackbar Snackbar { get; set; }
     [Inject] public IMediator? Mediator { get; set; }
     [Inject] public DocumentCartService? CartService { get; set; }
     [Inject] public AuthenticationStateProvider? AuthenticationState { get; set; }
@@ -42,7 +43,7 @@
     //functional
     private IndexItem _indexItem;
     private IList<DocumentCartItem>? documentCartItems;
-    private IEnumerable<DocumentRequest>? documentJobs;
+    private IEnumerable<DocumentJobRequest>? documentJobs;
 
     protected override async Task OnInitializedAsync()
     {
@@ -53,6 +54,8 @@
         {
             throw new ArgumentNullException(nameof(Index));
         }
+
+        Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
     }
 
     protected override Task OnAfterRenderAsync(bool firstRender)
@@ -76,7 +79,7 @@
         }
         else
         {
-            documentJobs = Enumerable.Empty<DocumentRequest>();
+            documentJobs = Enumerable.Empty<DocumentJobRequest>();
         }
         StateHasChanged();
     }
@@ -138,7 +141,7 @@
 
         if (serviceEvent.Action == ServiceAction.Start)
         {
-            var serviceRequest = new DocumentRequest
+            var serviceRequest = new DocumentJobRequest
                 {
                     Action = serviceEvent.Service.ToString(),
                     Id = Guid.NewGuid().ToString("D"),
@@ -147,22 +150,22 @@
                     CreatedOn = DateTimeOffset.Now.Ticks,
                     Documents = documentCartItems?.Select(x => new DocumentItem
                     {
-                      Id = x.RecordId,
-                      Title = x.Title
+                        Id = x.RecordId,
+                        Title = x.Title
                     }) ?? Enumerable.Empty<DocumentItem>(),
                     CreatedBy = authState.User.Identity.Name
                 };
 
-            var response = await Mediator.Send(new NewDocumentRequestCommand(new Domain.Entities.Messages.DocumentRequestMessage
-            {
-                DocumentRequest = serviceRequest,
-                expirationTime = DateTime.UtcNow.AddDays(12)
-            }));
+            var response = await Mediator.Send(new NewDocumentRequestCommand(serviceRequest));
 
-            if(response.messageId != null)
+            if (response.messageId != null)
             {
                 documentJobs = null;
                 _ = InitializeJobs().ConfigureAwait(false);
+            }
+            else
+            {
+                Snackbar.Add("Failed to start job.", Severity.Error);
             }
         }
     }

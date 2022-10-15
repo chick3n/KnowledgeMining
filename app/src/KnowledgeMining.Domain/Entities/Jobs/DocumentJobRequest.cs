@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace KnowledgeMining.Domain.Entities.Jobs
 {
-    public class DocumentRequest
+    public class DocumentJobRequest
     {
         [JsonPropertyName("name")]
         public string? Id { get; set; }

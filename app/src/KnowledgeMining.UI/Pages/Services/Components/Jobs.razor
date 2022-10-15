@@ -15,7 +15,7 @@
             <MudTh>State</MudTh>
             <MudTh>
                 <MudTableSortLabel InitialDirection="SortDirection.Descending" 
-                    SortBy="new Func<DocumentRequest, object>(x => x.CreatedOn ?? -1)">
+                    SortBy="new Func<DocumentJobRequest, object>(x => x.CreatedOn ?? -1)">
                         Created On
                 </MudTableSortLabel>
             </MudTh>
@@ -36,12 +36,12 @@
 </MudPaper>
 
 @code {
-    [Parameter] public IEnumerable<DocumentRequest>? Items { get; set; }
+    [Parameter] public IEnumerable<DocumentJobRequest>? Items { get; set; }
     [Parameter] public string IndexName { get; set; }
     [Parameter] public EventCallback<Task> OnRefresh { get; set; }
 
     //Functional
-    private IEnumerable<DocumentRequest>? _liveItems;
+    private IEnumerable<DocumentJobRequest>? _liveItems;
     private bool _isLoading = true;
     private bool _shouldRender;
 

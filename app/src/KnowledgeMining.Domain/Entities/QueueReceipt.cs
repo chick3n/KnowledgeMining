@@ -7,8 +7,8 @@ using System.Threading.Tasks;
 namespace KnowledgeMining.Domain.Entities
 {
     public record QueueReceipt(string messageId, 
-        DateTimeOffset insertionTime, 
-        DateTimeOffset expirationTime, 
-        string popReceipt, 
-        DateTimeOffset timeNextVisible);
+        DateTimeOffset insertionTime = default(DateTimeOffset), 
+        DateTimeOffset expirationTime = default(DateTimeOffset), 
+        string? popReceipt = null, 
+        DateTimeOffset timeNextVisible = default(DateTimeOffset));
 }
