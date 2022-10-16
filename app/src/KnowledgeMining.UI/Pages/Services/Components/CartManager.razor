@@ -10,7 +10,7 @@
             <MudButton OnClick="OnClearClicked">Clear</MudButton>
         </ToolBarContent>
         <RowTemplate>
-            <MudTd>@context.Title</MudTd>
+            <MudTd><MudLink Href="@($"/record/{IndexName}/{@context.RecordId}")">@context.Title</MudLink></MudTd>
             <MudTd Style="width: 10%">
                 <MudIconButton Size="Size.Small"  Icon="@Icons.Filled.Remove" OnClick="(async () => await OnRemovedClicked(context))" Title="Remove" />
             </MudTd>
@@ -27,6 +27,7 @@
 @code {
     [Parameter] public EventCallback<DocumentCartEvent> OnRemoved { get; set; }
     [Parameter] public IList<DocumentCartItem>? Items { get; set; }
+    [Parameter] public string? IndexName { get; set; }
 
     //Functional
     private IList<DocumentCartItem>? _liveItems { get; set; }
