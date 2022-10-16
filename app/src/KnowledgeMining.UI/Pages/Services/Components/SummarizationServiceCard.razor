@@ -11,7 +11,7 @@
         <MudText Typo="Typo.body2">@Description</MudText>
     </MudCardContent>
     <MudCardActions>
-        <MudButton Disabled="@Disabled" Variant="Variant.Text" Color="Color.Primary" OnClick="OnQueueClicked">Start</MudButton>
+        <MudButton Disabled="@Disabled" Variant="Variant.Text" Color="Color.Primary" OnClick="OnQueueClicked">@ActionTitle</MudButton>
         @if(_statusUpdate != null)
         {
             <MudText Typo="Typo.caption">@_statusUpdate</MudText>
@@ -26,6 +26,7 @@
     [Parameter] public string? Description { get; set; }
     [Parameter] public bool Disabled { get; set; }
     [Parameter] public string? Subtitle { get; set; }
+    [Parameter] public string? ActionTitle { get; set; } = "Start";
 
     [Parameter] public EventCallback<ServiceAction> OnAction { get; set; }
 
