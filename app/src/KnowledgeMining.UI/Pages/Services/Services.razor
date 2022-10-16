@@ -49,15 +49,15 @@
 <Jobs Items="documentJobs" IndexName="@Index" OnRefresh="@InitializeJobs" />
 
 @code {
-    [Inject] public ISnackbar Snackbar { get; set; }
+    [Inject] public ISnackbar? Snackbar { get; set; }
     [Inject] public IMediator? Mediator { get; set; }
     [Inject] public DocumentCartService? CartService { get; set; }
     [Inject] public AuthenticationStateProvider? AuthenticationState { get; set; }
 
-    [Parameter] public string Index { get; set; }
+    [Parameter] public string? Index { get; set; }
 
     //functional
-    private IndexItem _indexItem;
+    private IndexItem? _indexItem;
     private IList<DocumentCartItem>? documentCartItems;
     private IEnumerable<DocumentJobRequest>? documentJobs;
     private bool _extractiveComponentActive = false;
@@ -67,7 +67,7 @@
 
     protected override async Task OnInitializedAsync()
     {
-        var indexResponse = await Mediator.Send(new GetIndexQuery(Index));
+        var indexResponse = await Mediator!.Send(new GetIndexQuery(Index!));
         _indexItem = indexResponse.IndexItem;
 
         if(_indexItem == null)
@@ -75,7 +75,7 @@
             throw new ArgumentNullException(nameof(Index));
         }
 
-        Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+        Snackbar!.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
     }
 
     protected override Task OnAfterRenderAsync(bool firstRender)
@@ -95,7 +95,7 @@
     {
         if(Mediator != null) 
         {
-            documentJobs = await Mediator.Send(new GetDocumentJobsQuery(Index));
+            documentJobs = await Mediator.Send(new GetDocumentJobsQuery(Index!));
         }
         else
         {
@@ -112,7 +112,7 @@
     {
         if(CartService != null) 
         {
-            documentCartItems = await CartService.GetAll(Index);
+            documentCartItems = await CartService.GetAll(Index!);
         }
         else
         {
@@ -127,11 +127,11 @@
         {
             if (documentCartEvent.Action == CartAction.Delete)
             {
-                await CartService.Remove(Index, documentCartEvent.Item.RecordId ?? string.Empty);
+                await CartService.Remove(Index!, documentCartEvent.Item.RecordId ?? string.Empty);
             }
             else if(documentCartEvent.Action == CartAction.Clear)
             {
-                await CartService.Clear(Index);
+                await CartService.Clear(Index!);
             }
         }
     }
@@ -143,7 +143,7 @@
         if (serviceEvent.Service == ServiceType.AbstractiveSummary)
             throw new NotImplementedException(nameof(ServiceType.AbstractiveSummary));
 
-        var authState = await AuthenticationState.GetAuthenticationStateAsync();
+        var authState = await AuthenticationState!.GetAuthenticationStateAsync();
 
         if (serviceEvent.Action == ServiceAction.Start)
         {
@@ -162,7 +162,7 @@
                     CreatedBy = authState.User.Identity.Name
                 };
 
-            var response = await Mediator.Send(new NewDocumentRequestCommand(serviceRequest));
+            var response = await Mediator!.Send(new NewDocumentRequestCommand(serviceRequest));
 
             OnDone(response.messageId != null, serviceRequest);
 
