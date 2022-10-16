@@ -1,11 +1,11 @@
 ﻿@using KnowledgeMining.UI.Services.State
 
 <MudPaper Elevation="0" Class="p-4">
-    <MudTable Items="@_liveItems" Hover="true" Breakpoint="Breakpoint.Sm"
-        Style="width:800px; max-height: 300px; margin-left: auto; margin-right: auto;"
+    <MudTable Items="@_liveItems" Hover="true" Breakpoint="Breakpoint.Sm" Height="180px" Dense="true"
+        Style="width:800px; margin-left: auto; margin-right: auto;"
         Loading="@_isLoading" LoadingProgressColor="Color.Info">
         <ToolBarContent>
-            <MudText Typo="Typo.h6">Document Cart (@(_liveItems?.Count ?? 0))</MudText>
+            <MudText Typo="Typo.h6">Documents (@(_liveItems?.Count ?? 0))</MudText>
             <MudSpacer />
             <MudButton OnClick="OnClearClicked">Clear</MudButton>
         </ToolBarContent>

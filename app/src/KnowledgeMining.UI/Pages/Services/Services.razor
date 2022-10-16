@@ -19,7 +19,27 @@
         Style="margin-left: auto; margin-right: auto; display: block" />
 </MudContainer>
 
-<ServiceSelection OnServiceEvent="OnServiceEvent" />
+<MudStack Row="true" Class="p-4"
+    Spacing="9" AlignItems="AlignItems.Center" Justify="Justify.Center">
+    
+    <SummarizationServiceCard Title="Extractive summarization" 
+        ActionTitle="Create"
+        Description="Produces a summary by extracting salient sentences within the document."
+        ImageUrl="/images/extractive-text-summarization.jpg"
+        Active="@_extractiveComponentActive"
+        OnAction="OnExtractiveSummarizationAction"
+        JobRequest="@_extractiveComponentJobRequest"
+        Disabled="@_extractiveComponentDisabled" />
+
+    <SummarizationServiceCard Title="Abstractive summarization" 
+        ActionTitle="Coming Soon"
+        Description="Generates a summary that may not use the same words as those in the document, but captures the main idea."
+        ImageUrl="/images/abstractive-text-summarization.jpg"
+        OnAction="OnAbstractiveSummarizationAction"
+        Active="@_abstractiveComponentActive"
+        Disabled="true" />
+
+</MudStack>
 
 <MudContainer Fixed="true">
     <MudIcon Icon="@Icons.Filled.KeyboardDoubleArrowDown" Color="Color.Tertiary" Size="Size.Large"
@@ -40,6 +60,10 @@
     private IndexItem _indexItem;
     private IList<DocumentCartItem>? documentCartItems;
     private IEnumerable<DocumentJobRequest>? documentJobs;
+    private bool _extractiveComponentActive = false;
+    private bool _extractiveComponentDisabled = false;
+    private DocumentJobRequest? _extractiveComponentJobRequest = null;
+    private bool _abstractiveComponentActive = false;
 
     protected override async Task OnInitializedAsync()
     {
@@ -114,21 +138,7 @@
 
     #endregion
 
-    private async Task OnServiceEvent(ServiceEvent serviceEvent) 
-    {
-        if (serviceEvent == null)
-            return;
-
-        switch(serviceEvent.Service)
-        {
-            case ServiceType.AbstractiveSummary:
-            case ServiceType.ExtractiveSummary:
-                await HandleSummaryService(serviceEvent);
-                break;
-        }
-    }
-
-    private async Task HandleSummaryService(ServiceEvent serviceEvent)
+    private async Task HandleSummaryService(ServiceEvent serviceEvent, Action<bool, DocumentJobRequest> OnDone)
     {
         if (serviceEvent.Service == ServiceType.AbstractiveSummary)
             throw new NotImplementedException(nameof(ServiceType.AbstractiveSummary));
@@ -154,9 +164,10 @@
 
             var response = await Mediator.Send(new NewDocumentRequestCommand(serviceRequest));
 
+            OnDone(response.messageId != null, serviceRequest);
+
             if (response.messageId != null)
             {
-                documentJobs = null;
                 _ = InitializeJobs().ConfigureAwait(false);
             }
             else
@@ -165,5 +176,29 @@
             }
         }
     }
+
+    private Task OnExtractiveSummarizationAction(ServiceAction action) =>
+        HandleSummaryService(new ServiceEvent(action, ServiceType.ExtractiveSummary),
+        OnExtractiveSummarizationActionComplete);
+
+    private void OnExtractiveSummarizationActionComplete(bool success, DocumentJobRequest request)
+    {
+        _extractiveComponentActive = false;
+        _extractiveComponentDisabled = success;
+        _extractiveComponentJobRequest = request;
+
+        StateHasChanged();
+    }
+
+    private Task OnAbstractiveSummarizationAction(ServiceAction action) =>
+        HandleSummaryService(new ServiceEvent(action, ServiceType.AbstractiveSummary),
+        OnAbstractiveSummarizationActionComplete);
+
+    private void OnAbstractiveSummarizationActionComplete(bool success, DocumentJobRequest request)
+    {
+        _abstractiveComponentActive = false;
+        StateHasChanged();
+    }
+
 
 }

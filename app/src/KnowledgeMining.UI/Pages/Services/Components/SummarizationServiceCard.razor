@@ -1,43 +1,66 @@
-﻿@using KnowledgeMining.UI.Pages.Services.Models
+﻿@using KnowledgeMining.Domain.Entities.Jobs
+@using KnowledgeMining.UI.Pages.Services.Models
 
-<MudCard>
+<MudCard Style="height:402.5px;">
     <MudCardMedia Image="@ImageUrl" Height="200" />
-    <MudCardContent Style="width:400px; height:150px">
+    <MudCardContent Style="width:400px; height:150px; max-height: 150px">
         <MudText Typo="Typo.h5">@Title</MudText>
-        @if (Subtitle != null)
-        {
-            <MudText Typo="Typo.subtitle1">@Subtitle</MudText>
-        }
         <MudText Typo="Typo.body2">@Description</MudText>
     </MudCardContent>
     <MudCardActions>
-        <MudButton Disabled="@Disabled" Variant="Variant.Text" Color="Color.Primary" OnClick="OnQueueClicked">@ActionTitle</MudButton>
-        @if(_statusUpdate != null)
+        @if(_jobRequest == null)
         {
-            <MudText Typo="Typo.caption">@_statusUpdate</MudText>
+            <MudButton Disabled="@_disabled" Variant="Variant.Text" Color="Color.Primary" OnClick="OnActionClicked">@ActionTitle</MudButton>
+        }        
+        @if(_active)
+        {
+            <MudProgressCircular Size="Size.Small" Indeterminate="true" />
+        }
+        @if(_jobRequest != null)
+        {
+            <MudIcon Icon="@Icons.Material.Outlined.Link" Size="Size.Small" Class="mr-2" />
+            <MudLink Href="@($"/job/{_jobRequest.IndexConfig}/{_jobRequest.Id}")">@_jobRequest.Id</MudLink>
         }
     </MudCardActions>
 </MudCard>
 
 @code {
-    [Parameter] public string? IndexName { get; set; }
     [Parameter] public string? ImageUrl { get; set; }
     [Parameter] public string? Title { get; set; }
     [Parameter] public string? Description { get; set; }
     [Parameter] public bool Disabled { get; set; }
-    [Parameter] public string? Subtitle { get; set; }
     [Parameter] public string? ActionTitle { get; set; } = "Start";
+    [Parameter] public bool Active { get; set; } = false;
+    [Parameter] public DocumentJobRequest? JobRequest { get; set; } = null;
 
     [Parameter] public EventCallback<ServiceAction> OnAction { get; set; }
 
-    //UI
-    private string? _statusUpdate;
+    //Functional
+    private bool _shouldRender = false;
+    private DocumentJobRequest? _jobRequest;
+    private bool _active;
+    private bool _disabled;
 
-    private async Task OnQueueClicked() {
-        Disabled = true;
-        _statusUpdate = "In progress...";
+    protected override bool ShouldRender() => _shouldRender;
+
+    protected override void OnParametersSet()
+    {
+        _shouldRender = _active != Active || _jobRequest != JobRequest || _disabled != Disabled;
+
+        _active = Active;
+        _jobRequest = JobRequest;
+        _disabled = Disabled;
+
+        base.OnParametersSetAsync();
+    }
+
+    private async Task OnActionClicked() {
+        _disabled = true;
+        _active = true;
+        _shouldRender = true;
         StateHasChanged();
 
+        await Task.Delay(2000);
         await OnAction.InvokeAsync(ServiceAction.Start);
     }
 

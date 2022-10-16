@@ -1,9 +1,9 @@
 ﻿@using KnowledgeMining.Domain.Entities.Jobs
 
 <MudPaper Elevation="0" Class="p-4">
-    <MudTable Items="@_liveItems" Hover="true" Breakpoint="Breakpoint.Sm"
-        Loading="@_isLoading" LoadingProgressColor="Color.Default"
-        Style="width:800px; max-height: 300px; margin-left: auto; margin-right: auto;">
+    <MudTable Items="@_liveItems" Hover="true" Breakpoint="Breakpoint.Sm" Dense="true"
+        Loading="@_isLoading" LoadingProgressColor="Color.Default" Height="300px" FixedHeader="true"
+        Style="width:800px; margin-left: auto; margin-right: auto;">
         <ToolBarContent>
             <MudText Typo="Typo.h6">Jobs (@(Items?.Count() ?? 0))</MudText>
             <MudSpacer />
@@ -24,7 +24,7 @@
             <MudTd>@context.Action</MudTd>
             <MudTd><MudLink Href="@($"/job/{IndexName}/{context.Id}")">@context.Id</MudLink></MudTd>
             <MudTd>@context.State</MudTd>
-            <MudTd>@context.CreatedOn</MudTd>
+            <MudTd>@CreatedOnFromTicks(context.CreatedOn, context.CreatedOnOffset)</MudTd>
         </RowTemplate>
         <NoRecordsContent>
             <MudText>You have no documents queued.</MudText>
@@ -63,5 +63,15 @@
         if (OnRefresh.HasDelegate)
             return OnRefresh.InvokeAsync();
         return Task.CompletedTask;
+    }
+
+    private string CreatedOnFromTicks(long? ticks, long? offsetTicks)
+    {
+        if (!ticks.HasValue)
+            return string.Empty;
+
+        if (offsetTicks.HasValue)
+            return new DateTimeOffset(ticks.Value, TimeSpan.FromTicks(offsetTicks.Value)).ToString("yyyy-MM-dd HH:mm:ss");
+        return new DateTime(ticks.Value, DateTimeKind.Utc).ToString("yyyy-MM-dd HH:mm:ss");
     }
 }
