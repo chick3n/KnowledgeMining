@@ -34,7 +34,7 @@ namespace KnowledgeMining.UI.Services.Documents
                 string? nextPage = default;
                 do
                 {
-                    var response = await _mediator.Send(new GetDocumentsQuery(null, PAGESIZE, nextPage));
+                    var response = await _mediator.Send(new GetDocumentsQuery("documents", null, PAGESIZE, nextPage));
                     nextPage = response.NextPage;
                     documents.AddRange(response.Documents);
                 } while (!string.IsNullOrWhiteSpace(nextPage));

@@ -1,7 +1,9 @@
-﻿using Azure.Storage.Blobs;
+﻿using Azure.Data.Tables;
+using Azure.Storage.Blobs;
 using KnowledgeMining.Application.Common.Interfaces;
 using KnowledgeMining.Application.Common.Options;
 using KnowledgeMining.Domain.Entities;
+using KnowledgeMining.Domain.Entities.Jobs;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -20,13 +22,19 @@ namespace KnowledgeMining.Infrastructure.Services.Database
         private readonly DatabaseOptions _options;
         private readonly ILogger<DatabaseService> _logger;
         private readonly IMemoryCache _cache;
+        private readonly TableServiceClient _tableServiceClient;
+
+        private const string TABLE_JOBS = "jobs";
+        private const string TABLE_JOBDOCUMENTS = "jobDocuments";
 
         public DatabaseService(BlobServiceClient blobServiceClient,
+                                TableServiceClient tableServiceClient,
                                 IMemoryCache memoryCache,
                                  IOptions<DatabaseOptions> options,
                                  ILogger<DatabaseService> logger)
         {
             _blobServiceClient = blobServiceClient;
+            _tableServiceClient = tableServiceClient;
             _options = options.Value;
             _cache = memoryCache;
             _logger = logger;
@@ -93,6 +101,109 @@ namespace KnowledgeMining.Infrastructure.Services.Database
             }
 
             return metrics;
+        }
+
+        public async Task<bool> CreateDocumentJob(DocumentJobRequest documentRequest, CancellationToken cancellationToken = default)
+        {
+            var entity = new Models.Job
+            {
+                PartitionKey = documentRequest.IndexConfig,
+                RowKey = documentRequest.Id,
+                Timestamp = DateTimeOffset.UtcNow,
+                CreatedBy = documentRequest.CreatedBy,
+                CreatedOn = DateTimeOffset.Now,
+                State = documentRequest.State,
+                Action = documentRequest.Action,
+                ETag = new Azure.ETag("1")
+            };
+
+            var response = await _tableServiceClient.GetTableClient(TABLE_JOBS)
+                .AddEntityAsync(entity, cancellationToken);
+            if (response.IsError)
+            {
+                //Todo capture logging the issue
+                return false;
+            }
+
+            foreach(var documentItem in documentRequest.Documents)
+            {
+                var documentEntity = 
+                    new Models.JobDocument { PartitionKey = documentRequest.Id, RowKey = documentItem.Id, Title = documentItem.Title };
+                response = await _tableServiceClient.GetTableClient(TABLE_JOBDOCUMENTS)
+                    .AddEntityAsync(documentEntity, cancellationToken);
+
+                if (response.IsError)
+                    return false; //Todo capture logging and clean up rows
+            }
+
+            return true;
+        }
+
+        public async Task<IList<DocumentJobRequest>> GetDocumentJobs(string indexName, CancellationToken cancellationToken = default)
+        {
+            var jobs = new List<DocumentJobRequest>();
+            var results = _tableServiceClient.GetTableClient(TABLE_JOBS)
+                    .QueryAsync<Models.Job>(x => x.PartitionKey.Equals(indexName), maxPerPage: 100,
+                        cancellationToken: cancellationToken);
+
+            await foreach(var page in results.AsPages())
+            {
+                foreach (var entity in page.Values) {
+                    jobs.Add(new DocumentJobRequest
+                    {
+                        Action = entity.Action,
+                        CreatedBy = entity.CreatedBy,
+                        CreatedOn = entity.CreatedOn.Ticks,
+                        CreatedOnOffset = entity.CreatedOn.Offset.Ticks,
+                        Id = entity.RowKey,
+                        IndexConfig = entity.PartitionKey,
+                        State = entity.State
+                    });
+                }
+            }
+
+            return jobs;
+        }
+
+        public async Task<DocumentJobRequest> GetDocumentJob(string indexName, string id, CancellationToken cancellationToken = default)
+        {
+            var result = await _tableServiceClient.GetTableClient(TABLE_JOBS)
+                    .GetEntityAsync<Models.Job>(indexName, id, cancellationToken: cancellationToken);
+
+            if (result == null || result.Value == null)
+                throw new FileNotFoundException($"Job {indexName}/{id} cannot be found.");
+
+            var documentJobRequest = new DocumentJobRequest
+            {
+                Action = result.Value.Action,
+                CreatedBy = result.Value.CreatedBy,
+                CreatedOn = result.Value.CreatedOn.Ticks,
+                CreatedOnOffset = result.Value.CreatedOn.Offset.Ticks,
+                Id = result.Value.RowKey,
+                IndexConfig = result.Value.PartitionKey,
+                State = result.Value.State
+            };
+
+            var documents = new List<DocumentItem>();
+
+            var documentsResult = _tableServiceClient.GetTableClient(TABLE_JOBDOCUMENTS)
+                .QueryAsync<Models.JobDocument>(x => x.PartitionKey.Equals(id), maxPerPage: 100, cancellationToken: cancellationToken);
+
+            await foreach (var page in documentsResult.AsPages())
+            {
+                foreach (var entity in page.Values)
+                {
+                    documents.Add(new DocumentItem
+                    {
+                        Id = entity.RowKey,
+                        Title = entity.Title
+                    });
+                }
+            }
+
+            documentJobRequest.Documents = documents;
+
+            return documentJobRequest;
         }
     }
 }

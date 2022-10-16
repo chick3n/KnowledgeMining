@@ -1,0 +1,70 @@
+﻿@using KnowledgeMining.UI.Services.State
+
+<MudPaper Elevation="0" Class="p-4">
+    <MudTable Items="@_liveItems" Hover="true" Breakpoint="Breakpoint.Sm" Height="180px" Dense="true"
+        Style="width:800px; margin-left: auto; margin-right: auto;"
+        Loading="@_isLoading" LoadingProgressColor="Color.Info">
+        <ToolBarContent>
+            <MudText Typo="Typo.h6">Documents (@(_liveItems?.Count ?? 0))</MudText>
+            <MudSpacer />
+            <MudButton OnClick="OnClearClicked">Clear</MudButton>
+        </ToolBarContent>
+        <RowTemplate>
+            <MudTd><MudLink Href="@($"/record/{IndexName}/{@context.RecordId}")">@context.Title</MudLink></MudTd>
+            <MudTd Style="width: 10%">
+                <MudIconButton Size="Size.Small"  Icon="@Icons.Filled.Remove" OnClick="(async () => await OnRemovedClicked(context))" Title="Remove" />
+            </MudTd>
+        </RowTemplate>
+        <NoRecordsContent>
+            <MudText>You have no documents queued.</MudText>
+        </NoRecordsContent>
+        <LoadingContent>
+                <MudSkeleton Animation="Animation.Wave" SkeletonType="SkeletonType.Rectangle" Height="200px" />
+        </LoadingContent>
+    </MudTable>
+</MudPaper>
+
+@code {
+    [Parameter] public EventCallback<DocumentCartEvent> OnRemoved { get; set; }
+    [Parameter] public IList<DocumentCartItem>? Items { get; set; }
+    [Parameter] public string? IndexName { get; set; }
+
+    //Functional
+    private IList<DocumentCartItem>? _liveItems { get; set; }
+    private bool _shouldRender;
+    private bool _isLoading = true;
+
+    protected override void OnParametersSet()
+    {
+        _shouldRender = _liveItems != Items;
+        _liveItems = Items;
+        _isLoading = _liveItems == null;
+
+        base.OnParametersSet();
+    }
+
+    protected override bool ShouldRender() => _shouldRender;
+
+
+    private async Task OnRemovedClicked(DocumentCartItem documentCartItem)
+    {
+        if (Items != null) 
+        {
+            Items.Remove(documentCartItem);
+            _shouldRender = true;
+            await OnRemoved.InvokeAsync(new DocumentCartEvent(CartAction.Delete, documentCartItem, Items));
+            StateHasChanged();
+        }
+    }
+
+    private async Task OnClearClicked()
+    {
+        if (Items != null)
+        {
+            Items.Clear();
+            _shouldRender = true;
+            await OnRemoved.InvokeAsync(new DocumentCartEvent(CartAction.Clear, null, Items));
+            StateHasChanged();
+        }
+    }
+}

@@ -1,0 +1,77 @@
+﻿@using KnowledgeMining.Domain.Entities.Jobs
+
+<MudPaper Elevation="0" Class="p-4">
+    <MudTable Items="@_liveItems" Hover="true" Breakpoint="Breakpoint.Sm" Dense="true"
+        Loading="@_isLoading" LoadingProgressColor="Color.Default" Height="300px" FixedHeader="true"
+        Style="width:800px; margin-left: auto; margin-right: auto;">
+        <ToolBarContent>
+            <MudText Typo="Typo.h6">Jobs (@(Items?.Count() ?? 0))</MudText>
+            <MudSpacer />
+            <MudIconButton Icon="@Icons.Material.Filled.Refresh" Size="Size.Small" OnClick="@OnRefreshClicked" />
+        </ToolBarContent>
+        <HeaderContent>
+            <MudTh>Action</MudTh>
+            <MudTh>Id</MudTh>
+            <MudTh>State</MudTh>
+            <MudTh>
+                <MudTableSortLabel InitialDirection="SortDirection.Descending" 
+                    SortBy="new Func<DocumentJobRequest, object>(x => x.CreatedOn ?? -1)">
+                        Created On
+                </MudTableSortLabel>
+            </MudTh>
+        </HeaderContent>
+        <RowTemplate>
+            <MudTd>@context.Action</MudTd>
+            <MudTd><MudLink Href="@($"/job/{IndexName}/{context.Id}")">@context.Id</MudLink></MudTd>
+            <MudTd>@context.State</MudTd>
+            <MudTd>@CreatedOnFromTicks(context.CreatedOn, context.CreatedOnOffset)</MudTd>
+        </RowTemplate>
+        <NoRecordsContent>
+            <MudText>You have no documents queued.</MudText>
+        </NoRecordsContent>
+        <LoadingContent>
+            <MudSkeleton Animation="Animation.Wave" />
+        </LoadingContent>
+    </MudTable>
+</MudPaper>
+
+@code {
+    [Parameter] public IEnumerable<DocumentJobRequest>? Items { get; set; }
+    [Parameter] public string IndexName { get; set; }
+    [Parameter] public EventCallback<Task> OnRefresh { get; set; }
+
+    //Functional
+    private IEnumerable<DocumentJobRequest>? _liveItems;
+    private bool _isLoading = true;
+    private bool _shouldRender;
+
+    protected override void OnParametersSet()
+    {
+        _shouldRender = _liveItems != Items;
+        _liveItems = Items;
+        _isLoading = _liveItems == null;
+
+        base.OnParametersSet();
+    }
+
+    protected override bool ShouldRender() => _shouldRender;
+
+    private Task OnRefreshClicked()
+    {
+        Items = null;
+
+        if (OnRefresh.HasDelegate)
+            return OnRefresh.InvokeAsync();
+        return Task.CompletedTask;
+    }
+
+    private string CreatedOnFromTicks(long? ticks, long? offsetTicks)
+    {
+        if (!ticks.HasValue)
+            return string.Empty;
+
+        if (offsetTicks.HasValue)
+            return new DateTimeOffset(ticks.Value, TimeSpan.FromTicks(offsetTicks.Value)).ToString("yyyy-MM-dd HH:mm:ss");
+        return new DateTime(ticks.Value, DateTimeKind.Utc).ToString("yyyy-MM-dd HH:mm:ss");
+    }
+}

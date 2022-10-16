@@ -1,0 +1,204 @@
+﻿@page "/services/{Index}"
+@using KnowledgeMining.Application.Documents.Commands.DocumentRequest
+@using KnowledgeMining.Application.Documents.Commands.UploadDocument
+@using KnowledgeMining.Application.Documents.Queries.GetIndex
+@using KnowledgeMining.Application.Documents.Queries.Jobs
+@using KnowledgeMining.Domain.Entities
+@using KnowledgeMining.Domain.Entities.Jobs
+@using KnowledgeMining.UI.Pages.Services.Components
+@using KnowledgeMining.UI.Pages.Services.Models
+@using KnowledgeMining.UI.Services.State
+@using System.Text.Json
+@using System.Text
+
+
+<CartManager Items="@documentCartItems" IndexName="@Index" OnRemoved="OnCartItemRemoved" />
+
+<MudContainer Fixed="true">
+    <MudIcon Icon="@Icons.Filled.KeyboardArrowDown" Color="Color.Tertiary" Size="Size.Large" 
+        Style="margin-left: auto; margin-right: auto; display: block" />
+</MudContainer>
+
+<MudStack Row="true" Class="p-4"
+    Spacing="9" AlignItems="AlignItems.Center" Justify="Justify.Center">
+    
+    <SummarizationServiceCard Title="Extractive summarization" 
+        ActionTitle="Create"
+        Description="Produces a summary by extracting salient sentences within the document."
+        ImageUrl="/images/extractive-text-summarization.jpg"
+        Active="@_extractiveComponentActive"
+        OnAction="OnExtractiveSummarizationAction"
+        JobRequest="@_extractiveComponentJobRequest"
+        Disabled="@_extractiveComponentDisabled" />
+
+    <SummarizationServiceCard Title="Abstractive summarization" 
+        ActionTitle="Coming Soon"
+        Description="Generates a summary that may not use the same words as those in the document, but captures the main idea."
+        ImageUrl="/images/abstractive-text-summarization.jpg"
+        OnAction="OnAbstractiveSummarizationAction"
+        Active="@_abstractiveComponentActive"
+        Disabled="true" />
+
+</MudStack>
+
+<MudContainer Fixed="true">
+    <MudIcon Icon="@Icons.Filled.KeyboardDoubleArrowDown" Color="Color.Tertiary" Size="Size.Large"
+        Style="margin-left: auto; margin-right: auto; display: block" />
+</MudContainer>
+
+<Jobs Items="documentJobs" IndexName="@Index" OnRefresh="@InitializeJobs" />
+
+@code {
+    [Inject] public ISnackbar? Snackbar { get; set; }
+    [Inject] public IMediator? Mediator { get; set; }
+    [Inject] public DocumentCartService? CartService { get; set; }
+    [Inject] public AuthenticationStateProvider? AuthenticationState { get; set; }
+
+    [Parameter] public string? Index { get; set; }
+
+    //functional
+    private IndexItem? _indexItem;
+    private IList<DocumentCartItem>? documentCartItems;
+    private IEnumerable<DocumentJobRequest>? documentJobs;
+    private bool _extractiveComponentActive = false;
+    private bool _extractiveComponentDisabled = false;
+    private DocumentJobRequest? _extractiveComponentJobRequest = null;
+    private bool _abstractiveComponentActive = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var indexResponse = await Mediator!.Send(new GetIndexQuery(Index!));
+        _indexItem = indexResponse.IndexItem;
+
+        if(_indexItem == null)
+        {
+            throw new ArgumentNullException(nameof(Index));
+        }
+
+        Snackbar!.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+    }
+
+    protected override Task OnAfterRenderAsync(bool firstRender)
+    {
+        if(firstRender)
+        {
+            InitializeCart().ConfigureAwait(false);
+            InitializeJobs().ConfigureAwait(false);
+        }
+
+        return base.OnAfterRenderAsync(firstRender);
+    }
+
+    #region Jobs
+
+    private async Task InitializeJobs()
+    {
+        if(Mediator != null) 
+        {
+            documentJobs = await Mediator.Send(new GetDocumentJobsQuery(Index!));
+        }
+        else
+        {
+            documentJobs = Enumerable.Empty<DocumentJobRequest>();
+        }
+        StateHasChanged();
+    }
+
+    #endregion
+
+    #region Cart 
+
+    private async Task InitializeCart()
+    {
+        if(CartService != null) 
+        {
+            documentCartItems = await CartService.GetAll(Index!);
+        }
+        else
+        {
+            documentCartItems = new List<DocumentCartItem>();
+        }
+        StateHasChanged();
+    }
+
+    private async Task OnCartItemRemoved(DocumentCartEvent documentCartEvent)
+    {
+        if(CartService != null)
+        {
+            if (documentCartEvent.Action == CartAction.Delete)
+            {
+                await CartService.Remove(Index!, documentCartEvent.Item.RecordId ?? string.Empty);
+            }
+            else if(documentCartEvent.Action == CartAction.Clear)
+            {
+                await CartService.Clear(Index!);
+            }
+        }
+    }
+
+    #endregion
+
+    private async Task HandleSummaryService(ServiceEvent serviceEvent, Action<bool, DocumentJobRequest> OnDone)
+    {
+        if (serviceEvent.Service == ServiceType.AbstractiveSummary)
+            throw new NotImplementedException(nameof(ServiceType.AbstractiveSummary));
+
+        var authState = await AuthenticationState!.GetAuthenticationStateAsync();
+
+        if (serviceEvent.Action == ServiceAction.Start)
+        {
+            var serviceRequest = new DocumentJobRequest
+                {
+                    Action = serviceEvent.Service.ToString(),
+                    Id = Guid.NewGuid().ToString("D"),
+                    IndexConfig = Index,
+                    State = ServiceState.Pending.ToString(),
+                    CreatedOn = DateTimeOffset.Now.Ticks,
+                    Documents = documentCartItems?.Select(x => new DocumentItem
+                    {
+                        Id = x.RecordId,
+                        Title = x.Title
+                    }) ?? Enumerable.Empty<DocumentItem>(),
+                    CreatedBy = authState.User.Identity.Name
+                };
+
+            var response = await Mediator!.Send(new NewDocumentRequestCommand(serviceRequest));
+
+            OnDone(response.messageId != null, serviceRequest);
+
+            if (response.messageId != null)
+            {
+                _ = InitializeJobs().ConfigureAwait(false);
+            }
+            else
+            {
+                Snackbar.Add("Failed to start job.", Severity.Error);
+            }
+        }
+    }
+
+    private Task OnExtractiveSummarizationAction(ServiceAction action) =>
+        HandleSummaryService(new ServiceEvent(action, ServiceType.ExtractiveSummary),
+        OnExtractiveSummarizationActionComplete);
+
+    private void OnExtractiveSummarizationActionComplete(bool success, DocumentJobRequest request)
+    {
+        _extractiveComponentActive = false;
+        _extractiveComponentDisabled = success;
+        _extractiveComponentJobRequest = request;
+
+        StateHasChanged();
+    }
+
+    private Task OnAbstractiveSummarizationAction(ServiceAction action) =>
+        HandleSummaryService(new ServiceEvent(action, ServiceType.AbstractiveSummary),
+        OnAbstractiveSummarizationActionComplete);
+
+    private void OnAbstractiveSummarizationActionComplete(bool success, DocumentJobRequest request)
+    {
+        _abstractiveComponentActive = false;
+        StateHasChanged();
+    }
+
+
+}

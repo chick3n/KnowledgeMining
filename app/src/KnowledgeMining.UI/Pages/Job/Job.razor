@@ -1,0 +1,174 @@
+﻿@page "/job/{Index}/{ServiceId}"
+@using KnowledgeMining.Application.Documents.Queries.Jobs
+@using KnowledgeMining.Domain.Entities.Jobs
+
+@if(_jobNotFound)
+{
+    <MudAlert Severity="Severity.Error">Job @ServiceId cannot be found.</MudAlert>
+}
+else
+{
+    <MudContainer Fixed="true"  Style="margin-top: 20px">
+        <MudText Typo="Typo.h5">Request</MudText>
+        <MudGrid>
+            <MudItem xs="12" sm="6" md="4">
+                <MudField Label="Job Id" Variant="Variant.Text">
+                    @if(!_isLoadingJobRequest)
+                    {
+                        <MudText>@_jobRequest!.Id</MudText>
+                    }
+                    else
+                    {
+                        <MudSkeleton SkeletonType="SkeletonType.Text"  />
+                    }
+                </MudField>
+            </MudItem>
+            <MudItem xs="12" sm="6" md="4">
+                <MudField Label="Action" Variant="Variant.Text">
+                    @if(!_isLoadingJobRequest)
+                    {
+                        <MudText>@_jobRequest!.Action</MudText>
+                    }
+                    else
+                    {
+                        <MudSkeleton SkeletonType="SkeletonType.Text"  />
+                    }
+                </MudField>
+            </MudItem>
+            <MudItem xs="12" sm="6" md="4">
+                <MudField Label="State" Variant="Variant.Text">
+                    @if(!_isLoadingJobRequest)
+                    {
+                        <MudText>@_jobRequest!.State</MudText>
+                    }
+                    else
+                    {
+                        <MudSkeleton SkeletonType="SkeletonType.Text"  />
+                    }
+                </MudField>
+            </MudItem>
+            <MudItem xs="12" sm="6" md="4">
+                <MudField Label="Created By" Variant="Variant.Text">
+                    @if(!_isLoadingJobRequest)
+                    {
+                        <MudText>@CreatedByWho(_jobRequest!.CreatedBy)</MudText>
+                    }
+                    else
+                    {
+                        <MudSkeleton SkeletonType="SkeletonType.Text"  />
+                    }
+                </MudField>
+            </MudItem>
+            <MudItem xs="12" sm="6" md="4">
+                <MudField Label="Created On" Variant="Variant.Text">
+                    @if(!_isLoadingJobRequest)
+                    {
+                        <MudText>@TicksToString(_jobRequest!.CreatedOn, _jobRequest!.CreatedOnOffset)</MudText>
+                    }
+                    else
+                    {
+                        <MudSkeleton SkeletonType="SkeletonType.Text"  />
+                    }
+                </MudField>
+            </MudItem>
+            <MudItem xs="12" sm="12" md="12">
+                <MudField Label="Documents" Variant="Variant.Text">
+                    <ul style="padding-left: 20px !important">
+                        @if(!_isLoadingJobRequest)
+                        {
+                            @foreach(var document in _jobRequest!.Documents)
+                            {
+                                <li style="list-style-type: disc">
+                                    <MudLink Href="@($"/record/{Index}/{document.Id}")">
+                                        @document.Title
+                                    </MudLink>
+                                </li>
+                            }
+                        }
+                        else
+                        {
+                            <li style="list-style-type: disc"><MudSkeleton SkeletonType="SkeletonType.Text"  /></li>
+                            <li style="list-style-type: disc"><MudSkeleton SkeletonType="SkeletonType.Text"  /></li>
+                            <li style="list-style-type: disc"><MudSkeleton SkeletonType="SkeletonType.Text"  /></li>
+                        }
+                    </ul>
+                </MudField>
+            </MudItem>
+        </MudGrid>
+    </MudContainer>
+
+    <MudContainer Fixed="true" Style="margin-top: 20px">
+        @if(!_isLoadingJobContent)
+        {
+        
+        }
+        else
+        {
+            <MudText Typo="Typo.h5">@ResultHeader()</MudText>
+            <MudSkeleton SkeletonType="SkeletonType.Rectangle" Height="200px" />
+        }
+    </MudContainer>
+}
+
+@code {
+    [Parameter] public string? Index { get; set; }
+    [Parameter] public string? ServiceId { get; set; }
+
+    [Inject] public IMediator? Mediator { get; set; }
+
+    //Functional
+    private DocumentJobRequest? _jobRequest;
+    private bool _isLoadingJobRequest = true;
+    private bool _isLoadingJobContent = true;
+    private bool _jobNotFound = false;
+
+    protected override Task OnAfterRenderAsync(bool firstRender)
+    {
+        if(firstRender)
+        {
+            GetJob().ConfigureAwait(false);
+        }
+
+        return base.OnAfterRenderAsync(firstRender);
+    }
+
+    private async Task GetJob()
+    {
+        if (Index != null && ServiceId != null)
+            _jobRequest = await Mediator!.Send(new GetDocumentJobQuery(Index, ServiceId));
+        _jobNotFound = _jobRequest == null;
+        _isLoadingJobRequest = false;
+        StateHasChanged();
+    }
+
+    private string TicksToString(long? ticks, long? offsetTicks, string format = "yyyy-MM-dd HH:mm:ss")
+    {
+        if (ticks == null)
+            return string.Empty;
+
+        if (offsetTicks != null)
+            return new DateTimeOffset(ticks.Value, new TimeSpan(offsetTicks.Value)).ToString(format);
+
+        return new DateTime(ticks.Value, DateTimeKind.Utc).ToString(format);
+    }
+
+    private string CreatedByWho(string? createdBy, string @default = "Guest")
+    {
+        if (string.IsNullOrEmpty(createdBy))
+            return @default;
+        return createdBy;
+    }
+
+    private string ResultHeader()
+    {
+        if(_jobRequest != null)
+        {
+            if(!string.IsNullOrEmpty(_jobRequest.Action))
+            {
+                return _jobRequest.Action.SplitCamelCase();
+            }
+        }
+
+        return "Result";
+    }
+}

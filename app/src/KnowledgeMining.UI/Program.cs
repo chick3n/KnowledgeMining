@@ -1,3 +1,4 @@
+using Blazored.LocalStorage;
 using KnowledgeMining.Application.Common.Interfaces;
 using KnowledgeMining.UI.Api;
 using KnowledgeMining.UI.Services.Documents;
@@ -26,8 +27,18 @@ namespace KnowledgeMining.UI
             builder.Services.AddMemoryCache();
             builder.Services.AddRazorPages();
             builder.Services.AddServerSideBlazor();
-            builder.Services.AddMudServices();
+            builder.Services.AddMudServices(config =>
+            {
+                config.SnackbarConfiguration.PreventDuplicates = false;
+                config.SnackbarConfiguration.NewestOnTop = true;
+                config.SnackbarConfiguration.ShowCloseIcon = true;
+                config.SnackbarConfiguration.VisibleStateDuration = 10000;
+                config.SnackbarConfiguration.HideTransitionDuration = 500;
+                config.SnackbarConfiguration.ShowTransitionDuration = 500;
+                config.SnackbarConfiguration.SnackbarVariant = MudBlazor.Variant.Filled;
+            });
             builder.Services.AddHttpClient(PreviewFileEndpoint.EndpointName);
+            builder.Services.AddBlazoredLocalStorage();
 
             builder.Services.AddSignalR().AddAzureSignalR(options =>
             {
@@ -57,6 +68,7 @@ namespace KnowledgeMining.UI
 
             builder.Services.AddScoped<StateService>();
             builder.Services.AddScoped<ILinkGenerator, DocumentPreviewLinkGenerator>();
+            builder.Services.AddScoped<DocumentCartService>();
 
             builder.Services.AddApplicationInsightsTelemetry();
             builder.Services.AddHttpContextAccessor();

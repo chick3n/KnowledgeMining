@@ -67,6 +67,7 @@
                             DocumentWrapper="@GetDocumentMetadataWrapper()"
                             DocumentFooterFields="@_indexItem.Configuration?.Display?.Footer"
                             IsLoading="@_isSearching" TotalCount="@_searchState.TotalCount" TotalPages="@_searchState.TotalPages" 
+                            IndexName="@Index"
                             NavigateTo="@($"/record/{Index}/")" OnPageSelectedChanged="@SearchPageSelected" 
                             PageSelected="@_selectedPage"></SearchResultsComponent>
                     </MudTabPanel>

@@ -37,12 +37,12 @@ namespace KnowledgeMining.Infrastructure.Services.Storage
             _logger = logger;
         }
 
-        public async Task<GetDocumentsResponse> GetDocuments(string? searchPrefix, int pageSize, string? continuationToken, CancellationToken cancellationToken)
+        public async Task<GetDocumentsResponse> GetDocuments(string container, string? searchPrefix, int pageSize, string? continuationToken, CancellationToken cancellationToken)
         {
             searchPrefix ??= string.Empty;
             pageSize = pageSize is > 0 and <= MAX_ITEMS_PER_REQUEST ? pageSize : DEFAULT_PAGE_SIZE;
 
-            var pages = GetBlobContainerClient()
+            var pages = GetBlobContainerClient(container)
                             .GetBlobsAsync(traits: BlobTraits.Metadata | BlobTraits.Tags, prefix: searchPrefix, cancellationToken: cancellationToken)
                             .AsPages(continuationToken, pageSize);
 
@@ -158,13 +158,16 @@ namespace KnowledgeMining.Infrastructure.Services.Storage
             }            
         }
 
-        public async Task<IEnumerable<SearchDocument>> UploadDocuments(IEnumerable<UploadDocument> documents, CancellationToken cancellationToken)
+        public async Task<IEnumerable<SearchDocument>> UploadDocuments(string containerName,
+            IEnumerable<UploadDocument> documents, CancellationToken cancellationToken)
         {
+            _ = containerName ?? throw new ArgumentNullException(nameof(containerName));
+
             var result = new List<SearchDocument>();
 
             if (documents.Any())
             {
-                var container = GetBlobContainerClient();
+                var container = GetBlobContainerClient(containerName);
 
                 foreach (var file in documents)
                 {

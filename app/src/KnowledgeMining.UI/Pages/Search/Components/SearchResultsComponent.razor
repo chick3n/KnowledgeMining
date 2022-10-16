@@ -6,6 +6,8 @@
 
 @inject NavigationManager NavManager
 @inject StateService StateService
+@inject DocumentCartService CartService
+@inject ISnackbar Snackbar
 
 @if (IsLoading)
 {
@@ -59,6 +61,11 @@ else
                                     <MudLink Href="@($"{NavigateTo}{document.Id}")" Underline="Underline.None" Typo="Typo.body1" Style="display:block; width:100%">@((MarkupString)DocumentHeader(document))</MudLink>
                                     <MudLink Href="@($"{NavigateTo}{document.Id}")" Underline="Underline.None" Typo="Typo.body2" Style="display:block; width:100%">@DocumentSubHeader(document)</MudLink>
                                 </CardHeaderContent>
+                                <CardHeaderActions>
+                                    <MudIconButton Icon="@Icons.Material.Outlined.AddShoppingCart"
+                                        OnClick="@(() => AddToCart(DocumentWrapper.GetTitle(document), document.Id))"
+                                        Color="Color.Default" />
+                                </CardHeaderActions>
                             </MudCardHeader>
                             <MudCardContent>
                                 <div class="d-flex flex-row gap-10">
@@ -118,7 +125,8 @@ else
     public int? TotalPages { get; set; }
     [Parameter]
     public string NavigateTo { get; set; }
-
+    [Parameter]
+    public string IndexName { get; set; }
     [Parameter]
     public int? PageSelected { get; set; }
 
@@ -246,6 +254,15 @@ else
 
         return values.ToArray();
 
+    }
+
+    private async Task AddToCart(string title, string recordId)
+    {
+        var result = await CartService.Add(IndexName, title, recordId);
+        if(result)
+        {
+            Snackbar.Add("Added to cart!", Severity.Success);
+        }
     }
 
     
