@@ -32,7 +32,7 @@
         Disabled="@_extractiveComponentDisabled" />
 
     <SummarizationServiceCard Title="Abstractive summarization" 
-        ActionTitle="Coming Soon"
+        ActionTitle="Create"
         Description="Generates a summary that may not use the same words as those in the document, but captures the main idea."
         ImageUrl="/images/abstractive-text-summarization.jpg"
         OnAction="OnAbstractiveSummarizationAction"
@@ -64,6 +64,8 @@
     private bool _extractiveComponentDisabled = false;
     private DocumentJobRequest? _extractiveComponentJobRequest = null;
     private bool _abstractiveComponentActive = false;
+    private bool _abstractiveComponentDisabled = false;
+    private DocumentJobRequest? _abstractiveComponentJobRequest = null;
 
     protected override async Task OnInitializedAsync()
     {
@@ -140,9 +142,6 @@
 
     private async Task HandleSummaryService(ServiceEvent serviceEvent, Action<bool, DocumentJobRequest> OnDone)
     {
-        if (serviceEvent.Service == ServiceType.AbstractiveSummary)
-            throw new NotImplementedException(nameof(ServiceType.AbstractiveSummary));
-
         var authState = await AuthenticationState!.GetAuthenticationStateAsync();
 
         if (serviceEvent.Action == ServiceAction.Start)
@@ -197,6 +196,9 @@
     private void OnAbstractiveSummarizationActionComplete(bool success, DocumentJobRequest request)
     {
         _abstractiveComponentActive = false;
+        _abstractiveComponentDisabled = success;
+        _abstractiveComponentJobRequest = request;
+
         StateHasChanged();
     }
 
