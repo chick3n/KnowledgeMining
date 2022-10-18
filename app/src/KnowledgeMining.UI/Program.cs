@@ -1,12 +1,14 @@
 using Blazored.LocalStorage;
 using KnowledgeMining.Application.Common.Interfaces;
 using KnowledgeMining.UI.Api;
+using KnowledgeMining.UI.Extensions;
 using KnowledgeMining.UI.Services.Documents;
 using KnowledgeMining.UI.Services.Links;
 using KnowledgeMining.UI.Services.Metadata;
 using KnowledgeMining.UI.Services.State;
 using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.Extensions.Azure;
+using Microsoft.Extensions.FileProviders;
 using MudBlazor.Services;
 using System.Text;
 
@@ -86,7 +88,7 @@ namespace KnowledgeMining.UI
             app.UseHttpsRedirection();
 
             app.UseStaticFiles();
-
+            app.UseAzureStorageMappings(builder.Configuration);
             app.UseRouting();
 
             app.UseCookiePolicy();

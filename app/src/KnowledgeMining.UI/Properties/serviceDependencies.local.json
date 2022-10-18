@@ -5,20 +5,6 @@
       "resourceId": null,
       "type": "secrets.user",
       "connectionId": null
-    },
-    "signalr1": {
-      "secretStore": "LocalSecretsFile",
-      "resourceId": "/subscriptions/[parameters('subscriptionId')]/resourceGroups/[parameters('resourceGroupName')]/providers/Microsoft.SignalRService/SignalR/demostg",
-      "type": "signalr.azure",
-      "connectionId": "Azure:SignalR:ConnectionString",
-      "dynamicId": null
-    },
-    "storage1": {
-      "secretStore": "LocalSecretsFile",
-      "resourceId": "/subscriptions/[parameters('subscriptionId')]/resourceGroups/[parameters('resourceGroupName')]/providers/Microsoft.Storage/storageAccounts/stgdemodocuments",
-      "type": "storage.azure",
-      "connectionId": "stgaccount",
-      "dynamicId": null
     }
   }
 }

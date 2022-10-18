@@ -3,16 +3,6 @@
     "secrets1": {
       "type": "secrets",
       "connectionId": null
-    },
-    "signalr1": {
-      "type": "signalr",
-      "connectionId": "Azure:SignalR:ConnectionString",
-      "dynamicId": null
-    },
-    "storage1": {
-      "type": "storage",
-      "connectionId": "stgaccount",
-      "dynamicId": null
     }
   }
 }
