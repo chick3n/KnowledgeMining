@@ -9,6 +9,7 @@ namespace KnowledgeMining.Application.Common.Interfaces
 {
     public interface IQueueService
     {
-        Task<QueueReceipt> SendDocumentJobRequest(string message, CancellationToken cancellationToken = default);
+        Task<QueueReceipt> SendExtractiveSummaryRequest(string message, CancellationToken cancellationToken = default);
+        Task<QueueReceipt> SendAbstractiveSummaryRequest(string message, CancellationToken cancellationToken = default);
     }
 }

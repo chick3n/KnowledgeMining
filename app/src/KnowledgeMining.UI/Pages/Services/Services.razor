@@ -5,6 +5,7 @@
 @using KnowledgeMining.Application.Documents.Queries.Jobs
 @using KnowledgeMining.Domain.Entities
 @using KnowledgeMining.Domain.Entities.Jobs
+@using KnowledgeMining.Domain.Enums
 @using KnowledgeMining.UI.Pages.Services.Components
 @using KnowledgeMining.UI.Pages.Services.Models
 @using KnowledgeMining.UI.Services.State
@@ -151,7 +152,7 @@
                 {
                     Action = serviceEvent.Service.ToString(),
                     Id = Guid.NewGuid().ToString("D"),
-                    IndexConfig = Index,
+                    Index = _indexItem.IndexName,
                     State = ServiceState.Pending.ToString(),
                     CreatedOn = DateTimeOffset.Now.Ticks,
                     Documents = documentCartItems?.Select(x => new DocumentItem

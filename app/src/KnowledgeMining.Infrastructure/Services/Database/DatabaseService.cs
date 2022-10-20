@@ -107,7 +107,7 @@ namespace KnowledgeMining.Infrastructure.Services.Database
         {
             var entity = new Models.Job
             {
-                PartitionKey = documentRequest.IndexConfig,
+                PartitionKey = documentRequest.Index,
                 RowKey = documentRequest.Id,
                 Timestamp = DateTimeOffset.UtcNow,
                 CreatedBy = documentRequest.CreatedBy,
@@ -156,7 +156,7 @@ namespace KnowledgeMining.Infrastructure.Services.Database
                         CreatedOn = entity.CreatedOn.Ticks,
                         CreatedOnOffset = entity.CreatedOn.Offset.Ticks,
                         Id = entity.RowKey,
-                        IndexConfig = entity.PartitionKey,
+                        Index = entity.PartitionKey,
                         State = entity.State
                     });
                 }
@@ -180,7 +180,7 @@ namespace KnowledgeMining.Infrastructure.Services.Database
                 CreatedOn = result.Value.CreatedOn.Ticks,
                 CreatedOnOffset = result.Value.CreatedOn.Offset.Ticks,
                 Id = result.Value.RowKey,
-                IndexConfig = result.Value.PartitionKey,
+                Index = result.Value.PartitionKey,
                 State = result.Value.State
             };
 

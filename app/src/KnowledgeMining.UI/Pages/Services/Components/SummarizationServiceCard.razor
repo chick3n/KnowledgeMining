@@ -1,4 +1,5 @@
 ﻿@using KnowledgeMining.Domain.Entities.Jobs
+@using KnowledgeMining.Domain.Enums
 @using KnowledgeMining.UI.Pages.Services.Models
 
 <MudCard Style="height:402.5px;">
@@ -19,7 +20,7 @@
         @if(_jobRequest != null)
         {
             <MudIcon Icon="@Icons.Material.Outlined.Link" Size="Size.Small" Class="mr-2" />
-            <MudLink Href="@($"/job/{_jobRequest.IndexConfig}/{_jobRequest.Id}")">@_jobRequest.Id</MudLink>
+            <MudLink Href="@($"/job/{_jobRequest.Index}/{_jobRequest.Id}")">@_jobRequest.Id</MudLink>
         }
     </MudCardActions>
 </MudCard>

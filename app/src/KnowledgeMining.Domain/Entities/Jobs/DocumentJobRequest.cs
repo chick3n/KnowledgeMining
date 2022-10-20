@@ -12,8 +12,8 @@ namespace KnowledgeMining.Domain.Entities.Jobs
         [JsonPropertyName("name")]
         public string? Id { get; set; }
 
-        [JsonPropertyName("indexConfig")]
-        public string? IndexConfig { get; set; }
+        [JsonPropertyName("index")]
+        public string? Index { get; set; }
 
         [JsonPropertyName("action")]
         public string? Action { get; set; }

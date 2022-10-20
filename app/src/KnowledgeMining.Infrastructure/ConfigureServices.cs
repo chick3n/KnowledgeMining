@@ -13,6 +13,7 @@ using Microsoft.Extensions.Configuration;
 using System.Threading.Channels;
 using Microsoft.Extensions.Options;
 using KnowledgeMining.Infrastructure.Services.Queue;
+using Azure.Storage.Queues;
 
 namespace Microsoft.Extensions.DependencyInjection
 {
@@ -32,7 +33,11 @@ namespace Microsoft.Extensions.DependencyInjection
                 //clientBuilder.AddSearchClient(configuration.GetSection(KMOptions.SearchOptions.Search));
                 clientBuilder.AddSearchIndexClient(configuration.GetSection(KMOptions.SearchOptions.Search));
                 //clientBuilder.AddSearchIndexerClient(configuration.GetSection(KMOptions.SearchOptions.Search));
-                clientBuilder.AddQueueServiceClient(configuration.GetSection(KMOptions.QueueOptions.Queue));
+                clientBuilder.AddQueueServiceClient(configuration.GetSection(KMOptions.QueueOptions.Queue))
+                    .ConfigureOptions(opt =>
+                    {
+                        opt.MessageEncoding = QueueMessageEncoding.Base64;
+                    });
 
                 //Extension has issue grabing connectionstring from config, doing manually now
                 var connString = configuration.GetSection("Database:ConnectionString").Get<string>();

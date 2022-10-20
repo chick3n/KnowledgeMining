@@ -6,6 +6,7 @@ using KnowledgeMining.Domain.Entities;
 using System.Text.Json;
 using System.Text;
 using KnowledgeMining.Domain.Entities.Jobs;
+using KnowledgeMining.Domain.Enums;
 
 namespace KnowledgeMining.Application.Documents.Commands.DocumentRequest
 {
@@ -32,15 +33,24 @@ namespace KnowledgeMining.Application.Documents.Commands.DocumentRequest
             var job = request.Job;
             var payload = JsonSerializer.Serialize(new DocumentJobRequestMessage(DateTimeOffset.UtcNow.AddDays(7),
                 job.Id,
-                job.IndexConfig,
-                job.Action));
+                job.Index,
+                job.Action), new JsonSerializerOptions
+                {
+                    PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+                });
 
             var dbSuccess = await _databaseService.CreateDocumentJob(job, cancellationToken);
             if (dbSuccess)
             {
-                var receipt = await _queueService.SendDocumentJobRequest(payload);
-                return receipt;
+                switch(job.Action)
+                {
+                    case nameof(ServiceType.AbstractiveSummary):
+                        return await _queueService.SendAbstractiveSummaryRequest(payload);
+                    case nameof(ServiceType.ExtractiveSummary):
+                        return await _queueService.SendExtractiveSummaryRequest(payload);
+                }
             }
+
             return new QueueReceipt(null);
         }
     }

@@ -10,7 +10,7 @@ namespace KnowledgeMining.Domain.Entities.Messages
 {
     public record DocumentJobRequestMessage(DateTimeOffset expirationTime,
         string? Id,
-        string? IndexConfig,
+        string? Index,
         string? Action
         );
 }
