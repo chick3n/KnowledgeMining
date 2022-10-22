@@ -14,6 +14,7 @@ using System.Threading.Channels;
 using Microsoft.Extensions.Options;
 using KnowledgeMining.Infrastructure.Services.Queue;
 using Azure.Storage.Queues;
+using Azure;
 
 namespace Microsoft.Extensions.DependencyInjection
 {
@@ -25,7 +26,7 @@ namespace Microsoft.Extensions.DependencyInjection
 
             services.AddAzureClients(clientBuilder =>
             {
-                clientBuilder.ConfigureDefaults(configuration.GetSection("AzureDefaults"));
+                /*clientBuilder.ConfigureDefaults(configuration.GetSection("AzureDefaults"));
                 clientBuilder.UseCredential(new DefaultAzureCredential());
                 clientBuilder.AddSecretClient(configuration.GetSection(KMOptions.KeyVaultOptions.KeyVault));
                 clientBuilder.AddBlobServiceClient(configuration.GetSection(KMOptions.StorageOptions.Storage));
@@ -34,6 +35,18 @@ namespace Microsoft.Extensions.DependencyInjection
                 clientBuilder.AddSearchIndexClient(configuration.GetSection(KMOptions.SearchOptions.Search));
                 //clientBuilder.AddSearchIndexerClient(configuration.GetSection(KMOptions.SearchOptions.Search));
                 clientBuilder.AddQueueServiceClient(configuration.GetSection(KMOptions.QueueOptions.Queue))
+                    .ConfigureOptions(opt =>
+                    {
+                        opt.MessageEncoding = QueueMessageEncoding.Base64;
+                    });*/
+
+                clientBuilder.ConfigureDefaults(configuration.GetSection("AzureDefaults"));
+                clientBuilder.AddSecretClient(configuration.GetSection(KMOptions.KeyVaultOptions.KeyVault));
+                clientBuilder.AddBlobServiceClient(configuration.GetValue<string>("Storage:ConnectionString"));
+
+                clientBuilder.AddSearchIndexClient(new Uri(configuration.GetValue<string>("Search:Endpoint")), 
+                    new AzureKeyCredential(configuration.GetValue<string>("Search:Credential:Key")));
+                clientBuilder.AddQueueServiceClient(configuration.GetValue<string>("Queue:ConnectionString"))
                     .ConfigureOptions(opt =>
                     {
                         opt.MessageEncoding = QueueMessageEncoding.Base64;
