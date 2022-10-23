@@ -28,7 +28,6 @@ namespace Microsoft.Extensions.DependencyInjection
             {
                 /*clientBuilder.ConfigureDefaults(configuration.GetSection("AzureDefaults"));
                 clientBuilder.UseCredential(new DefaultAzureCredential());
-                clientBuilder.AddSecretClient(configuration.GetSection(KMOptions.KeyVaultOptions.KeyVault));
                 clientBuilder.AddBlobServiceClient(configuration.GetSection(KMOptions.StorageOptions.Storage));
 
                 //clientBuilder.AddSearchClient(configuration.GetSection(KMOptions.SearchOptions.Search));
@@ -41,7 +40,6 @@ namespace Microsoft.Extensions.DependencyInjection
                     });*/
 
                 clientBuilder.ConfigureDefaults(configuration.GetSection("AzureDefaults"));
-                clientBuilder.AddSecretClient(configuration.GetSection(KMOptions.KeyVaultOptions.KeyVault));
                 clientBuilder.AddBlobServiceClient(configuration.GetValue<string>("Storage:ConnectionString"));
 
                 clientBuilder.AddSearchIndexClient(new Uri(configuration.GetValue<string>("Search:Endpoint")), 

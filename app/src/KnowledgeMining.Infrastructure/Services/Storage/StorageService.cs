@@ -22,7 +22,6 @@ namespace KnowledgeMining.Infrastructure.Services.Storage
 
         private readonly BlobServiceClient _blobServiceClient;
         private readonly StorageOptions _storageOptions;
-        private readonly SecretClient _secretClient;
 
         private readonly ILogger<StorageService> _logger;
 
@@ -32,7 +31,6 @@ namespace KnowledgeMining.Infrastructure.Services.Storage
                                  ILogger<StorageService> logger)
         {
             _blobServiceClient = blobServiceClient;
-            _secretClient = secretClient;
             _storageOptions = storageOptions.Value;
             _logger = logger;
         }
@@ -68,27 +66,40 @@ namespace KnowledgeMining.Infrastructure.Services.Storage
 
         public async Task<GetDocumentResponse> GetDocument(string key, string container, string filename, CancellationToken cancellationToken)
         {
-            var keyVaultResponse = await _secretClient.GetSecretAsync(key, cancellationToken: cancellationToken);
-            var client = GetBlobContainerClient(keyVaultResponse.Value.Value, container);
-            var blob = client.GetBlobClient(filename);
+            object? connectionString = null;
+            if(!_storageOptions.ConnectionStrings.TryGetValue(key, out connectionString))
+                _logger.LogWarning("Connection string for {Key} does not exist.", key);
 
-            try
+            string conn = connectionString?.ToString() ?? string.Empty;
+
+            if (!string.IsNullOrEmpty(conn))
             {
-                var properties = await blob.GetPropertiesAsync(cancellationToken: cancellationToken); 
-                
-                return new GetDocumentResponse
+                var client = GetBlobContainerClient(conn, 
+                    container);
+                var blob = client.GetBlobClient(filename);
+
+                try
                 {
-                    Document = new Document(blob.Name, null, properties.Value.Metadata)
-                };
+                    var properties = await blob.GetPropertiesAsync(cancellationToken: cancellationToken);
+
+                    return new GetDocumentResponse
+                    {
+                        Document = new Document(blob.Name, null, properties.Value.Metadata)
+                    };
+                }
+                catch (Azure.RequestFailedException e)
+                {
+                    _logger.LogCritical(e, "Failed to retrieve metadata properties from {Filename}", filename);
+                }
             }
-            catch(Azure.RequestFailedException e)
+            else
             {
-                _logger.LogCritical(e, "Failed to retrieve metadata properties from {Filename}", filename);
-            }
+                _logger.LogWarning("Connection string for {Key} does not exist.", key);
+            }            
 
             return new GetDocumentResponse
             {
-                Document = new Document(blob.Name, null, null)
+                Document = new Document(filename, null, null)
             };
         }
 

@@ -13,5 +13,7 @@ namespace KnowledgeMining.Application.Common.Options
         public DocumentTag[] Tags { get; set; } = Array.Empty<DocumentTag>();
 
         public DocumentTag[] Metadata { get; set; } = Array.Empty<DocumentTag>();
+
+        public Dictionary<string, object> ConnectionStrings { get; set; } = new Dictionary<string, object>();
     }
 }
