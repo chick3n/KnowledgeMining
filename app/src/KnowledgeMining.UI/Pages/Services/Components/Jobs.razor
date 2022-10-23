@@ -1,9 +1,9 @@
 ﻿@using KnowledgeMining.Domain.Entities.Jobs
 
-<MudPaper Elevation="0" Class="p-4">
+<MudPaper Elevation="0">
     <MudTable Items="@_liveItems" Hover="true" Breakpoint="Breakpoint.Sm" Dense="true"
         Loading="@_isLoading" LoadingProgressColor="Color.Default" Height="300px" FixedHeader="true"
-        Style="width:800px; margin-left: auto; margin-right: auto;">
+        Style="width:100%; margin-left: auto; margin-right: auto;">
         <ToolBarContent>
             <MudText Typo="Typo.h6">Jobs (@(Items?.Count() ?? 0))</MudText>
             <MudSpacer />

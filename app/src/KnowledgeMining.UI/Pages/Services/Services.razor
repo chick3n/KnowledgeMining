@@ -12,43 +12,105 @@
 @using System.Text.Json
 @using System.Text
 
+<style>
+    .review-component {
+        border: 1px dashed #ddd;
+        padding: 12px 8px;
+        margin-bottom: 12px;
+    }
+</style>
 
-<CartManager Items="@documentCartItems" IndexName="@Index" OnRemoved="OnCartItemRemoved" />
+<MudContainer MaxWidth="MaxWidth.Large" Class="mt-4">
+    @if(_currentState == FirstState)
+    {
+        <MudText Typo="ServiceHeaderType">Cart</MudText>
+        <MudText Typo="Typo.body1">Manage documents queued for services.</MudText>
+        <hr />
+        <CartManager Items="@documentCartItems" IndexName="@Index" OnRemoved="OnCartItemRemoved" />
+    }
+    else if(_currentState == SelectState)
+    {
+        <MudText Typo="ServiceHeaderType">Services</MudText>
+        <MudText Typo="Typo.body1">Select the services to be applied against your documents.</MudText>
+        <hr />
+        <ServiceCard Title="Extractive summarization"
+            Description="Produces a summary by extracting salient sentences within the document."
+            ImagePath="/images/extractive-text-summarization.jpg"
+            @bind-Active="_extractiveComponentActive" />
 
-<MudContainer Fixed="true">
-    <MudIcon Icon="@Icons.Filled.KeyboardArrowDown" Color="Color.Tertiary" Size="Size.Large" 
-        Style="margin-left: auto; margin-right: auto; display: block" />
+        <ServiceCard Title="Abstractive summarization"
+            Description="Generates a summary that may not use the same words as those in the document, but captures the main idea."
+            ImagePath="/images/abstractive-text-summarization.jpg"
+            @bind-Active="_abstractiveComponentActive" />
+
+        <ServiceCard Title="Prompt?"
+            Description="Provide our model a prompt to influences the subsequent output."
+            ImagePath="/images/abstractive-text-summarization.jpg"
+            @bind-Active="_promptComponentActive" />
+    }
+    else if(_currentState == ReviewState)
+    {
+        <MudText Typo="ServiceHeaderType">Review Service Options</MudText>
+        <hr />
+        @if(_extractiveComponentActive)
+        {
+            <div class="review-component">
+                <MudText Typo="Typo.h6">Extractive Summarization</MudText>
+                <MudNumericField @bind-Value="_extractiveSummaryMaxSentences" Label="Maximum sentence limit for summary." 
+                    Variant="Variant.Text" Min="3" Max="20" />
+            </div>
+        }
+
+        @if(_abstractiveComponentActive)
+        {
+            <div class="review-component">
+                <MudText Typo="Typo.h6">Abstractive Summarization</MudText>
+                <MudNumericField @bind-Value="_abstractiveSummaryMaxSentences" Label="Maximum sentence limit for summary." 
+                    Variant="Variant.Text" Min="3" Max="20" />
+                <MudSelect @bind-Value="_abstractiveSummaryCost" Label="How expensive do you want this?" 
+                    AdornmentColor="Color.Primary">
+                    <MudSelectItem Value="1" Disabled="true">$$$$</MudSelectItem>
+                    <MudSelectItem Value="2" Disabled="true">$$$</MudSelectItem>
+                    <MudSelectItem Value="3">$$</MudSelectItem>
+                    <MudSelectItem Value="4">$</MudSelectItem>
+                </MudSelect>
+            </div>
+        }
+
+        @if(_promptComponentActive)
+        {
+            <div class="review-component">
+                <MudText Typo="Typo.h6">Prompt?</MudText>
+                <MudTextField @bind-Value="_promptValue" Label="Prompt Value" Variant="Variant.Text" />
+                <MudSelect @bind-Value="_promptCost" Label="How expensive do you want this?" 
+                    AdornmentColor="Color.Primary">
+                    <MudSelectItem Value="1" Disabled="true">$$$$</MudSelectItem>
+                    <MudSelectItem Value="2" Disabled="true">$$$</MudSelectItem>
+                    <MudSelectItem Value="3">$$</MudSelectItem>
+                    <MudSelectItem Value="4">$</MudSelectItem>
+                </MudSelect>
+            </div>
+        }
+    }
+    else if(_currentState == LastState)
+    {
+        <MudText Typo="ServiceHeaderType">Job Request</MudText>
+        <hr />
+        <Jobs Items="documentJobs" IndexName="@Index" OnRefresh="@InitializeJobs" />
+    }
+
+    <MudPaper Elevation="0" Class="mt-10">
+        <MudButton Disabled="@(_currentState > FirstState ? false : true)" 
+            Variant="Variant.Outlined"
+            Class="mr-2" 
+            OnClick="PreviousStep">Previous</MudButton>
+        <MudButton Disabled="@(_currentState < LastState ? false : true)" 
+            Variant="Variant.Outlined"
+            OnClick="NextStep">@NextStepLabel()</MudButton>
+    </MudPaper>
+
 </MudContainer>
 
-<MudStack Row="true" Class="p-4"
-    Spacing="9" AlignItems="AlignItems.Center" Justify="Justify.Center">
-    
-    <SummarizationServiceCard Title="Extractive summarization" 
-        ActionTitle="Create"
-        Description="Produces a summary by extracting salient sentences within the document."
-        ImageUrl="/images/extractive-text-summarization.jpg"
-        Active="@_extractiveComponentActive"
-        OnAction="OnExtractiveSummarizationAction"
-        JobRequest="@_extractiveComponentJobRequest"
-        Disabled="@_extractiveComponentDisabled" />
-
-    <SummarizationServiceCard Title="Abstractive summarization" 
-        ActionTitle="Create"
-        Description="Generates a summary that may not use the same words as those in the document, but captures the main idea."
-        ImageUrl="/images/abstractive-text-summarization.jpg"
-        OnAction="OnAbstractiveSummarizationAction"
-        Active="@_abstractiveComponentActive"
-        Disabled="@_abstractiveComponentDisabled"
-        JobRequest="@_abstractiveComponentJobRequest"/>
-
-</MudStack>
-
-<MudContainer Fixed="true">
-    <MudIcon Icon="@Icons.Filled.KeyboardDoubleArrowDown" Color="Color.Tertiary" Size="Size.Large"
-        Style="margin-left: auto; margin-right: auto; display: block" />
-</MudContainer>
-
-<Jobs Items="documentJobs" IndexName="@Index" OnRefresh="@InitializeJobs" />
 
 @code {
     [Inject] public ISnackbar? Snackbar { get; set; }
@@ -58,16 +120,33 @@
 
     [Parameter] public string? Index { get; set; }
 
+    //UI
+    private const MudBlazor.Typo ServiceHeaderType = Typo.h4;
+
     //functional
     private IndexItem? _indexItem;
     private IList<DocumentCartItem>? documentCartItems;
     private IEnumerable<DocumentJobRequest>? documentJobs;
-    private bool _extractiveComponentActive = false;
-    private bool _extractiveComponentDisabled = false;
-    private DocumentJobRequest? _extractiveComponentJobRequest = null;
+
+    //stateful
+    private int _currentState = 1; // 1 = Manage Document, 2 = Pick Services, 3 = Services Result
+    private const int LastState = 4;
+    private const int FirstState = 1;
+    private const int ReviewState = 3;
+    private const int SelectState = 2;
+
+
+    //service values
+    private bool _extractiveComponentActive { get; set;} = false;
+    private int _extractiveSummaryMaxSentences = 3;
+
     private bool _abstractiveComponentActive = false;
-    private bool _abstractiveComponentDisabled = false;
-    private DocumentJobRequest? _abstractiveComponentJobRequest = null;
+    private int _abstractiveSummaryMaxSentences = 3;
+    private int _abstractiveSummaryCost = 4;
+
+    private bool _promptComponentActive = false;
+    private string _promptValue = string.Empty;
+    private int _promptCost = 4;
 
     protected override async Task OnInitializedAsync()
     {
@@ -78,8 +157,6 @@
         {
             throw new ArgumentNullException(nameof(Index));
         }
-
-        Snackbar!.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
     }
 
     protected override Task OnAfterRenderAsync(bool firstRender)
@@ -92,6 +169,43 @@
 
         return base.OnAfterRenderAsync(firstRender);
     }
+
+    private void PreviousStep()
+    {
+        _currentState--;
+        if (_currentState < FirstState)
+            _currentState = FirstState;
+
+        StateHasChanged();
+    }
+
+    private void NextStep()
+    {
+        _currentState++;
+        if (_currentState > LastState)
+            _currentState = LastState;
+
+        StateHasChanged();
+    }
+
+    private string NextStepLabel()
+    {
+        switch(_currentState)
+        {
+            case FirstState: return "Next: Select Services";
+            case SelectState: return "Next: Review Request";
+            case ReviewState: return "Next: Create Request";
+            case LastState: return "Done";
+        }
+
+        return "Next";
+    }
+
+    private void LastStep()
+    {
+        StateHasChanged();
+    }
+
 
     #region Jobs
 
@@ -178,31 +292,7 @@
         }
     }
 
-    private Task OnExtractiveSummarizationAction(ServiceAction action) =>
-        HandleSummaryService(new ServiceEvent(action, ServiceType.ExtractiveSummary),
-        OnExtractiveSummarizationActionComplete);
-
-    private void OnExtractiveSummarizationActionComplete(bool success, DocumentJobRequest request)
-    {
-        _extractiveComponentActive = false;
-        _extractiveComponentDisabled = success;
-        _extractiveComponentJobRequest = request;
-
-        StateHasChanged();
-    }
-
-    private Task OnAbstractiveSummarizationAction(ServiceAction action) =>
-        HandleSummaryService(new ServiceEvent(action, ServiceType.AbstractiveSummary),
-        OnAbstractiveSummarizationActionComplete);
-
-    private void OnAbstractiveSummarizationActionComplete(bool success, DocumentJobRequest request)
-    {
-        _abstractiveComponentActive = false;
-        _abstractiveComponentDisabled = success;
-        _abstractiveComponentJobRequest = request;
-
-        StateHasChanged();
-    }
+    
 
 
 }

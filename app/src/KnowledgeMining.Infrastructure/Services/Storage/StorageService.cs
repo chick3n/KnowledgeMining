@@ -26,7 +26,6 @@ namespace KnowledgeMining.Infrastructure.Services.Storage
         private readonly ILogger<StorageService> _logger;
 
         public StorageService(BlobServiceClient blobServiceClient,
-                                SecretClient secretClient,
                                  IOptions<StorageOptions> storageOptions,
                                  ILogger<StorageService> logger)
         {
