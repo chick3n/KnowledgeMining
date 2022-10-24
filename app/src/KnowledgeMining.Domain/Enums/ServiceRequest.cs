@@ -16,7 +16,8 @@ namespace KnowledgeMining.Domain.Enums
     public enum ServiceType
     {
         ExtractiveSummary,
-        AbstractiveSummary
+        AbstractiveSummary,
+        Prompt
     }
 
     public enum ServiceState

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using KnowledgeMining.Domain.Enums;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -16,7 +17,7 @@ namespace KnowledgeMining.Domain.Entities.Jobs
         public string? Index { get; set; }
 
         [JsonPropertyName("action")]
-        public string? Action { get; set; }
+        public ServiceType Action { get; set; }
 
         [JsonPropertyName("createdBy")]
         public string? CreatedBy { get; set; }
@@ -32,5 +33,8 @@ namespace KnowledgeMining.Domain.Entities.Jobs
 
         [JsonPropertyName("documents")]
         public IEnumerable<DocumentItem> Documents { get; set; } = Enumerable.Empty<DocumentItem>();
+
+        [JsonPropertyName("options")]
+        public Dictionary<string, string> Options { get; set; } = new Dictionary<string, string>();
     }
 }

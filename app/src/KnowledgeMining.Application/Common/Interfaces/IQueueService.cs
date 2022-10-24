@@ -1,4 +1,5 @@
 ﻿using KnowledgeMining.Domain.Entities;
+using KnowledgeMining.Domain.Enums;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,7 +10,6 @@ namespace KnowledgeMining.Application.Common.Interfaces
 {
     public interface IQueueService
     {
-        Task<QueueReceipt> SendExtractiveSummaryRequest(string message, CancellationToken cancellationToken = default);
-        Task<QueueReceipt> SendAbstractiveSummaryRequest(string message, CancellationToken cancellationToken = default);
+        Task<QueueReceipt> SendJobRequest(ServiceType serviceType, string message, CancellationToken cancellationToken);
     }
 }

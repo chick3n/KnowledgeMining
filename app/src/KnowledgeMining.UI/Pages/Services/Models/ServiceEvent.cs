@@ -1,6 +1,7 @@
-﻿using KnowledgeMining.Domain.Enums;
+﻿using KnowledgeMining.Domain.Entities.Jobs;
+using KnowledgeMining.Domain.Enums;
 
 namespace KnowledgeMining.UI.Pages.Services.Models
 {
-    public record ServiceEvent(ServiceAction Action, ServiceType Service);
+    public record ServiceDocumentJobRequestResponse(bool Created, DocumentJobRequest? Request);
 }

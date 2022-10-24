@@ -1,6 +1,7 @@
 ﻿using Azure.Data.Tables;
 using Azure.Storage.Blobs;
 using KnowledgeMining.Application.Common.Interfaces;
+using KnowledgeMining.Application.Common.Mappings;
 using KnowledgeMining.Application.Common.Options;
 using KnowledgeMining.Domain.Entities;
 using KnowledgeMining.Domain.Entities.Jobs;
@@ -26,6 +27,7 @@ namespace KnowledgeMining.Infrastructure.Services.Database
 
         private const string TABLE_JOBS = "jobs";
         private const string TABLE_JOBDOCUMENTS = "jobDocuments";
+        private const string TABLE_JOBOPTIONS = "jobOptions";
 
         public DatabaseService(BlobServiceClient blobServiceClient,
                                 TableServiceClient tableServiceClient,
@@ -113,7 +115,7 @@ namespace KnowledgeMining.Infrastructure.Services.Database
                 CreatedBy = documentRequest.CreatedBy,
                 CreatedOn = DateTimeOffset.Now,
                 State = documentRequest.State,
-                Action = documentRequest.Action,
+                Action = documentRequest.Action.ToString(),
                 ETag = new Azure.ETag("1")
             };
 
@@ -125,15 +127,53 @@ namespace KnowledgeMining.Infrastructure.Services.Database
                 return false;
             }
 
-            foreach(var documentItem in documentRequest.Documents)
+            var documentResponse = await CreateDocumentJobFiles(documentRequest, cancellationToken);
+            if (!documentResponse)
+                return false;
+
+            var optionResponse = await CreateDocumentJobOptions(documentRequest, cancellationToken);
+            if (!optionResponse)
+                return false;
+
+            return true;
+        }
+
+        private async Task<bool> CreateDocumentJobFiles(DocumentJobRequest documentRequest, CancellationToken cancellationToken)
+        {
+            var documentTableClient = _tableServiceClient.GetTableClient(TABLE_JOBDOCUMENTS);
+            await documentTableClient.CreateIfNotExistsAsync(cancellationToken);
+
+            foreach (var documentItem in documentRequest.Documents)
             {
-                var documentEntity = 
+                var documentEntity =
                     new Models.JobDocument { PartitionKey = documentRequest.Id, RowKey = documentItem.Id, Title = documentItem.Title };
-                response = await _tableServiceClient.GetTableClient(TABLE_JOBDOCUMENTS)
-                    .AddEntityAsync(documentEntity, cancellationToken);
+                var response = await documentTableClient.AddEntityAsync(documentEntity, cancellationToken);
 
                 if (response.IsError)
                     return false; //Todo capture logging and clean up rows
+            }
+
+            return true;
+        }
+
+        private async Task<bool> CreateDocumentJobOptions(DocumentJobRequest documentRequest, CancellationToken cancellationToken)
+        {
+            var optionTableClient = _tableServiceClient.GetTableClient(TABLE_JOBOPTIONS);
+            await optionTableClient.CreateIfNotExistsAsync(cancellationToken);
+
+            foreach (var option in documentRequest.Options)
+            {
+                var optionEntity = new Models.JobOption
+                {
+                    PartitionKey = documentRequest.Id,
+                    RowKey = Guid.NewGuid().ToString("D"),
+                    Name = option.Key,
+                    Value = option.Value
+                };
+
+                var response = await optionTableClient.AddEntityAsync(optionEntity, cancellationToken);
+                if (response.IsError)
+                    return false;
             }
 
             return true;
@@ -151,7 +191,7 @@ namespace KnowledgeMining.Infrastructure.Services.Database
                 foreach (var entity in page.Values) {
                     jobs.Add(new DocumentJobRequest
                     {
-                        Action = entity.Action,
+                        Action = ServiceTypeMapper.FromString(entity.Action),
                         CreatedBy = entity.CreatedBy,
                         CreatedOn = entity.CreatedOn.Ticks,
                         CreatedOnOffset = entity.CreatedOn.Offset.Ticks,
@@ -175,7 +215,7 @@ namespace KnowledgeMining.Infrastructure.Services.Database
 
             var documentJobRequest = new DocumentJobRequest
             {
-                Action = result.Value.Action,
+                Action = ServiceTypeMapper.FromString(result.Value.Action),
                 CreatedBy = result.Value.CreatedBy,
                 CreatedOn = result.Value.CreatedOn.Ticks,
                 CreatedOnOffset = result.Value.CreatedOn.Offset.Ticks,

@@ -1,5 +1,7 @@
 ﻿@page "/job/{Index}/{ServiceId}"
+@using KnowledgeMining.Application.Documents.Queries.GetIndex
 @using KnowledgeMining.Application.Documents.Queries.Jobs
+@using KnowledgeMining.Domain.Entities
 @using KnowledgeMining.Domain.Entities.Jobs
 
 @if(_jobNotFound)
@@ -121,6 +123,18 @@ else
     private bool _isLoadingJobRequest = true;
     private bool _isLoadingJobContent = true;
     private bool _jobNotFound = false;
+    private IndexItem? _indexItem;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var indexResponse = await Mediator!.Send(new GetIndexQuery(Index!));
+        _indexItem = indexResponse.IndexItem;
+
+        if(_indexItem == null)
+        {
+            throw new ArgumentNullException(nameof(Index));
+        }
+    }
 
     protected override Task OnAfterRenderAsync(bool firstRender)
     {
@@ -135,7 +149,7 @@ else
     private async Task GetJob()
     {
         if (Index != null && ServiceId != null)
-            _jobRequest = await Mediator!.Send(new GetDocumentJobQuery(Index, ServiceId));
+            _jobRequest = await Mediator!.Send(new GetDocumentJobQuery(_indexItem!.IndexName!, ServiceId));
         _jobNotFound = _jobRequest == null;
         _isLoadingJobRequest = false;
         StateHasChanged();
@@ -163,9 +177,9 @@ else
     {
         if(_jobRequest != null)
         {
-            if(!string.IsNullOrEmpty(_jobRequest.Action))
+            if(!string.IsNullOrEmpty(_jobRequest.Action.ToString()))
             {
-                return _jobRequest.Action.SplitCamelCase();
+                return _jobRequest.Action.ToString().SplitCamelCase();
             }
         }
 

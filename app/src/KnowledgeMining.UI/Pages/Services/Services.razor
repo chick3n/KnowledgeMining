@@ -96,11 +96,41 @@
     {
         <MudText Typo="ServiceHeaderType">Job Request</MudText>
         <hr />
-        <Jobs Items="documentJobs" IndexName="@Index" OnRefresh="@InitializeJobs" />
+
+        @if(_createdJobs != null)
+        {
+            foreach(var job in _createdJobs)
+            {
+                if(job.Created && job.Request != null)
+                {
+                    <div class="review-component">
+                        <MudText Typo="Typo.h6">@job.Request.Action.ToString()</MudText>
+                        <MudField Label="Link" Variant="Variant.Text" Adornment="Adornment.Start" AdornmentIcon="@Icons.Outlined.Link"> 
+                            <MudLink Href="@($"/job/{Index}/{job.Request.Id}")">@job.Request.Id</MudLink>
+                        </MudField>
+                    </div>
+                }
+                else
+                {
+                    <div class="review-component">
+                        <MudText Typo="Typo.h6">@job.Request?.Action.ToString()</MudText>
+                        <MudField Label="Error" Variant="Variant.Text" Adornment="Adornment.Start"
+                            AdornmentIcon="@Icons.Outlined.Error" AdornmentColor="Color.Error"> 
+                            There was an issue generating this request.
+                        </MudField>
+                    </div>
+                }
+            }
+        }
+        else
+        {
+            <MudText Typo="Typo.h6">Generating requests...</MudText>
+            <MudSkeleton Animation="Animation.Wave" SkeletonType="SkeletonType.Rectangle" Height="200px" />
+        }
     }
 
     <MudPaper Elevation="0" Class="mt-10">
-        <MudButton Disabled="@(_currentState > FirstState ? false : true)" 
+        <MudButton Disabled="@(_currentState > FirstState && _currentState < LastState ? false : true)" 
             Variant="Variant.Outlined"
             Class="mr-2" 
             OnClick="PreviousStep">Previous</MudButton>
@@ -134,6 +164,7 @@
     private const int FirstState = 1;
     private const int ReviewState = 3;
     private const int SelectState = 2;
+    private ServiceDocumentJobRequestResponse[]? _createdJobs;
 
 
     //service values
@@ -186,6 +217,9 @@
             _currentState = LastState;
 
         StateHasChanged();
+
+        if (_currentState == LastState)
+            LastStep().ConfigureAwait(true);
     }
 
     private string NextStepLabel()
@@ -194,15 +228,17 @@
         {
             case FirstState: return "Next: Select Services";
             case SelectState: return "Next: Review Request";
-            case ReviewState: return "Next: Create Request";
+            case ReviewState: return "Create Request";
             case LastState: return "Done";
         }
 
         return "Next";
     }
 
-    private void LastStep()
+    private async Task LastStep()
     {
+        await Task.Delay(2000);
+        await CreateRequests();
         StateHasChanged();
     }
 
@@ -256,40 +292,67 @@
 
     #endregion
 
-    private async Task HandleSummaryService(ServiceEvent serviceEvent, Action<bool, DocumentJobRequest> OnDone)
+    private async Task CreateRequests()
+    {
+        var createdJobs = new List<ServiceDocumentJobRequestResponse>();
+
+        if (_extractiveComponentActive)
+            createdJobs.Add(await CreateJobRequest(ServiceType.ExtractiveSummary, ExtractiveSummaryOptions()));
+
+        if (_abstractiveComponentActive)
+            createdJobs.Add(await CreateJobRequest(ServiceType.AbstractiveSummary, AbstractiveSummaryOptions()));
+
+        if (_promptComponentActive)
+            createdJobs.Add(await CreateJobRequest(ServiceType.Prompt, PromptOptions()));
+
+        _createdJobs = createdJobs.ToArray();
+    }
+
+    private Dictionary<string, string> ExtractiveSummaryOptions()
+    {
+        var options = new Dictionary<string, string>();
+        options["maxSentences"] = _extractiveSummaryMaxSentences.ToString();
+        return options;
+    }
+
+    private Dictionary<string, string> AbstractiveSummaryOptions()
+    {
+        var options = new Dictionary<string, string>();
+        options["maxSentences"] = _abstractiveSummaryMaxSentences.ToString();
+        options["cost"] = _abstractiveSummaryCost.ToString();
+        return options;
+    }
+
+    private Dictionary<string, string> PromptOptions()
+    {
+        var options = new Dictionary<string, string>();
+        options["prompt"] = _promptValue;
+        options["cost"] = _promptCost.ToString();
+        return options;
+    }
+
+    private async Task<ServiceDocumentJobRequestResponse> CreateJobRequest(ServiceType serviceType, Dictionary<string, string> options)
     {
         var authState = await AuthenticationState!.GetAuthenticationStateAsync();
 
-        if (serviceEvent.Action == ServiceAction.Start)
-        {
-            var serviceRequest = new DocumentJobRequest
+        var serviceRequest = new DocumentJobRequest
+            {
+                Action = serviceType,
+                Id = Guid.NewGuid().ToString("D"),
+                Index = _indexItem.IndexName,
+                State = ServiceState.Pending.ToString(),
+                CreatedOn = DateTimeOffset.Now.Ticks,
+                Documents = documentCartItems?.Select(x => new DocumentItem
                 {
-                    Action = serviceEvent.Service.ToString(),
-                    Id = Guid.NewGuid().ToString("D"),
-                    Index = _indexItem.IndexName,
-                    State = ServiceState.Pending.ToString(),
-                    CreatedOn = DateTimeOffset.Now.Ticks,
-                    Documents = documentCartItems?.Select(x => new DocumentItem
-                    {
-                        Id = x.RecordId,
-                        Title = x.Title
-                    }) ?? Enumerable.Empty<DocumentItem>(),
-                    CreatedBy = authState.User.Identity.Name
-                };
+                    Id = x.RecordId,
+                    Title = x.Title
+                }) ?? Enumerable.Empty<DocumentItem>(),
+                CreatedBy = authState.User.Identity.Name,
+                Options = options
+            };
 
-            var response = await Mediator!.Send(new NewDocumentRequestCommand(serviceRequest));
-
-            OnDone(response.messageId != null, serviceRequest);
-
-            if (response.messageId != null)
-            {
-                _ = InitializeJobs().ConfigureAwait(false);
-            }
-            else
-            {
-                Snackbar.Add("Failed to start job.", Severity.Error);
-            }
-        }
+        var response = await Mediator!.Send(new NewDocumentRequestCommand(serviceRequest));
+        return new ServiceDocumentJobRequestResponse(response.messageId != null, serviceRequest);
     }
 
     

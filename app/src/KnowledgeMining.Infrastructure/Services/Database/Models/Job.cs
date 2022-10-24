@@ -12,6 +12,7 @@ namespace KnowledgeMining.Infrastructure.Services.Database.Models
     {
         public string PartitionKey { get; set; }
         public string RowKey { get; set; }
+        public string Index { get; set; }
         public string State { get; set; }
         public string CreatedBy { get; set; }
         public string Action { get; set; }

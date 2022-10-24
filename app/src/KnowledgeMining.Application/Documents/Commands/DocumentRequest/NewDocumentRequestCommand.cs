@@ -34,7 +34,7 @@ namespace KnowledgeMining.Application.Documents.Commands.DocumentRequest
             var payload = JsonSerializer.Serialize(new DocumentJobRequestMessage(DateTimeOffset.UtcNow.AddDays(7),
                 job.Id,
                 job.Index,
-                job.Action), new JsonSerializerOptions
+                job.Action.ToString()), new JsonSerializerOptions
                 {
                     PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
                 });
@@ -42,13 +42,7 @@ namespace KnowledgeMining.Application.Documents.Commands.DocumentRequest
             var dbSuccess = await _databaseService.CreateDocumentJob(job, cancellationToken);
             if (dbSuccess)
             {
-                switch(job.Action)
-                {
-                    case nameof(ServiceType.AbstractiveSummary):
-                        return await _queueService.SendAbstractiveSummaryRequest(payload);
-                    case nameof(ServiceType.ExtractiveSummary):
-                        return await _queueService.SendExtractiveSummaryRequest(payload);
-                }
+                return await _queueService.SendJobRequest(job.Action, payload, cancellationToken);
             }
 
             return new QueueReceipt(null);
