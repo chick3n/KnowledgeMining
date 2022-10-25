@@ -1,6 +1,7 @@
-﻿@page "/services/{Index}"
+﻿@page "/services/{Index}/{RecordId?}"
 @using KnowledgeMining.Application.Documents.Commands.DocumentRequest
 @using KnowledgeMining.Application.Documents.Commands.UploadDocument
+@using KnowledgeMining.Application.Documents.Queries.GetDocumentMetadata
 @using KnowledgeMining.Application.Documents.Queries.GetIndex
 @using KnowledgeMining.Application.Documents.Queries.Jobs
 @using KnowledgeMining.Domain.Entities
@@ -11,6 +12,7 @@
 @using KnowledgeMining.UI.Services.State
 @using System.Text.Json
 @using System.Text
+@using KnowledgeMining.UI.Wrappers
 
 <style>
     .review-component {
@@ -23,10 +25,25 @@
 <MudContainer MaxWidth="MaxWidth.Large" Class="mt-4">
     @if(_currentState == FirstState)
     {
-        <MudText Typo="ServiceHeaderType">Cart</MudText>
-        <MudText Typo="Typo.body1">Manage documents queued for services.</MudText>
-        <hr />
-        <CartManager Items="@documentCartItems" IndexName="@Index" OnRemoved="OnCartItemRemoved" />
+        @if(!string.IsNullOrEmpty(RecordId)) 
+        {
+            if(_singleRecord != null) 
+            {
+                <MudText Typo="ServiceHeaderType">Services</MudText>
+                <MudText Typo="Typo.body1">Document: @_singleRecord.Title</MudText>
+            }
+            else
+            {
+                <MudSkeleton Animation="Animation.Wave" SkeletonType="SkeletonType.Rectangle" Height="80px" />
+            }
+        }
+        else 
+        {
+            <MudText Typo="ServiceHeaderType">Cart</MudText>
+            <MudText Typo="Typo.body1">Manage documents queued for services.</MudText>
+            <hr />
+            <CartManager Items="@documentCartItems" IndexName="@Index" OnRemoved="OnCartItemRemoved" />
+        }
     }
     else if(_currentState == SelectState)
     {
@@ -150,6 +167,8 @@
 
     [Parameter] public string? Index { get; set; }
 
+    [Parameter] public string? RecordId { get; set; }
+
     //UI
     private const MudBlazor.Typo ServiceHeaderType = Typo.h4;
 
@@ -157,6 +176,7 @@
     private IndexItem? _indexItem;
     private IList<DocumentCartItem>? documentCartItems;
     private IEnumerable<DocumentJobRequest>? documentJobs;
+    private DocumentMetadata? _singleRecord;
 
     //stateful
     private int _currentState = 1; // 1 = Manage Document, 2 = Pick Services, 3 = Services Result
@@ -194,7 +214,14 @@
     {
         if(firstRender)
         {
-            InitializeCart().ConfigureAwait(false);
+            if(!string.IsNullOrEmpty(RecordId))
+            {
+                GetRecordDetails().ConfigureAwait(false);
+            }
+            else
+            {                
+                InitializeCart().ConfigureAwait(false);
+            }
         }
 
         return base.OnAfterRenderAsync(firstRender);
@@ -236,7 +263,6 @@
 
     private async Task LastStep()
     {
-        await Task.Delay(2000);
         await CreateRequests();
         StateHasChanged();
     }
@@ -312,6 +338,32 @@
         return options;
     }
 
+    private IEnumerable<DocumentItem> GetDocumentsForJob()
+    {
+        var documents = new List<DocumentItem>();
+
+        if(!string.IsNullOrEmpty(RecordId))
+        {
+            if(_singleRecord != null)
+            {
+                documents.Add(new DocumentItem {
+                        Id = RecordId,
+                        Title = _singleRecord.Title
+                });
+            }
+        }
+        else
+        {
+            documents = documentCartItems?.Select(x => new DocumentItem
+                {
+                    Id = x.RecordId,
+                    Title = x.Title
+                }).ToList();
+        }
+
+        return documents ?? Enumerable.Empty<DocumentItem>();
+    }
+
     private async Task<ServiceDocumentJobRequestResponse> CreateJobRequest(ServiceType serviceType, Dictionary<string, string> options)
     {
         var authState = await AuthenticationState!.GetAuthenticationStateAsync();
@@ -323,11 +375,7 @@
                 Index = _indexItem.IndexName,
                 State = ServiceState.Pending.ToString(),
                 CreatedOn = DateTimeOffset.Now.Ticks,
-                Documents = documentCartItems?.Select(x => new DocumentItem
-                {
-                    Id = x.RecordId,
-                    Title = x.Title
-                }) ?? Enumerable.Empty<DocumentItem>(),
+                Documents = GetDocumentsForJob(),
                 CreatedBy = authState.User.Identity.Name,
                 Options = options
             };
@@ -336,7 +384,18 @@
         return new ServiceDocumentJobRequestResponse(response.messageId != null, serviceRequest);
     }
 
-    
+    private async Task GetRecordDetails()
+    {
+        var documentMetadata = await Mediator!.Send(new GetDocumentMetadataQuery(_indexItem!.IndexName!, RecordId!));
+        var wrapper = new DocumentMetadataWrapper(new DocumentMetadata[] { documentMetadata },
+            _indexItem!.FieldMapping!, 
+            _indexItem.KeyField);
+        _singleRecord = wrapper.Documents().FirstOrDefault();
+        if(_singleRecord != null)
+            _singleRecord.Title = wrapper.GetTitle(_singleRecord) ?? string.Empty;
+
+        StateHasChanged();
+    }
 
 
 }

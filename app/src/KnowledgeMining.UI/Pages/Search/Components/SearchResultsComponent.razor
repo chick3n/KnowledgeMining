@@ -62,7 +62,7 @@ else
                                     <MudLink Href="@($"{NavigateTo}{document.Id}")" Underline="Underline.None" Typo="Typo.body2" Style="display:block; width:100%">@DocumentSubHeader(document)</MudLink>
                                 </CardHeaderContent>
                                 <CardHeaderActions>
-                                    <MudIconButton Icon="@Icons.Material.Outlined.AddShoppingCart"
+                                    <MudIconButton Icon="@Icons.Filled.PlaylistAdd" Title="Add to queue"
                                         OnClick="@(() => AddToCart(DocumentWrapper.GetTitle(document), document.Id))"
                                         Color="Color.Default" />
                                 </CardHeaderActions>

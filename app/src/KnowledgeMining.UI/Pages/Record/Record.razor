@@ -84,6 +84,16 @@
                         </MudBadge>
                     </MudPaper>
                 }
+
+                <MudPaper Elevation="0" Style="margin-top: 20px">
+                    <MudButtonGroup Color="Color.Dark" Variant="Variant.Filled" Style="width: 100%" DisableElevation="false">
+                        <MudButton Href="@($"/services/{Index}/{RecordId}")" Style="width: 80%" 
+                            Class="mudbutton-text-left mud-typography-body1">Services</MudButton>
+                        <MudIconButton Icon="@Icons.Filled.PlaylistAdd" Style="width: 20%" Title="Add to queue"
+                            OnClick="@(() => AddToCart(_title, RecordId))"
+                            Color="Color.Default" />
+                    </MudButtonGroup>
+                </MudPaper>
             }
             else
             {
