@@ -42,8 +42,11 @@
     </MudStack>
     <MudSpacer />
     <MudBadge Content="@(_cartCount ?? 0)" Color="Color.Primary" Overlap="true" Bordered="true" Class="mx-6 my-4">
-        <MudButton StartIcon="@Icons.Filled.VerticalSplit" Href="@($"/services/{IndexName}")" Variant="Variant.Outlined"
-            Color="Color.Default">Documents</MudButton>
+        <MudButtonGroup Color="Color.Dark" Variant="Variant.Outlined">
+            <MudIconButton Icon="@Icons.Filled.List" Title="Jobs" Href="@($"/jobs/{IndexName}")" />
+            <MudButton StartIcon="@Icons.Filled.VerticalSplit" Href="@($"/services/{IndexName}")" Variant="Variant.Outlined"
+                Color="Color.Default">Documents</MudButton>
+        </MudButtonGroup>
     </MudBadge>
 </MudAppBar>
 

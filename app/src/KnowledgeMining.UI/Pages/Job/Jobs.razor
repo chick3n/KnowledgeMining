@@ -1,0 +1,70 @@
+﻿@page "/jobs/{Index}"
+@using KnowledgeMining.Application.Documents.Queries.GetIndex
+@using KnowledgeMining.Application.Documents.Queries.Jobs
+@using KnowledgeMining.Domain.Entities
+@using KnowledgeMining.Domain.Entities.Jobs
+@using KnowledgeMining.UI.Pages.Job.Components
+
+<MudContainer MaxWidth="MaxWidth.Large" Class="mt-4">
+    
+    <JobList IndexName="@Index" Items="_documentJobs" OnRefresh="InitializeJobs" />
+
+</MudContainer>
+
+
+@code {
+    [Inject] public IMediator? Mediator { get; set; }
+
+    [Parameter] public string? Index { get; set; }
+
+    //UI
+    private const MudBlazor.Typo ServiceHeaderType = Typo.h4;
+
+    //functional
+    private IndexItem? _indexItem;
+    private IEnumerable<DocumentJobRequest>? _documentJobs;
+    
+
+    protected override async Task OnInitializedAsync()
+    {
+        var indexResponse = await Mediator!.Send(new GetIndexQuery(Index!));
+        _indexItem = indexResponse.IndexItem;
+
+        if(_indexItem == null)
+        {
+            throw new ArgumentNullException(nameof(Index));
+        }
+    }
+
+    protected override Task OnAfterRenderAsync(bool firstRender)
+    {
+        if(firstRender)
+        {
+            InitializeJobs().ConfigureAwait(false);
+        }
+
+        return base.OnAfterRenderAsync(firstRender);
+    }
+
+    
+    #region Jobs
+
+    private async Task InitializeJobs()
+    {
+        if(Mediator != null) 
+        {
+            _documentJobs = await Mediator.Send(new GetDocumentJobsQuery(_indexItem!.IndexName));
+        }
+        else
+        {
+            _documentJobs = Enumerable.Empty<DocumentJobRequest>();
+        }
+        StateHasChanged();
+    }
+
+    #endregion
+
+    
+
+
+}

@@ -168,7 +168,7 @@
 
 
     //service values
-    private bool _extractiveComponentActive { get; set;} = false;
+    private bool _extractiveComponentActive = false;
     private int _extractiveSummaryMaxSentences = 3;
 
     private bool _abstractiveComponentActive = false;
@@ -195,7 +195,6 @@
         if(firstRender)
         {
             InitializeCart().ConfigureAwait(false);
-            InitializeJobs().ConfigureAwait(false);
         }
 
         return base.OnAfterRenderAsync(firstRender);
@@ -241,24 +240,6 @@
         await CreateRequests();
         StateHasChanged();
     }
-
-
-    #region Jobs
-
-    private async Task InitializeJobs()
-    {
-        if(Mediator != null) 
-        {
-            documentJobs = await Mediator.Send(new GetDocumentJobsQuery(Index!));
-        }
-        else
-        {
-            documentJobs = Enumerable.Empty<DocumentJobRequest>();
-        }
-        StateHasChanged();
-    }
-
-    #endregion
 
     #region Cart 
 
