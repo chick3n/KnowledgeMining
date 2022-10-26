@@ -7,6 +7,7 @@
 @using KnowledgeMining.Domain.Entities
 @using KnowledgeMining.Domain.Entities.Jobs
 @using KnowledgeMining.Domain.Enums
+@using KnowledgeMining.UI.Helpers
 @using KnowledgeMining.UI.Pages.Services.Components
 @using KnowledgeMining.UI.Pages.Services.Models
 @using KnowledgeMining.UI.Services.State
@@ -86,10 +87,10 @@
                     Variant="Variant.Text" Min="3" Max="20" />
                 <MudSelect @bind-Value="_abstractiveSummaryCost" Label="How expensive do you want this?" 
                     AdornmentColor="Color.Primary">
-                    <MudSelectItem Value="1" Disabled="true">$$$$</MudSelectItem>
-                    <MudSelectItem Value="2" Disabled="true">$$$</MudSelectItem>
-                    <MudSelectItem Value="3">$$</MudSelectItem>
-                    <MudSelectItem Value="4">$</MudSelectItem>
+                    <MudSelectItem Value="@ServiceCostHelper.ToValue("$$$$")" Disabled="true">$$$$</MudSelectItem>
+                    <MudSelectItem Value="@ServiceCostHelper.ToValue("$$$")" Disabled="true">$$$</MudSelectItem>
+                    <MudSelectItem Value="@ServiceCostHelper.ToValue("$$")">$$</MudSelectItem>
+                    <MudSelectItem Value="@ServiceCostHelper.ToValue("$")">$</MudSelectItem>
                 </MudSelect>
             </div>
         }
@@ -101,10 +102,10 @@
                 <MudTextField @bind-Value="_promptValue" Label="Prompt Value" Variant="Variant.Text" />
                 <MudSelect @bind-Value="_promptCost" Label="How expensive do you want this?" 
                     AdornmentColor="Color.Primary">
-                    <MudSelectItem Value="1" Disabled="true">$$$$</MudSelectItem>
-                    <MudSelectItem Value="2" Disabled="true">$$$</MudSelectItem>
-                    <MudSelectItem Value="3">$$</MudSelectItem>
-                    <MudSelectItem Value="4">$</MudSelectItem>
+                    <MudSelectItem Value="@ServiceCostHelper.ToValue("$$$$")" Disabled="true">$$$$</MudSelectItem>
+                    <MudSelectItem Value="@ServiceCostHelper.ToValue("$$$")" Disabled="true">$$$</MudSelectItem>
+                    <MudSelectItem Value="@ServiceCostHelper.ToValue("$$")">$$</MudSelectItem>
+                    <MudSelectItem Value="@ServiceCostHelper.ToValue("$")">$</MudSelectItem>
                 </MudSelect>
             </div>
         }

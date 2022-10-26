@@ -4,6 +4,7 @@
 @using KnowledgeMining.Application.Documents.Queries.Jobs
 @using KnowledgeMining.Domain.Entities
 @using KnowledgeMining.Domain.Entities.Jobs
+@using KnowledgeMining.UI.Helpers
 
 @if(_jobNotFound)
 {
@@ -97,11 +98,32 @@ else
                     </ul>
                 </MudField>
             </MudItem>
+            @if (!_isLoadingJobRequest && _jobRequest != null && _jobRequest.Options != null && _jobRequest.Options.Count > 0)
+            {
+                <MudItem xs="12" sm="12" md="12">
+                    <MudText Typo="Typo.h6">Parameters</MudText>
+                    <dl>
+                        @foreach (var option in _jobRequest!.Options)
+                        {
+                            @if(option.Key.Equals("cost"))
+                            {
+                                <dt>@option.Key</dt>
+                                <dd>@ServiceCostHelper.FromValue(option.Value)</dd>
+                            }
+                            else
+                            {
+                                <dt>@option.Key</dt>
+                                <dd>@option.Value</dd>
+                            }
+                        }
+                    </dl>
+                </MudItem>
+            }
         </MudGrid>
     </MudContainer>
 
     <MudContainer MaxWidth="MaxWidth.Large" Style="margin-top: 20px">
-        <MudText Typo="Typo.h5" Class="mb-2">Result</MudText>
+        <MudText Typo="Typo.h5">@ResultHeader()</MudText>
         @if(!_isLoadingJobContent)
         {
             if(_jobResponse != null)
@@ -120,7 +142,6 @@ else
         }
         else
         {
-            <MudText Typo="Typo.h5">@ResultHeader()</MudText>
             <MudSkeleton SkeletonType="SkeletonType.Rectangle" Height="200px" />
         }
     </MudContainer>

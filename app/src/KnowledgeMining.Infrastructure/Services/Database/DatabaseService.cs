@@ -243,6 +243,20 @@ namespace KnowledgeMining.Infrastructure.Services.Database
 
             documentJobRequest.Documents = documents;
 
+            var options = new Dictionary<string, string>();
+            var optionsResult = _tableServiceClient.GetTableClient(TABLE_JOBOPTIONS)
+                .QueryAsync<Models.JobOption>(x => x.PartitionKey.Equals(id), maxPerPage: 100, cancellationToken: cancellationToken);
+
+            await foreach(var page in optionsResult.AsPages())
+            {
+                foreach(var entity in page.Values)
+                {
+                    options.TryAdd(entity.Name, entity.Value);
+                }
+            }
+
+            documentJobRequest.Options = options;
+
             return documentJobRequest;
         }
     }
