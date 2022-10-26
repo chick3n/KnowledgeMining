@@ -106,16 +106,16 @@ else
         {
             if(_jobResponse != null)
             {
-                <MudPaper Elevation="1" Class="p-2">
-                    @foreach(var response in _jobResponse)
-                    {
+                @foreach(var response in _jobResponse)
+                {
+                    <MudPaper Elevation="1" Class="p-2 mb-4">                    
                         <MudText Typo="Typo.h6">@GetResponseTitle(response.Key)</MudText>
                         <hr />
                         <pre style="overflow-x: auto; overflow-y: scroll; white-space: pre-wrap; word-wrap: break-word; font-size: inherit">
                             <MudText>@response.Value.ToString()</MudText>
-                        </pre>
-                    }
-                </MudPaper>
+                        </pre>                    
+                    </MudPaper>
+                }
             }
         }
         else
