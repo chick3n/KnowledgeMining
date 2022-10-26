@@ -1,4 +1,5 @@
 ﻿@page "/job/{Index}/{ServiceId}"
+@using KnowledgeMining.Application.Documents.Queries.GetDocumentContent
 @using KnowledgeMining.Application.Documents.Queries.GetIndex
 @using KnowledgeMining.Application.Documents.Queries.Jobs
 @using KnowledgeMining.Domain.Entities
@@ -102,7 +103,20 @@ else
     <MudContainer MaxWidth="MaxWidth.Large" Style="margin-top: 20px">
         @if(!_isLoadingJobContent)
         {
-        
+            if(_jobResponse != null)
+            {
+                <MudTabs Outlined="true" Position="@Position.Left" Rounded="true" Border="true"
+                    ApplyEffectsToContainer="true" Class="mt-8" PanelClass="pa-6">
+                    @foreach(var response in _jobResponse)
+                    {
+                        <MudTabPanel Text="@GetResponseTitle(response.Key)">
+                            <pre style="overflow-x: auto; overflow-y: scroll; white-space: pre-wrap; word-wrap: break-word; font-size: inherit">
+                                <MudText>@response.Value.ToString()</MudText>
+                            </pre>
+                        </MudTabPanel>
+                    }
+                </MudTabs>
+            }
         }
         else
         {
@@ -120,6 +134,7 @@ else
 
     //Functional
     private DocumentJobRequest? _jobRequest;
+    private Dictionary<string, object>? _jobResponse;
     private bool _isLoadingJobRequest = true;
     private bool _isLoadingJobContent = true;
     private bool _jobNotFound = false;
@@ -153,6 +168,34 @@ else
         _jobNotFound = _jobRequest == null;
         _isLoadingJobRequest = false;
         StateHasChanged();
+
+        _ = GetJobResult().ConfigureAwait(false);
+    }
+
+    private async Task GetJobResult()
+    {
+        var jobContent = await Mediator!.Send(new GetJobDocumentContentQuery(ServiceId));
+        if(jobContent != null)
+        {
+            _isLoadingJobContent = false;
+            _jobResponse = jobContent.Response;
+        }
+
+        StateHasChanged();
+    }
+
+    private string GetResponseTitle(string recordId)
+    {
+        if (string.IsNullOrWhiteSpace(recordId))
+            return "Unknown";
+
+        var record = _jobRequest?.Documents
+            .FirstOrDefault(x => x?.Id?.Equals(recordId, StringComparison.CurrentCultureIgnoreCase) ?? false);
+
+        if (record != null && string.IsNullOrEmpty(record.Title))
+            return "__Blank__";
+
+        return record?.Title ?? "Unknown";
     }
 
     private string TicksToString(long? ticks, long? offsetTicks, string format = "yyyy-MM-dd HH:mm:ss")

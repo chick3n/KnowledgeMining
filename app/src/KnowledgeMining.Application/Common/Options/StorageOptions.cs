@@ -9,6 +9,7 @@ namespace KnowledgeMining.Application.Common.Options
         public Uri? ServiceUri { get; set; }
         public string ContainerName { get; set; } = "documents";
         public string SourceContainerName { get; set; } = "source-docs";
+        public string JobsContainerName { get; set; } = "jobs";
 
         public DocumentTag[] Tags { get; set; } = Array.Empty<DocumentTag>();
 

@@ -259,6 +259,9 @@ namespace KnowledgeMining.Infrastructure.Services.Storage
             return ms.ToArray();
         }
 
+        public async ValueTask<byte[]> DownloadJobDocument(string documentName, CancellationToken cancellationToken) =>
+            await DownloadDocument(_storageOptions.JobsContainerName, documentName, cancellationToken);
+
         public async ValueTask<byte[]> DownloadDocument(string documentName, CancellationToken cancellationToken) =>
             await DownloadDocument(_storageOptions.ContainerName, documentName, cancellationToken);
 
