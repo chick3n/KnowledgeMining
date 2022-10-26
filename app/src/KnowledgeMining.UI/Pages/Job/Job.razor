@@ -101,21 +101,21 @@ else
     </MudContainer>
 
     <MudContainer MaxWidth="MaxWidth.Large" Style="margin-top: 20px">
+        <MudText Typo="Typo.h5" Class="mb-2">Result</MudText>
         @if(!_isLoadingJobContent)
         {
             if(_jobResponse != null)
             {
-                <MudTabs Outlined="true" Position="@Position.Left" Rounded="true" Border="true"
-                    ApplyEffectsToContainer="true" Class="mt-8" PanelClass="pa-6">
+                <MudPaper Elevation="1" Class="p-2">
                     @foreach(var response in _jobResponse)
                     {
-                        <MudTabPanel Text="@GetResponseTitle(response.Key)">
-                            <pre style="overflow-x: auto; overflow-y: scroll; white-space: pre-wrap; word-wrap: break-word; font-size: inherit">
-                                <MudText>@response.Value.ToString()</MudText>
-                            </pre>
-                        </MudTabPanel>
+                        <MudText Typo="Typo.h6">@GetResponseTitle(response.Key)</MudText>
+                        <hr />
+                        <pre style="overflow-x: auto; overflow-y: scroll; white-space: pre-wrap; word-wrap: break-word; font-size: inherit">
+                            <MudText>@response.Value.ToString()</MudText>
+                        </pre>
                     }
-                </MudTabs>
+                </MudPaper>
             }
         }
         else
