@@ -85,12 +85,11 @@
                 <MudText Typo="Typo.h6">Abstractive Summarization</MudText>
                 <MudNumericField @bind-Value="_abstractiveSummaryMaxSentences" Label="Maximum sentence limit for summary." 
                     Variant="Variant.Text" Min="3" Max="20" />
-                <MudSelect @bind-Value="_abstractiveSummaryCost" Label="How expensive do you want this?" 
+                <MudSelect @bind-Value="_abstractiveSummaryCost" Label="Model to use?" 
                     AdornmentColor="Color.Primary">
-                    <MudSelectItem Value="@ServiceCostHelper.ToValue("$$$$")" Disabled="true">$$$$</MudSelectItem>
-                    <MudSelectItem Value="@ServiceCostHelper.ToValue("$$$")" Disabled="true">$$$</MudSelectItem>
-                    <MudSelectItem Value="@ServiceCostHelper.ToValue("$$")">$$</MudSelectItem>
-                    <MudSelectItem Value="@ServiceCostHelper.ToValue("$")">$</MudSelectItem>
+                    <MudSelectItem Value="@ServiceCostHelper.ToValue("$$$")">Davinci ($$$)</MudSelectItem>
+                    <MudSelectItem Value="@ServiceCostHelper.ToValue("$$")">Curie ($$)</MudSelectItem>
+                    <MudSelectItem Value="@ServiceCostHelper.ToValue("$")">Aba ($)</MudSelectItem>
                 </MudSelect>
             </div>
         }
@@ -100,12 +99,11 @@
             <div class="review-component">
                 <MudText Typo="Typo.h6">Prompt?</MudText>
                 <MudTextField @bind-Value="_promptValue" Label="Prompt Value" Variant="Variant.Text" />
-                <MudSelect @bind-Value="_promptCost" Label="How expensive do you want this?" 
+                <MudSelect @bind-Value="_promptCost" Label="Model to use?" 
                     AdornmentColor="Color.Primary">
-                    <MudSelectItem Value="@ServiceCostHelper.ToValue("$$$$")" Disabled="true">$$$$</MudSelectItem>
-                    <MudSelectItem Value="@ServiceCostHelper.ToValue("$$$")" Disabled="true">$$$</MudSelectItem>
-                    <MudSelectItem Value="@ServiceCostHelper.ToValue("$$")">$$</MudSelectItem>
-                    <MudSelectItem Value="@ServiceCostHelper.ToValue("$")">$</MudSelectItem>
+                    <MudSelectItem Value="@ServiceCostHelper.ToValue("$$$")">Davinci ($$$)</MudSelectItem>
+                    <MudSelectItem Value="@ServiceCostHelper.ToValue("$$")">Curie ($$)</MudSelectItem>
+                    <MudSelectItem Value="@ServiceCostHelper.ToValue("$")">Aba ($)</MudSelectItem>
                 </MudSelect>
             </div>
         }
