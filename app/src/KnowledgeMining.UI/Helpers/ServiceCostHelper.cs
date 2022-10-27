@@ -17,19 +17,19 @@
             return "$";
         }
 
-        public static string ToValue(string value)
+        public static int ToValue(string value)
         {
             value = value ?? string.Empty;
             value = value.Trim().ToLower();
 
             if (value == "$$$$")
-                return "1";
+                return 1;
             if (value == "$$$")
-                return "2";
+                return 2;
             if (value == "$$")
-                return "3";
+                return 3;
 
-            return "4";
+            return 4;
         }
     }
 }
