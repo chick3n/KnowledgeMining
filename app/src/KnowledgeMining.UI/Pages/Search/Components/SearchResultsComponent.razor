@@ -3,11 +3,14 @@
 @using KnowledgeMining.UI.Services.State
 @using KnowledgeMining.UI.Wrappers
 @using System.Text
+@using Microsoft.AspNetCore.Hosting;
+@using Microsoft.Extensions.Hosting;
 
 @inject NavigationManager NavManager
 @inject StateService StateService
 @inject DocumentCartService CartService
 @inject ISnackbar Snackbar
+@inject IWebHostEnvironment HostEnvironment
 
 @if (IsLoading)
 {
@@ -62,9 +65,12 @@ else
                                     <MudLink Href="@($"{NavigateTo}{document.Id}")" Underline="Underline.None" Typo="Typo.body2" Style="display:block; width:100%">@DocumentSubHeader(document)</MudLink>
                                 </CardHeaderContent>
                                 <CardHeaderActions>
-                                    <MudIconButton Icon="@Icons.Filled.PlaylistAdd" Title="Add to queue"
-                                        OnClick="@(() => AddToCart(DocumentWrapper.GetTitle(document), document.Id))"
-                                        Color="Color.Default" />
+                                    @if(!HostEnvironment.IsProduction()) 
+                                    {
+                                        <MudIconButton Icon="@Icons.Filled.PlaylistAdd" Title="Add to queue"
+                                            OnClick="@(() => AddToCart(DocumentWrapper.GetTitle(document), document.Id))"
+                                            Color="Color.Default" />
+                                    }
                                 </CardHeaderActions>
                             </MudCardHeader>
                             <MudCardContent>

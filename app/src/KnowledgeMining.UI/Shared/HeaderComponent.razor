@@ -2,10 +2,14 @@
 @using KnowledgeMining.Domain.Entities
 @using KnowledgeMining.UI.Services.State
 @using MediatR
+@using Microsoft.AspNetCore.Hosting;
+@using Microsoft.Extensions.Hosting;
+
 
 @inject NavigationManager NavigationManager;
 @inject IMediator Mediator;
 @inject DocumentCartService CartService;
+@inject IWebHostEnvironment HostEnvironment;
 
 
 <MudAppBar Style="@($"color: {Theme.Palette.Black};background: {Theme.Palette.White}")" Elevation="1">
@@ -40,14 +44,17 @@
             }
         }        
     </MudStack>
-    <MudSpacer />
-    <MudBadge Content="@(_cartCount ?? 0)" Color="Color.Primary" Overlap="true" Bordered="true" Class="mx-6 my-4">
-        <MudButtonGroup Color="Color.Dark" Variant="Variant.Outlined">
-            <MudIconButton Icon="@Icons.Filled.List" Title="Jobs" Href="@($"/jobs/{IndexName}")" />
-            <MudButton StartIcon="@Icons.Filled.VerticalSplit" Href="@($"/services/{IndexName}")" Variant="Variant.Outlined"
-                Color="Color.Default">Documents</MudButton>
-        </MudButtonGroup>
-    </MudBadge>
+    @if (!HostEnvironment.IsProduction())
+    {
+        <MudSpacer />
+        <MudBadge Content="@(_cartCount ?? 0)" Color="Color.Primary" Overlap="true" Bordered="true" Class="mx-6 my-4">
+            <MudButtonGroup Color="Color.Dark" Variant="Variant.Outlined">
+                <MudIconButton Icon="@Icons.Filled.List" Title="Jobs" Href="@($"/jobs/{IndexName}")" />
+                <MudButton StartIcon="@Icons.Filled.VerticalSplit" Href="@($"/services/{IndexName}")" Variant="Variant.Outlined"
+                    Color="Color.Default">Documents</MudButton>
+            </MudButtonGroup>
+        </MudBadge>
+    }
 </MudAppBar>
 
 @code {
