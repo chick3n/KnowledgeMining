@@ -47,7 +47,7 @@
     </MudContainer>
 </MudPaper>
 <MudPaper Width="100%" Class="" Square="true" Elevation="0">
-    @if (string.IsNullOrEmpty(_landingPageContent))
+    @if (!string.IsNullOrEmpty(_landingPageContent))
     {
         @((MarkupString)_landingPageContent)
     }
@@ -72,7 +72,7 @@
         _indexItem = indexResponse.IndexItem;
         
         if(!string.IsNullOrEmpty(_indexItem.Landing?.PagePath))
-            _landingPageContent = System.IO.File.ReadAllText(Path.Join("/landings", _indexItem.Landing.PagePath));
+            _landingPageContent = System.IO.File.ReadAllText($"/landings/{_indexItem.Landing.PagePath}");
     }
 
     private async Task<IEnumerable<string>?> AutoComplete(string value)
