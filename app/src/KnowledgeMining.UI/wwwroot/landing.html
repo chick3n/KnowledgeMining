@@ -1,0 +1,856 @@
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/charts.css/dist/charts.min.css">
+<script>function load_sentiment(key) {
+    console.log(key);
+
+    document.querySelectorAll('.org_result_sent_container').forEach(el => {
+        el.style.display = 'none'
+    });
+
+    document.querySelector('#' + key).style.display = ''
+    document.querySelectorAll('#orgs th').forEach(el => {
+        el.className = '';
+    });
+
+    document.querySelector('#link' + key).className = 'selected'
+}</script>
+<style>.tabset > input[type="radio"] {
+position: absolute;
+left: -200vw;
+}
+
+.tabset .tab-panel {
+display: none;
+}
+
+.tabset > .tab-panel-info {
+    cursor: none;
+    font-weight: 100;
+}
+
+.tabset > input:first-child:checked ~ .tab-panels > .tab-panel:first-child,
+.tabset > input:nth-child(3):checked ~ .tab-panels > .tab-panel:nth-child(2),
+.tabset > input:nth-child(5):checked ~ .tab-panels > .tab-panel:nth-child(3),
+.tabset > input:nth-child(7):checked ~ .tab-panels > .tab-panel:nth-child(4),
+.tabset > input:nth-child(9):checked ~ .tab-panels > .tab-panel:nth-child(5),
+.tabset > input:nth-child(11):checked ~ .tab-panels > .tab-panel:nth-child(6) {
+display: block;
+}
+
+/*
+Styling
+*/
+body {
+font: 16px/1.5em "Overpass", "Open Sans", Helvetica, sans-serif;
+color: #333;
+font-weight: 300;
+}
+
+.tabset > label {
+position: relative;
+display: inline-block;
+padding: 15px 15px 25px;
+border: 1px solid transparent;
+border-bottom: 0;
+cursor: pointer;
+font-weight: 600;
+}
+
+.tabset > label:hover,
+.tabset > input:focus + label {
+color: #06c;
+}
+
+.tabset > input:checked + label {
+border-color: #ccc;
+border-bottom: 1px solid #fff;
+margin-bottom: -1px;
+}
+
+.tab-panel {
+padding: 30px 0;
+border-top: 1px solid #ccc;
+}
+
+/* Charts */
+
+div.chart-data-image {
+    height: 90px;
+    position: absolute;
+    /* top: -400px; */
+    width: 100px;
+    background-repeat: no-repeat;
+    /* background-size: 150px;    
+    background-position-x: -25px; */
+    border-radius: 50%;
+    /* background-position-y: -10px; */
+    border-style: solid;
+}
+div.metrics {
+    height: 300px;
+    margin-top: 40px;
+}
+.charts-css .data {
+    padding-top: 2px
+}
+a.chart-link {
+    text-decoration: none;
+    color: #000;
+}
+
+/* Layout */
+body {
+    margin: 0;
+}
+
+.page {
+display: flex;
+flex-wrap: wrap;
+}
+
+.page > * {
+padding: 1rem;
+}
+
+.popular {
+background: var(--color-primary-x-light);
+outline: 1px solid var(--color-primary);
+flex-grow: 1;
+flex-basis: 12rem;
+}
+
+.content {
+flex-basis: 0;
+flex-grow: 2;
+min-width: 70%;
+}
+
+div.document > a.link {
+    text-decoration: none;
+    padding-left: 10px
+}
+
+h2.header {
+    margin-top:0;
+    font-size: 2rem;
+}
+
+h2.document-header {
+    margin: 0;
+    text-decoration: none;
+    font-size: 1.5rem;
+}
+
+h2.document-header a {
+    text-decoration: none;
+}
+
+div.row {
+    padding: 40px;
+}
+
+div.row:nth-child(2n+2) {
+    background-color: #eee;
+}
+
+div.docrow {
+    display: flex;
+}
+
+div.docrow > article {
+    margin-right: 20px;
+}
+
+.date_range {
+    text-align: right;
+    padding: 20px;
+    font-size: 0.75rem;
+}
+
+/* Cards */
+
+.cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+    grid-gap: 20px;
+}
+
+.card {
+    /* display: grid; */
+    /* grid-template-rows: max-content 200px 1fr; */
+    /* height: 200px; */
+    border: solid 1px #ccc;
+    flex: 0 0 50%;
+}
+
+.card > * {
+    padding: 6px;
+}
+
+.card > header {
+    max-height: 100px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.card > header > h3 {
+    padding:0;
+    margin:0;
+    font-size: 1rem;
+}
+
+.card > .content {
+    border-top: solid 1px #ccc;
+    font-size: 0.8rem;
+}
+
+.card > .content > p {
+    margin: 0;
+    padding: 0;
+}
+
+.card img {
+    object-fit: cover;
+    width: 100%;
+    height: 100%;
+}
+
+/* Orgs */
+
+.orgs {
+    height: auto;
+    display: flex;
+}
+
+.orgs > .orgs_sent > .charts-css {
+    --color-1: rgba(255, 200, 0, 0.6);
+    /* --color-2: rgba(255, 150, 0, 0.6); */
+    /* --color-3: rgba(255, 75, 0, 0.6); */
+    --color-2: rgba(255, 0, 0, 0.6);
+}
+
+#orgs.bar {
+    --labels-size: 22rem;
+}
+
+.orgs > .orgs_result {
+    border-right: 1px solid #000;
+    flex-basis: 35%;
+    padding: 16px;
+    padding-top: 0;
+}
+
+.orgs > .orgs_sent {
+    flex-basis: 65%;
+}
+
+.orgs_result > .org_result_sent_container > div {
+    display: flex;
+    flex-direction: column;
+    /* justify-content: space-around; */
+    height: 100%;
+    gap: 10px;
+}
+
+.orgs_result > .org_result_sent_container > h3 {
+    margin-top: 0
+}
+
+.orgs_result > .org_result_sent_container > h3 > a {
+    text-decoration: none;
+    color: #333;
+}
+
+.orgs_result .positive,
+.orgs_result .negative {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border-radius: 30px;
+    padding: 0 20px;
+    max-height: 200px;
+}
+
+.orgs_result .positive {
+    background-color: rgba(255, 200, 0, 0.3);
+}
+
+.orgs_result .negative {
+    background-color: rgba(255, 0, 0, 0.2);;
+}
+
+.orgs_result .sentiment {
+    padding-right: 20px;
+    font-size: 4rem;
+}
+
+.orgs_result .positive > q,
+.orgs_result .negative > q {
+    overflow-y: hidden;
+    text-overflow: ellipsis;
+    display: -webkit-box;
+    -webkit-line-clamp: 6;
+    -webkit-box-orient: vertical;
+    word-break: break-all;
+
+    margin-block-start: 1em;
+    margin-block-end: 1em;
+    margin-inline-start: 0px;
+    margin-inline-end: 0px;
+}
+
+.sent_link {
+    text-decoration: none;
+}
+
+.sent_link q {
+    color: #000;
+}
+
+.selected {
+    background-color: #ddd !important;
+}
+
+</style>
+<div class="date_range">12 December, 2022 to 15 January, 2023</div>
+<div class="row"><h2 class="header">NORTH AMERICA</h2><div class="docrow">
+<article class="card">
+    <img src="" alt="nothing" style="display: none">
+    <header>
+        <h2 class="document-header"><a href="/record/ukraine-invasion/YUhSMGNITTZMeTl6ZEdkb1p6Um9kbWh1WkdVemFuaGxMbUpzYjJJdVkyOXlaUzUzYVc1a2IzZHpMbTVsZEM5a2IyTjFiV1Z1ZEhNdk1qQXlNeTB0TURFdE1EVmZWMU5JUkVOZk56WXpOUzUwZUhRMQ==">WSHDC Russia/Ukraine Sitrep #148 January 3-5</a></h2>        
+        <small>2023-01-05</small>
+    </header>  
+    <div class="content">
+        <p>WSHDC Russia/Ukraine Sitrep #148 January 3-5 January 4, President Biden when asked if the US is considering providing Bradley fighting vehicles to Ukraine, responded yes. January 3 and 4, State Department Press briefings with department spokesperson Ned Price, transcripts available here <https://www.state.gov/briefings/department-press-briefing-january-3-2023/>  and here <https://www.state.gov/briefings/department-press-briefing-january-4-2023/> . o   In response to a question about Ukraine stating that Iranian drones contain parts from 13 US companies, Price stated that the US is examining the reports closely and working with private industry on supply chain security.</p>
+    </div>
+</article>
+<div class="documents">
+<div class="document">
+<small class="date">2023-01-03</small> <a href='/record/ukraine-invasion/YUhSMGNITTZMeTl6ZEdkb1p6Um9kbWh1WkdVemFuaGxMbUpzYjJJdVkyOXlaUzUzYVc1a2IzZHpMbTVsZEM5a2IyTjFiV1Z1ZEhNdk1qQXlNeTB0TURFdE1ETmZWMU5JUkVOZk56TXpPUzUwZUhRMQ==' class="link">RE: WSHDC Russia/Ukraine SITREP #147 January 1-3</a>
+</div>
+
+
+<div class="document">
+<small class="date">2022-12-22</small> <a href='/record/ukraine-invasion/YUhSMGNITTZMeTl6ZEdkb1p6Um9kbWh1WkdVemFuaGxMbUpzYjJJdVkyOXlaUzUzYVc1a2IzZHpMbTVsZEM5a2IyTjFiV1Z1ZEhNdk1qQXlNaTB0TVRJdE1qSmZVRkpOVGxsZk1UWXhPVE11ZEhoMDA=' class="link">PRMNY-11830  UNGA77: Final Third Committee Report</a>
+</div>
+
+
+<div class="document">
+<small class="date">2022-12-16</small> <a href='/record/ukraine-invasion/YUhSMGNITTZMeTl6ZEdkb1p6Um9kbWh1WkdVemFuaGxMbUpzYjJJdVkyOXlaUzUzYVc1a2IzZHpMbTVsZEM5a2IyTjFiV1Z1ZEhNdk1qQXlNaTB0TVRJdE1UWmZWMU5JUkVOZk56ZzJOQzUwZUhRMQ==' class="link">RE: WSHDC Russia/Ukraine SITREP #145 December 13-16 (12:30)</a>
+</div>
+
+
+<div class="document">
+<small class="date">2022-12-15</small> <a href='/record/ukraine-invasion/YUhSMGNITTZMeTl6ZEdkb1p6Um9kbWh1WkdVemFuaGxMbUpzYjJJdVkyOXlaUzUzYVc1a2IzZHpMbTVsZEM5a2IyTjFiV1Z1ZEhNdk1qQXlNaTB0TVRJdE1UVmZVRkpOVGxsZk9EWTNNUzUwZUhRMQ==' class="link">PRMNY-11893: REPORT: UNSC Meets on arms transfers to Ukraine, Russia attempts to distract from aggression.</a>
+</div>
+
+
+<div class="document">
+<small class="date">2022-12-13</small> <a href='/record/ukraine-invasion/YUhSMGNITTZMeTl6ZEdkb1p6Um9kbWh1WkdVemFuaGxMbUpzYjJJdVkyOXlaUzUzYVc1a2IzZHpMbTVsZEM5a2IyTjFiV1Z1ZEhNdk1qQXlNaTB0TVRJdE1UTmZWMU5JUkVOZk56VXpOeTUwZUhRMQ==' class="link">WSHDC Russia/Ukraine SITREP #144 December 8-13</a>
+</div>
+</div></div></div>
+<div class="row">
+<h2 class="header">PERSONS OF INTEREST</h2>
+<small></small>
+<div class="metrics">
+    <table id="people"
+        class="charts-css column multiple hide-data show-labels show-data-axes data-spacing-20 ">
+        <caption> People of Interest </caption>
+        <thead>
+            <tr>
+                <th scope="col"> Year </th>
+                <th scope="col"> Current </th>
+                <th scope="col"> Previous </th>
+            </tr>
+        </thead>
+        <tbody>
+        
+<tr>
+    <th scope="row"> 
+        <span style="transform: translateY(10px);"><a href="/search/ukraine-invasion/eyJUeXBlIjoic2VyIiwiVmFsdWVzIjoiczp8cDoxfGZhOnBlcnNvbnM9Ym9ycmVsbHxvOiRvcmRlcmJ5PXNlYXJjaC5zY29yZSgpIGRlc2MsIGRhdGV0aW1lIGRlc2MifQ==" class="chart-link">Borrell</a></span>
+        <div class="chart-data-image" style="background-image: url(https://upload.wikimedia.org/wikipedia/commons/thumb/6/68/Josep_Borrell_%2849468484246%29.jpg/800px-Josep_Borrell_%2849468484246%29.jpg); background-size: 150px; background-position-x: -25px; background-position-y: -15px; top: -117.64705882352942px;"></div>
+    </th>
+    <td style="--size:0.058823529411764705; --color:red; opacity:1.0;"><span class="data"> 6 </span></td>
+</tr>
+
+
+<tr>
+    <th scope="row"> 
+        <span style="transform: translateY(10px);"><a href="/search/ukraine-invasion/eyJUeXBlIjoic2VyIiwiVmFsdWVzIjoiczp8cDoxfGZhOnBlcnNvbnM9ZW1tYW51ZWwgbWFjcm9ufG86JG9yZGVyYnk9c2VhcmNoLnNjb3JlKCkgZGVzYywgZGF0ZXRpbWUgZGVzYyJ9" class="chart-link">Emmanuel Macron</a></span>
+        <div class="chart-data-image" style="background-image: url(https://upload.wikimedia.org/wikipedia/commons/d/d2/Emmanuel_Macron_June_2022_%28cropped%29.jpg); background-size: 150px; background-position-x: -29px; background-position-y: -34px; top: -117.64705882352942px;"></div>
+    </th>
+    <td style="--size:0.058823529411764705; --color:red; opacity:1.0;"><span class="data"> 6 </span></td>
+</tr>
+
+
+<tr>
+    <th scope="row"> 
+        <span style="transform: translateY(10px);"><a href="/search/ukraine-invasion/eyJUeXBlIjoic2VyIiwiVmFsdWVzIjoiczp8cDoxfGZhOnBlcnNvbnM9aWdvciBnaXJraW58bzokb3JkZXJieT1zZWFyY2guc2NvcmUoKSBkZXNjLCBkYXRldGltZSBkZXNjIn0=" class="chart-link">Igor Girkin</a></span>
+        <div class="chart-data-image" style="background-image: url(https://upload.wikimedia.org/wikipedia/commons/8/83/Igor_Ivanovich_Strelkov_Yekaterinburg3.JPG); background-size: 150px; background-position-x: -34px; background-position-y: -38px; top: -135.29411764705884px;"></div>
+    </th>
+    <td style="--size:0.11764705882352941; --color:red; opacity:1.0;"><span class="data"> 12 </span></td>
+</tr>
+
+
+<tr>
+    <th scope="row"> 
+        <span style="transform: translateY(10px);"><a href="/search/ukraine-invasion/eyJUeXBlIjoic2VyIiwiVmFsdWVzIjoiczp8cDoxfGZhOnBlcnNvbnM9am9lIGJpZGVufG86JG9yZGVyYnk9c2VhcmNoLnNjb3JlKCkgZGVzYywgZGF0ZXRpbWUgZGVzYyJ9" class="chart-link">Joe Biden</a></span>
+        <div class="chart-data-image" style="background-image: url(https://upload.wikimedia.org/wikipedia/commons/thumb/6/68/Joe_Biden_presidential_portrait.jpg/1024px-Joe_Biden_presidential_portrait.jpg); background-size: 150px; background-position-x: -25px; background-position-y: -15px; top: -152.94117647058823px;"></div>
+    </th>
+    <td style="--size:0.17647058823529413; --color:red; opacity:1.0;"><span class="data"> 18 </span></td>
+</tr>
+
+
+<tr>
+    <th scope="row"> 
+        <span style="transform: translateY(10px);"><a href="/search/ukraine-invasion/eyJUeXBlIjoic2VyIiwiVmFsdWVzIjoiczp8cDoxfGZhOnBlcnNvbnM9a3lyeWxvIGJ1ZGFub3Z8bzokb3JkZXJieT1zZWFyY2guc2NvcmUoKSBkZXNjLCBkYXRldGltZSBkZXNjIn0=" class="chart-link">Kyrylo Budanov</a></span>
+        <div class="chart-data-image" style="background-image: url(https://upload.wikimedia.org/wikipedia/commons/thumb/9/9c/Kyrylo_Budanov%2C_head_of_the_HUR_MOU_%28cropped%29.jpg/1024px-Kyrylo_Budanov%2C_head_of_the_HUR_MOU_%28cropped%29.jpg); background-size: 150px; background-position-x: -25px; background-position-y: -43px; top: -135.29411764705884px;"></div>
+    </th>
+    <td style="--size:0.11764705882352941; --color:red; opacity:1.0;"><span class="data"> 12 </span></td>
+</tr>
+
+
+<tr>
+    <th scope="row"> 
+        <span style="transform: translateY(10px);"><a href="/search/ukraine-invasion/eyJUeXBlIjoic2VyIiwiVmFsdWVzIjoiczp8cDoxfGZhOnBlcnNvbnM9bmVkIHByaWNlfG86JG9yZGVyYnk9c2VhcmNoLnNjb3JlKCkgZGVzYywgZGF0ZXRpbWUgZGVzYyJ9" class="chart-link">Ned Price</a></span>
+        <div class="chart-data-image" style="background-image: url(https://upload.wikimedia.org/wikipedia/commons/thumb/7/77/Ned_Price_official_photo.jpg/1024px-Ned_Price_official_photo.jpg); background-size: 150px; background-position-x: -25px; background-position-y: -23px; top: -135.29411764705884px;"></div>
+    </th>
+    <td style="--size:0.11764705882352941; --color:red; opacity:1.0;"><span class="data"> 12 </span></td>
+</tr>
+
+
+<tr>
+    <th scope="row"> 
+        <span style="transform: translateY(10px);"><a href="/search/ukraine-invasion/eyJUeXBlIjoic2VyIiwiVmFsdWVzIjoiczp8cDoxfGZhOnBlcnNvbnM9cHJpZ296aGlufG86JG9yZGVyYnk9c2VhcmNoLnNjb3JlKCkgZGVzYywgZGF0ZXRpbWUgZGVzYyJ9" class="chart-link">Prigozhin</a></span>
+        <div class="chart-data-image" style="background-image: url(https://upload.wikimedia.org/wikipedia/commons/f/fc/Yevgeny_Prigozhin_at_his_Concord_food_catering_factory_02.jpg); background-size: 150px; background-position-x: -25px; background-position-y: -20px; top: -170.58823529411765px;"></div>
+    </th>
+    <td style="--size:0.23529411764705882; --color:red; opacity:1.0;"><span class="data"> 24 </span></td>
+</tr>
+
+
+<tr>
+    <th scope="row"> 
+        <span style="transform: translateY(10px);"><a href="/search/ukraine-invasion/eyJUeXBlIjoic2VyIiwiVmFsdWVzIjoiczp8cDoxfGZhOnBlcnNvbnM9c2Nob2x6fG86JG9yZGVyYnk9c2VhcmNoLnNjb3JlKCkgZGVzYywgZGF0ZXRpbWUgZGVzYyJ9" class="chart-link">Scholz</a></span>
+        <div class="chart-data-image" style="background-image: url(https://upload.wikimedia.org/wikipedia/commons/thumb/7/74/Olaf_Scholz%2C_15-12-2022_%281%29_%28cropped%29.jpg/800px-Olaf_Scholz%2C_15-12-2022_%281%29_%28cropped%29.jpg); background-size: 74px; background-position-x: 13px; background-position-y: 0px; top: -117.64705882352942px;"></div>
+    </th>
+    <td style="--size:0.058823529411764705; --color:red; opacity:1.0;"><span class="data"> 6 </span></td>
+</tr>
+
+
+<tr>
+    <th scope="row"> 
+        <span style="transform: translateY(10px);"><a href="/search/ukraine-invasion/eyJUeXBlIjoic2VyIiwiVmFsdWVzIjoiczp8cDoxfGZhOnBlcnNvbnM9c2hvaWd1fG86JG9yZGVyYnk9c2VhcmNoLnNjb3JlKCkgZGVzYywgZGF0ZXRpbWUgZGVzYyJ9" class="chart-link">Shoigu</a></span>
+        <div class="chart-data-image" style="background-image: url(https://upload.wikimedia.org/wikipedia/commons/thumb/3/32/Official_portrait_of_Sergey_Shoigu.jpg/1024px-Official_portrait_of_Sergey_Shoigu.jpg); background-size: 150px; background-position-x: -25px; background-position-y: -15px; top: -152.94117647058823px;"></div>
+    </th>
+    <td style="--size:0.17647058823529413; --color:red; opacity:1.0;"><span class="data"> 18 </span></td>
+</tr>
+
+
+<tr>
+    <th scope="row"> 
+        <span style="transform: translateY(10px);"><a href="/search/ukraine-invasion/eyJUeXBlIjoic2VyIiwiVmFsdWVzIjoiczp8cDoxfGZhOnBlcnNvbnM9c3RvbHRlbmJlcmd8bzokb3JkZXJieT1zZWFyY2guc2NvcmUoKSBkZXNjLCBkYXRldGltZSBkZXNjIn0=" class="chart-link">Stoltenberg</a></span>
+        <div class="chart-data-image" style="background-image: url(https://upload.wikimedia.org/wikipedia/commons/6/67/Fumio_Kishida_met_with_Jens_Stoltenberg_at_the_sidelines_of_2022_Madrid_Summit_%281%29_%28cropped%29.jpg); background-size: 150px; background-position-x: -22px; background-position-y: -35px; top: -117.64705882352942px;"></div>
+    </th>
+    <td style="--size:0.058823529411764705; --color:red; opacity:1.0;"><span class="data"> 6 </span></td>
+</tr>
+
+        </tbody>
+    </table>
+</div>
+</div>
+<div class="row"><h2 class="header">EUROPE</h2><div class="docrow">
+<article class="card">
+    <img src="" alt="nothing" style="display: none">
+    <header>
+        <h2 class="document-header"><a href="/record/ukraine-invasion/YUhSMGNITTZMeTl6ZEdkb1p6Um9kbWh1WkdVemFuaGxMbUpzYjJJdVkyOXlaUzUzYVc1a2IzZHpMbTVsZEM5a2IyTjFiV1Z1ZEhNdk1qQXlNeTB0TURFdE1EWmZUVTlUUTA5Zk9EWXlNaTUwZUhRMQ==">MOSCO-658/23 - Key Developments from Russia in its War on Ukraine (Week of Dec 31, 2022 to Jan 6, 2023)</a></h2>        
+        <small>2023-01-06</small>
+    </header>  
+    <div class="content">
+        <p>While continuing to rain drones and missiles on Ukraine, Russia was shocked by Ukraines New Years Eve missile strike on a military base in Makiivka, near the city of Donetsk. The Ministry of Defence attempted to deflect all responsibility for the affair to the victims themselves, whom the Ministry said revealed the bases location through use of cell phones. On December 31, he said, The moral and historical truth is on our side. Whenever possible, Russias Ministry of Defence ignores or downplays military disasters.</p>
+    </div>
+</article>
+<div class="documents">
+<div class="document">
+<small class="date">2023-01-06</small> <a href='/record/ukraine-invasion/YUhSMGNITTZMeTl6ZEdkb1p6Um9kbWh1WkdVemFuaGxMbUpzYjJJdVkyOXlaUzUzYVc1a2IzZHpMbTVsZEM5a2IyTjFiV1Z1ZEhNdk1qQXlNeTB0TURFdE1EWmZVRUZTU1ZOZk9EY3hNaTUwZUhRMQ==' class="link">PARIS Sitrep Ukraine/Russie 6 janvier</a>
+</div>
+
+
+<div class="document">
+<small class="date">2023-01-06</small> <a href='/record/ukraine-invasion/YUhSMGNITTZMeTl6ZEdkb1p6Um9kbWh1WkdVemFuaGxMbUpzYjJJdVkyOXlaUzUzYVc1a2IzZHpMbTVsZEM5a2IyTjFiV1Z1ZEhNdk1qQXlNeTB0TURFdE1EWmZUMU5NVDE4NE5UQXpMblI0ZEEy' class="link">Oslo: Ukraine Related Update January 6, 2023</a>
+</div>
+
+
+<div class="document">
+<small class="date">2023-01-06</small> <a href='/record/ukraine-invasion/YUhSMGNITTZMeTl6ZEdkb1p6Um9kbWh1WkdVemFuaGxMbUpzYjJJdVkyOXlaUzUzYVc1a2IzZHpMbTVsZEM5a2IyTjFiV1Z1ZEhNdk1qQXlNeTB0TURFdE1EWmZRazVCVkU5Zk1UVTROakV1ZEhoMDA=' class="link">Ukraine Morning Update as of 0930 - Open Source Report - January 6</a>
+</div>
+
+
+<div class="document">
+<small class="date">2023-01-06</small> <a href='/record/ukraine-invasion/YUhSMGNITTZMeTl6ZEdkb1p6Um9kbWh1WkdVemFuaGxMbUpzYjJJdVkyOXlaUzUzYVc1a2IzZHpMbTVsZEM5a2IyTjFiV1Z1ZEhNdk1qQXlNeTB0TURFdE1EWmZTRUZIVlVWZk1qUXdOalV1ZEhoMDA=' class="link">HAGUE-1104: Update from the Netherlands  Russian Invasion of Ukraine   January 6</a>
+</div>
+
+
+<div class="document">
+<small class="date">2023-01-05</small> <a href='/record/ukraine-invasion/YUhSMGNITTZMeTl6ZEdkb1p6Um9kbWh1WkdVemFuaGxMbUpzYjJJdVkyOXlaUzUzYVc1a2IzZHpMbTVsZEM5a2IyTjFiV1Z1ZEhNdk1qQXlNeTB0TURFdE1EVmZUVTlUUTA5Zk1qUTVOVEV1ZEhoMDA=' class="link">MOSCO-657/23  Russia: A Demography Unsuited for Wartime</a>
+</div>
+</div></div></div>
+<div class="row">
+<h2 class="header">ORGANIZATIONS SENTIMENT</h2>
+<small></small>
+<div class="orgs">
+    <div class="orgs_result">
+    
+<div id="ZXVyb3BlYW4gdW5pb24" class="org_result_sent_container" style="display: ">
+<h3><a href="/search/ukraine-invasion/eyJUeXBlIjoic2VyIiwiVmFsdWVzIjoiczp8cDoxfGZhOm9yZ2FuaXphdGlvbnM9ZXVyb3BlYW4gdW5pb258bzokb3JkZXJieT1zZWFyY2guc2NvcmUoKSBkZXNjLCBkYXRldGltZSBkZXNjIn0=">European Union 🔗</a></h3>
+<div class="">
+<a href="aHR0cHM6Ly9zdGdoZzRodmhuZGUzanhlLmJsb2IuY29yZS53aW5kb3dzLm5ldC9kb2N1bWVudHMvMjAyMi0tMTItMzBfQlJFVV8xNTU2My50eHQ1" class="sent_link"><div class="positive"><span class="sentiment">🙂</span><q>Winterization efforts: The United Nations Development Programme (UNDP) in Ukraine, with financial support from the European Union, transferred <https://www.eeas.europa.eu/delegations/ukraine/thanks-eu-and-undp-university-dormitories-kharkiv-hosting-over-1000-idps_en>  over 270 household appliances to support IDPs from war-torn communities and recently retaken territories who are staying in university dormitories in Kharkiv.</q></div></a>
+<a href="aHR0cHM6Ly9zdGdoZzRodmhuZGUzanhlLmJsb2IuY29yZS53aW5kb3dzLm5ldC9kb2N1bWVudHMvMjAyMi0tMTItMjJfTU9TQ09fODE3NS50eHQ1" class="sent_link"><div class="negative"><span class="sentiment">😡</span><q>Deputy Foreign Minister Sergey Vershinin said that the European Union is trying to hide its involvement in war crimes in Ukraine, and therefore initiated the creation of a special tribunal.</q></div></a>
+</div>
+</div>
+
+
+<div id="dW5pdGVkIG5hdGlvbnM" class="org_result_sent_container" style="display: none">
+<h3><a href="/search/ukraine-invasion/eyJUeXBlIjoic2VyIiwiVmFsdWVzIjoiczp8cDoxfGZhOm9yZ2FuaXphdGlvbnM9dW5pdGVkIG5hdGlvbnN8bzokb3JkZXJieT1zZWFyY2guc2NvcmUoKSBkZXNjLCBkYXRldGltZSBkZXNjIn0=">United Nations 🔗</a></h3>
+<div class="">
+<a href="aHR0cHM6Ly9zdGdoZzRodmhuZGUzanhlLmJsb2IuY29yZS53aW5kb3dzLm5ldC9kb2N1bWVudHMvMjAyMi0tMTItMzBfQlJFVV8xNTU2My50eHQ1" class="sent_link"><div class="positive"><span class="sentiment">🙂</span><q>Winterization efforts: The United Nations Development Programme (UNDP) in Ukraine, with financial support from the European Union, transferred <https://www.eeas.europa.eu/delegations/ukraine/thanks-eu-and-undp-university-dormitories-kharkiv-hosting-over-1000-idps_en>  over 270 household appliances to support IDPs from war-torn communities and recently retaken territories who are staying in university dormitories in Kharkiv.</q></div></a>
+<a href="aHR0cHM6Ly9zdGdoZzRodmhuZGUzanhlLmJsb2IuY29yZS53aW5kb3dzLm5ldC9kb2N1bWVudHMvMjAyMi0tMTItMTNfV1NIRENfNzUzNy50eHQ1" class="sent_link"><div class="negative"><span class="sentiment">😡</span><q>The spokesperson answered that the US will not take a different approach to Ukraine.o   On possible US emergency measures to stop Iran’s cooperation with Russia on drones and advanced technology in breach of the United Nations Security Council 2231:</q></div></a>
+</div>
+</div>
+
+
+<div id="a3JlbWxpbg" class="org_result_sent_container" style="display: none">
+<h3><a href="/search/ukraine-invasion/eyJUeXBlIjoic2VyIiwiVmFsdWVzIjoiczp8cDoxfGZhOm9yZ2FuaXphdGlvbnM9a3JlbWxpbnxvOiRvcmRlcmJ5PXNlYXJjaC5zY29yZSgpIGRlc2MsIGRhdGV0aW1lIGRlc2MifQ==">Kremlin 🔗</a></h3>
+<div class="">
+<a href="aHR0cHM6Ly9zdGdoZzRodmhuZGUzanhlLmJsb2IuY29yZS53aW5kb3dzLm5ldC9kb2N1bWVudHMvMjAyMy0tMDEtMDZfTU9TQ09fODYyMi50eHQ1" class="sent_link"><div class="positive"><span class="sentiment">🙂</span><q>His choice of words clearly highlighted continued Kremlin efforts to portray supporters of the war in Ukraine as true patriots, and war opponents as traitors:It was a year that put many things in their place, and drew a clear line between courage and heroism, on the one hand, and betrayal and cowardice on the other, showed us that there is nothing stronger than love for our near and dear, loyalty to our friends and comrades-in-arms, and devotion to our Fatherland.</q></div></a>
+<a href="aHR0cHM6Ly9zdGdoZzRodmhuZGUzanhlLmJsb2IuY29yZS53aW5kb3dzLm5ldC9kb2N1bWVudHMvMjAyMi0tMTItMjhfS1lJVl85MzgzLnR4dA2" class="sent_link"><div class="negative"><span class="sentiment">😡</span><q>The number of carbon monoxide poisonings has increased due to the careless use of power generators.-        During his visit to Moscow, the IAEA director suggested the Kremlin create a protection zone for the Zaporizhzhia nuclear power plant.-        </q></div></a>
+</div>
+</div>
+
+
+<div id="aWFlYQ" class="org_result_sent_container" style="display: none">
+<h3><a href="/search/ukraine-invasion/eyJUeXBlIjoic2VyIiwiVmFsdWVzIjoiczp8cDoxfGZhOm9yZ2FuaXphdGlvbnM9aWFlYXxvOiRvcmRlcmJ5PXNlYXJjaC5zY29yZSgpIGRlc2MsIGRhdGV0aW1lIGRlc2MifQ==">Iaea 🔗</a></h3>
+<div class="">
+<a href="aHR0cHM6Ly9zdGdoZzRodmhuZGUzanhlLmJsb2IuY29yZS53aW5kb3dzLm5ldC9kb2N1bWVudHMvNWZkNjhlMjcyYTE4NGNmNWIxOGU2OWIzNWEyOWMyZDkudHh00" class="sent_link"><div class="positive"><span class="sentiment">🙂</span><q>We support the International Atomic Energy Agency’s (IAEA) efforts to establish a Safety and Security Zone.</q></div></a>
+<a href="aHR0cHM6Ly9zdGdoZzRodmhuZGUzanhlLmJsb2IuY29yZS53aW5kb3dzLm5ldC9kb2N1bWVudHMvMjAyMi0tMTItMjhfS1lJVl85MzgzLnR4dA2" class="sent_link"><div class="negative"><span class="sentiment">😡</span><q>The number of carbon monoxide poisonings has increased due to the careless use of power generators.-        During his visit to Moscow, the IAEA director suggested the Kremlin create a protection zone for the Zaporizhzhia nuclear power plant.-        </q></div></a>
+</div>
+</div>
+
+
+<div id="bmF0bw" class="org_result_sent_container" style="display: none">
+<h3><a href="/search/ukraine-invasion/eyJUeXBlIjoic2VyIiwiVmFsdWVzIjoiczp8cDoxfGZhOm9yZ2FuaXphdGlvbnM9bmF0b3xvOiRvcmRlcmJ5PXNlYXJjaC5zY29yZSgpIGRlc2MsIGRhdGV0aW1lIGRlc2MifQ==">Nato 🔗</a></h3>
+<div class="">
+<a href="aHR0cHM6Ly9zdGdoZzRodmhuZGUzanhlLmJsb2IuY29yZS53aW5kb3dzLm5ldC9kb2N1bWVudHMvMjAyMi0tMTItMTZfQk5BVE9fODM4My50eHQ1" class="sent_link"><div class="positive"><span class="sentiment">🙂</span><q>A multinational choir of soldiers deployed to NATO’s enhanced Forward Presence in Latvia singing the Ukrainian Carol of the Bells was a moving reminder of what NATO stands for, and feels like a fitting way to wrap up 2022.  </q></div></a>
+<a href="aHR0cHM6Ly9zdGdoZzRodmhuZGUzanhlLmJsb2IuY29yZS53aW5kb3dzLm5ldC9kb2N1bWVudHMvMjAyMi0tMTItMTJfTU9TQ09fMTY1MDkudHh00" class="sent_link"><div class="negative"><span class="sentiment">😡</span><q>He accused the West of destroying the architecture of strategic stability, including by expanding NATO.  </q></div></a>
+</div>
+</div>
+
+
+<div id="aW50ZXJuYXRpb25hbCBhdG9taWMgZW5lcmd5IGFnZW5jeQ" class="org_result_sent_container" style="display: none">
+<h3><a href="/search/ukraine-invasion/eyJUeXBlIjoic2VyIiwiVmFsdWVzIjoiczp8cDoxfGZhOm9yZ2FuaXphdGlvbnM9aW50ZXJuYXRpb25hbCBhdG9taWMgZW5lcmd5IGFnZW5jeXxvOiRvcmRlcmJ5PXNlYXJjaC5zY29yZSgpIGRlc2MsIGRhdGV0aW1lIGRlc2MifQ==">International Atomic Energy Agency 🔗</a></h3>
+<div class="">
+<a href="aHR0cHM6Ly9zdGdoZzRodmhuZGUzanhlLmJsb2IuY29yZS53aW5kb3dzLm5ldC9kb2N1bWVudHMvNWZkNjhlMjcyYTE4NGNmNWIxOGU2OWIzNWEyOWMyZDkudHh00" class="sent_link"><div class="positive"><span class="sentiment">🙂</span><q>We support the International Atomic Energy Agency’s (IAEA) efforts to establish a Safety and Security Zone.</q></div></a>
+
+</div>
+</div>
+
+
+<div id="cmV1dGVycw" class="org_result_sent_container" style="display: none">
+<h3><a href="/search/ukraine-invasion/eyJUeXBlIjoic2VyIiwiVmFsdWVzIjoiczp8cDoxfGZhOm9yZ2FuaXphdGlvbnM9cmV1dGVyc3xvOiRvcmRlcmJ5PXNlYXJjaC5zY29yZSgpIGRlc2MsIGRhdGV0aW1lIGRlc2MifQ==">Reuters 🔗</a></h3>
+<div class="">
+<a href="aHR0cHM6Ly9zdGdoZzRodmhuZGUzanhlLmJsb2IuY29yZS53aW5kb3dzLm5ldC9kb2N1bWVudHMvMjAyMi0tMTItMjNfUFJHVUVfMTczMDgudHh00" class="sent_link"><div class="positive"><span class="sentiment">🙂</span><q>High level visits and engagement•Reuters reported that Czechia, in the final days of its Presidency of the Council of the EU, coordinated a joint demarche by several EU Member States (including the Baltics, Poland and Slovakia) that was delivered to France on December 12, reacting to French President Emmanuel Macron’s public statement of the need to consider how to give guarantees to Russia the day it returns to the negotiating table.</q></div></a>
+<a href="aHR0cHM6Ly9zdGdoZzRodmhuZGUzanhlLmJsb2IuY29yZS53aW5kb3dzLm5ldC9kb2N1bWVudHMvMjAyMy0tMDEtMDZfQk5BVE9fMTU4NjEudHh00" class="sent_link"><div class="negative"><span class="sentiment">😡</span><q>But is it…]*Reuters and AP reported that the US will unveil a new package for Ukraine on Jan 6 which will include 50 Bradley Fighting Vehicles [if you were wondering, these do have tracks, but are definitely not tanks – they certainly do have the ability to destroy Soviet tanks with their M242 Bushmaster chain gun though].</q></div></a>
+</div>
+</div>
+
+
+<div id="cnVzc2lh" class="org_result_sent_container" style="display: none">
+<h3><a href="/search/ukraine-invasion/eyJUeXBlIjoic2VyIiwiVmFsdWVzIjoiczp8cDoxfGZhOm9yZ2FuaXphdGlvbnM9cnVzc2lhfG86JG9yZGVyYnk9c2VhcmNoLnNjb3JlKCkgZGVzYywgZGF0ZXRpbWUgZGVzYyJ9">Russia 🔗</a></h3>
+<div class="">
+<a href="aHR0cHM6Ly9zdGdoZzRodmhuZGUzanhlLmJsb2IuY29yZS53aW5kb3dzLm5ldC9kb2N1bWVudHMvMjAyMi0tMTItMjJfTU9TQ09fODY2OS50eHQ1" class="sent_link"><div class="positive"><span class="sentiment">🙂</span><q>As they say in Russian, по смотрим (We will see).</q></div></a>
+<a href="aHR0cHM6Ly9zdGdoZzRodmhuZGUzanhlLmJsb2IuY29yZS53aW5kb3dzLm5ldC9kb2N1bWVudHMvMjAyMi0tMTItMTJfQk5BVE9fMTYxOTUudHh00" class="sent_link"><div class="negative"><span class="sentiment">😡</span><q>The attack did not go well for the Russians:[1x T-80</q></div></a>
+</div>
+</div>
+
+
+<div id="dHdpdHRlcg" class="org_result_sent_container" style="display: none">
+<h3><a href="/search/ukraine-invasion/eyJUeXBlIjoic2VyIiwiVmFsdWVzIjoiczp8cDoxfGZhOm9yZ2FuaXphdGlvbnM9dHdpdHRlcnxvOiRvcmRlcmJ5PXNlYXJjaC5zY29yZSgpIGRlc2MsIGRhdGV0aW1lIGRlc2MifQ==">Twitter 🔗</a></h3>
+<div class="">
+<a href="aHR0cHM6Ly9zdGdoZzRodmhuZGUzanhlLmJsb2IuY29yZS53aW5kb3dzLm5ldC9kb2N1bWVudHMvMjAyMi0tMTItMjhfQkdSQURfMTc0MDgudHh00" class="sent_link"><div class="positive"><span class="sentiment">🙂</span><q>Serbs in Kosovo feel, and are viewed as, powerless in the face of a hostile, alien, Kosovo state (again, see https://twitter.com/AndricRakic/status/1602585065757736960?s=20&t=Nv87F7KXbDUoMuGghdyGoQ, referenced in Eyes on Belgrade - 363).</q></div></a>
+<a href="aHR0cHM6Ly9zdGdoZzRodmhuZGUzanhlLmJsb2IuY29yZS53aW5kb3dzLm5ldC9kb2N1bWVudHMvMjAyMi0tMTItMTJfQk5BVE9fMTYxOTUudHh00" class="sent_link"><div class="negative"><span class="sentiment">😡</span><q>Kuleba responded to these comments on Twitter by stating that 184 Ukrainian athletes have been killed since the beginning of the war in February, and that “using sports to whitewash war crimes is sickening”.</q></div></a>
+</div>
+</div>
+
+
+<div id="cnVzc2lhbiBtaWxpdGFyeQ" class="org_result_sent_container" style="display: none">
+<h3><a href="/search/ukraine-invasion/eyJUeXBlIjoic2VyIiwiVmFsdWVzIjoiczp8cDoxfGZhOm9yZ2FuaXphdGlvbnM9cnVzc2lhbiBtaWxpdGFyeXxvOiRvcmRlcmJ5PXNlYXJjaC5zY29yZSgpIGRlc2MsIGRhdGV0aW1lIGRlc2MifQ==">Russian Military 🔗</a></h3>
+<div class="">
+<a href="aHR0cHM6Ly9zdGdoZzRodmhuZGUzanhlLmJsb2IuY29yZS53aW5kb3dzLm5ldC9kb2N1bWVudHMvMjAyMi0tMTItMjJfTU9TQ09fODE3NS50eHQ1" class="sent_link"><div class="positive"><span class="sentiment">🙂</span><q>He noted that the Russian military reliably protects the left-bank part of the Kherson region and that all attempts to force the Dnipro from the Ukrainian forces have been stopped.</q></div></a>
+<a href="aHR0cHM6Ly9zdGdoZzRodmhuZGUzanhlLmJsb2IuY29yZS53aW5kb3dzLm5ldC9kb2N1bWVudHMvMjAyMi0tMTItMTZfV1NIRENfNzg2NC50eHQ1" class="sent_link"><div class="negative"><span class="sentiment">😡</span><q>In other words, the BIS could not verify whether or not their products have been used to support the Russian military and its ongoing conflict in Ukraine.</q></div></a>
+</div>
+</div>
+
+
+<div id="ZXVyb3BlYW4gY29tbWlzc2lvbg" class="org_result_sent_container" style="display: none">
+<h3><a href="/search/ukraine-invasion/eyJUeXBlIjoic2VyIiwiVmFsdWVzIjoiczp8cDoxfGZhOm9yZ2FuaXphdGlvbnM9ZXVyb3BlYW4gY29tbWlzc2lvbnxvOiRvcmRlcmJ5PXNlYXJjaC5zY29yZSgpIGRlc2MsIGRhdGV0aW1lIGRlc2MifQ==">European Commission 🔗</a></h3>
+<div class="">
+<a href="aHR0cHM6Ly9zdGdoZzRodmhuZGUzanhlLmJsb2IuY29yZS53aW5kb3dzLm5ldC9kb2N1bWVudHMvMjAyMy0tMDEtMDRfQlJFVV8xNjAwMi50eHQ1" class="sent_link"><div class="positive"><span class="sentiment">🙂</span><q>This will be a formal summit under EU law, meaning that the EU will be represented by European Council President Charles Michel and European Commission Ursula von der Leyen (with no EU-27 national leaders normally present) and will have decision-making authority.3.       </q></div></a>
+<a href="aHR0cHM6Ly9zdGdoZzRodmhuZGUzanhlLmJsb2IuY29yZS53aW5kb3dzLm5ldC9kb2N1bWVudHMvMjAyMi0tMTItMTlfQlJFVV8xNTk3Ni50eHQ1" class="sent_link"><div class="negative"><span class="sentiment">😡</span><q>According to media reports, EU countries are considering a lower cap than initially proposed by the European Commission, namely EUR 187/MWh for a period of three days, compared to EUR 275/MW for two weeks.</q></div></a>
+</div>
+</div>
+
+
+<div id="dGVsZWdyYW0" class="org_result_sent_container" style="display: none">
+<h3><a href="/search/ukraine-invasion/eyJUeXBlIjoic2VyIiwiVmFsdWVzIjoiczp8cDoxfGZhOm9yZ2FuaXphdGlvbnM9dGVsZWdyYW18bzokb3JkZXJieT1zZWFyY2guc2NvcmUoKSBkZXNjLCBkYXRldGltZSBkZXNjIn0=">Telegram 🔗</a></h3>
+<div class="">
+<a href="aHR0cHM6Ly9zdGdoZzRodmhuZGUzanhlLmJsb2IuY29yZS53aW5kb3dzLm5ldC9kb2N1bWVudHMvMjAyMi0tMTItMTlfTU9TQ09fODczNy50eHQ1" class="sent_link"><div class="positive"><span class="sentiment">🙂</span><q>He said the whole world will receive a powerful new source of stable development.·       Deputy Head of Security Council Medvedev speculated on his Telegram channel about Russia already being at war with NATO.</q></div></a>
+<a href="aHR0cHM6Ly9zdGdoZzRodmhuZGUzanhlLmJsb2IuY29yZS53aW5kb3dzLm5ldC9kb2N1bWVudHMvMjAyMi0tMTItMTVfTU9TQ09fODY1NS50eHQ1" class="sent_link"><div class="negative"><span class="sentiment">😡</span><q>Writing on Telegram, he said that “a missile was destroyed by air defense systems and individual pieces landed on the territory of an industrial zone.</q></div></a>
+</div>
+</div>
+
+
+<div id="cnVzc2lhbiBhcm15" class="org_result_sent_container" style="display: none">
+<h3><a href="/search/ukraine-invasion/eyJUeXBlIjoic2VyIiwiVmFsdWVzIjoiczp8cDoxfGZhOm9yZ2FuaXphdGlvbnM9cnVzc2lhbiBhcm15fG86JG9yZGVyYnk9c2VhcmNoLnNjb3JlKCkgZGVzYywgZGF0ZXRpbWUgZGVzYyJ9">Russian Army 🔗</a></h3>
+<div class="">
+<a href="aHR0cHM6Ly9zdGdoZzRodmhuZGUzanhlLmJsb2IuY29yZS53aW5kb3dzLm5ldC9kb2N1bWVudHMvMjAyMi0tMTItMjJfTU9TQ09fODY2OS50eHQ1" class="sent_link"><div class="positive"><span class="sentiment">🙂</span><q>The main aim of the new coordination council is to ensure, among other goals, the production and supply of weapons for the Russian army in the occupied territories of Ukraine.  </q></div></a>
+<a href="aHR0cHM6Ly9zdGdoZzRodmhuZGUzanhlLmJsb2IuY29yZS53aW5kb3dzLm5ldC9kb2N1bWVudHMvMjAyMi0tMTItMjJfTU9TQ09fODY2OS50eHQ1" class="sent_link"><div class="negative"><span class="sentiment">😡</span><q>The Russian army was not prepared to receive a huge intake of mobilized soldiers into its ranks, and the situation has been chaotic with numerous shortcomings.·       </q></div></a>
+</div>
+</div>
+
+
+<div id="cGVudGFnb24" class="org_result_sent_container" style="display: none">
+<h3><a href="/search/ukraine-invasion/eyJUeXBlIjoic2VyIiwiVmFsdWVzIjoiczp8cDoxfGZhOm9yZ2FuaXphdGlvbnM9cGVudGFnb258bzokb3JkZXJieT1zZWFyY2guc2NvcmUoKSBkZXNjLCBkYXRldGltZSBkZXNjIn0=">Pentagon 🔗</a></h3>
+<div class="">
+
+<a href="aHR0cHM6Ly9zdGdoZzRodmhuZGUzanhlLmJsb2IuY29yZS53aW5kb3dzLm5ldC9kb2N1bWVudHMvMjAyMi0tMTItMjlfTU9TQ09fODQzNi50eHQ1" class="sent_link"><div class="negative"><span class="sentiment">😡</span><q>In an interview on Channel One, foreign minister Lavrov said that a “serious change of position” is represented by the words of an anonymous Pentagon official who said that the United States cannot prevent the Ukrainian Armed Forces from trying to attack Crimea.  </q></div></a>
+</div>
+</div>
+
+
+<div id="dWtyYWluaWFuIG1pbGl0YXJ5" class="org_result_sent_container" style="display: none">
+<h3><a href="/search/ukraine-invasion/eyJUeXBlIjoic2VyIiwiVmFsdWVzIjoiczp8cDoxfGZhOm9yZ2FuaXphdGlvbnM9dWtyYWluaWFuIG1pbGl0YXJ5fG86JG9yZGVyYnk9c2VhcmNoLnNjb3JlKCkgZGVzYywgZGF0ZXRpbWUgZGVzYyJ9">Ukrainian Military 🔗</a></h3>
+<div class="">
+<a href="aHR0cHM6Ly9zdGdoZzRodmhuZGUzanhlLmJsb2IuY29yZS53aW5kb3dzLm5ldC9kb2N1bWVudHMvMjAyMi0tMTItMTlfS1lJVl84Njg4LnR4dA2" class="sent_link"><div class="positive"><span class="sentiment">🙂</span><q>From 600 t0 800 Ukrainian troops will be trained per month.-According to the UA Ambassador to the UK, 19,200 Ukrainian military personnel will be trained in the UK in 2023.</q></div></a>
+<a href="aHR0cHM6Ly9zdGdoZzRodmhuZGUzanhlLmJsb2IuY29yZS53aW5kb3dzLm5ldC9kb2N1bWVudHMvMjAyMi0tMTItMTlfS1lJVl84Njg4LnR4dA2" class="sent_link"><div class="negative"><span class="sentiment">😡</span><q>-Explosions were reported in occupied Skadovsk on Thursday.-A hotel where Russian FSB officers had been quartering was blown up in Zaliznyy Port, Kherson oblast.-According to the Ukrainian military intelligence department, the Russian forces are reinforcing the shoreline in the occupied Crimea.</q></div></a>
+</div>
+</div>
+
+
+<div id="Z2F6cHJvbQ" class="org_result_sent_container" style="display: none">
+<h3><a href="/search/ukraine-invasion/eyJUeXBlIjoic2VyIiwiVmFsdWVzIjoiczp8cDoxfGZhOm9yZ2FuaXphdGlvbnM9Z2F6cHJvbXxvOiRvcmRlcmJ5PXNlYXJjaC5zY29yZSgpIGRlc2MsIGRhdGV0aW1lIGRlc2MifQ==">Gazprom 🔗</a></h3>
+<div class="">
+<a href="aHR0cHM6Ly9zdGdoZzRodmhuZGUzanhlLmJsb2IuY29yZS53aW5kb3dzLm5ldC9kb2N1bWVudHMvMjAyMi0tMTItMTVfTU9TQ09fODY1NS50eHQ1" class="sent_link"><div class="positive"><span class="sentiment">🙂</span><q>Gazprom specialists are working on several underground gas storage (UGS) projects: at the ShengShen 2-1 gas deposit (Heilongjiang Province), in the Baijiu aquifers (Jiangsu Province) and in the Chuzhou salt caverns (Jiangsu Province).https://www.interfax.ru/business/876798 <https://www.interfax.ru/business/876798> *         Gazprom plans to expand the Kaluga underground gas storage (UGS) facility and to build a new storage facility in rock salt deposits, the Novomoskovskoye UGS facility (Tula Region) in 2024-2026.</q></div></a>
+<a href="aHR0cHM6Ly9zdGdoZzRodmhuZGUzanhlLmJsb2IuY29yZS53aW5kb3dzLm5ldC9kb2N1bWVudHMvMjAyMi0tMTItMTVfTU9TQ09fODY1NS50eHQ1" class="sent_link"><div class="negative"><span class="sentiment">😡</span><q>According to the results for 11 months of this year, Gazprom's production decreased by 19.4% year-on-year, while the demand for the company's gas on the domestic market decreased by 5.7%.https://www.kommersant.ru/doc/5721006 <https://www.kommersant.ru/doc/5721006> *         </q></div></a>
+</div>
+</div>
+
+
+<div id="ZmFjZWJvb2s" class="org_result_sent_container" style="display: none">
+<h3><a href="/search/ukraine-invasion/eyJUeXBlIjoic2VyIiwiVmFsdWVzIjoiczp8cDoxfGZhOm9yZ2FuaXphdGlvbnM9ZmFjZWJvb2t8bzokb3JkZXJieT1zZWFyY2guc2NvcmUoKSBkZXNjLCBkYXRldGltZSBkZXNjIn0=">Facebook 🔗</a></h3>
+<div class="">
+
+<a href="aHR0cHM6Ly9zdGdoZzRodmhuZGUzanhlLmJsb2IuY29yZS53aW5kb3dzLm5ldC9kb2N1bWVudHMvMjAyMi0tMTItMjlfTU9TQ09fODQzNi50eHQ1" class="sent_link"><div class="negative"><span class="sentiment">😡</span><q>The dismissal notice, which Galyamina posted on Facebook, states that Galyamina was fired because of a ban on “foreign agents carrying out educational or pedagogical activities in state organizations.”</q></div></a>
+</div>
+</div>
+
+
+<div id="dWtyYWluaWFuIGFybXk" class="org_result_sent_container" style="display: none">
+<h3><a href="/search/ukraine-invasion/eyJUeXBlIjoic2VyIiwiVmFsdWVzIjoiczp8cDoxfGZhOm9yZ2FuaXphdGlvbnM9dWtyYWluaWFuIGFybXl8bzokb3JkZXJieT1zZWFyY2guc2NvcmUoKSBkZXNjLCBkYXRldGltZSBkZXNjIn0=">Ukrainian Army 🔗</a></h3>
+<div class="">
+<a href="aHR0cHM6Ly9zdGdoZzRodmhuZGUzanhlLmJsb2IuY29yZS53aW5kb3dzLm5ldC9kb2N1bWVudHMvMjAyMi0tMTItMTlfTU9TQ09fODczNy50eHQ1" class="sent_link"><div class="positive"><span class="sentiment">🙂</span><q>Peace Talks Discussions·       On December 15, Moscow-installed Acting Head of occupied Donetsk, Denis Pushylin, stated that negotiations with Ukraine on new peace agreements were impossible after “the largest strike on Donetsk since 2014” by the Ukrainian army on December 15.Nuclear·       Contacts with the IAEA to prevent the shelling of the Zaporizhzhye nuclear power plant (NPP) are continuing and IAEA Director General Rafael Grossi may soon visit Moscow, Deputy Foreign Minister Sergei Vershinin said on December 16.Military - Telegram channel of the Ministry of Defence·       On December 16, throughout the day, Russian President Vladimir Putin worked at the joint headquarters of the branches of the armed forces involved in the “special military operation”.</q></div></a>
+<a href="aHR0cHM6Ly9zdGdoZzRodmhuZGUzanhlLmJsb2IuY29yZS53aW5kb3dzLm5ldC9kb2N1bWVudHMvMjAyMi0tMTItMjlfTU9TQ09fODQzNi50eHQ1" class="sent_link"><div class="negative"><span class="sentiment">😡</span><q>Military*         Ria Novosti reports remarks by Chechnya’s leader, Ramzan Kadyrov, that the Ukrainian army is demoralised and suffering heavy losses, and is making up for losses with untrained recruits.</q></div></a>
+</div>
+</div>
+
+    </div>
+    <div class="orgs_sent">
+        <table id="orgs"
+            class="charts-css bar hide-data show-labels show-primary-axis show-5-secondary-axes data-spacing-5 multiple stacked ">
+            <caption> Organization </caption>
+            <thead>
+                <tr>
+                    <th scope="col"> Organization </th>
+                    <th scope="col"> Positive </th>
+                    <th scope="col"> Neutral </th>
+                    <th scope="col"> Negative </th>
+                </tr>
+            </thead>
+            <tbody>
+            
+<tr>
+    <th scope="row" id="linkZXVyb3BlYW4gdW5pb24" class="selected"><a href="Javascript:;" onclick="load_sentiment('ZXVyb3BlYW4gdW5pb24');">European Union</a></th>
+    <td style="--size:calc(5/7);"><span class="data"> 5 </span></td>
+    <td style="--size:calc(2/7);"><span class="data"> 2 </span></td>
+</tr>
+
+
+<tr>
+    <th scope="row" id="linkdW5pdGVkIG5hdGlvbnM" class=""><a href="Javascript:;" onclick="load_sentiment('dW5pdGVkIG5hdGlvbnM');">United Nations</a></th>
+    <td style="--size:calc(6/8);"><span class="data"> 6 </span></td>
+    <td style="--size:calc(2/8);"><span class="data"> 2 </span></td>
+</tr>
+
+
+<tr>
+    <th scope="row" id="linka3JlbWxpbg" class=""><a href="Javascript:;" onclick="load_sentiment('a3JlbWxpbg');">Kremlin</a></th>
+    <td style="--size:calc(13/50);"><span class="data"> 13 </span></td>
+    <td style="--size:calc(37/50);"><span class="data"> 37 </span></td>
+</tr>
+
+
+<tr>
+    <th scope="row" id="linkaWFlYQ" class=""><a href="Javascript:;" onclick="load_sentiment('aWFlYQ');">Iaea</a></th>
+    <td style="--size:calc(2/9);"><span class="data"> 2 </span></td>
+    <td style="--size:calc(7/9);"><span class="data"> 7 </span></td>
+</tr>
+
+
+<tr>
+    <th scope="row" id="linkbmF0bw" class=""><a href="Javascript:;" onclick="load_sentiment('bmF0bw');">Nato</a></th>
+    <td style="--size:calc(23/52);"><span class="data"> 23 </span></td>
+    <td style="--size:calc(29/52);"><span class="data"> 29 </span></td>
+</tr>
+
+
+<tr>
+    <th scope="row" id="linkaW50ZXJuYXRpb25hbCBhdG9taWMgZW5lcmd5IGFnZW5jeQ" class=""><a href="Javascript:;" onclick="load_sentiment('aW50ZXJuYXRpb25hbCBhdG9taWMgZW5lcmd5IGFnZW5jeQ');">International Atomic Energy Agency</a></th>
+    <td style="--size:calc(2/2);"><span class="data"> 2 </span></td>
+    <td style="--size:calc(0/2);"><span class="data"> 0 </span></td>
+</tr>
+
+
+<tr>
+    <th scope="row" id="linkcmV1dGVycw" class=""><a href="Javascript:;" onclick="load_sentiment('cmV1dGVycw');">Reuters</a></th>
+    <td style="--size:calc(1/3);"><span class="data"> 1 </span></td>
+    <td style="--size:calc(2/3);"><span class="data"> 2 </span></td>
+</tr>
+
+
+<tr>
+    <th scope="row" id="linkcnVzc2lh" class=""><a href="Javascript:;" onclick="load_sentiment('cnVzc2lh');">Russia</a></th>
+    <td style="--size:calc(293/995);"><span class="data"> 293 </span></td>
+    <td style="--size:calc(702/995);"><span class="data"> 702 </span></td>
+</tr>
+
+
+<tr>
+    <th scope="row" id="linkdHdpdHRlcg" class=""><a href="Javascript:;" onclick="load_sentiment('dHdpdHRlcg');">Twitter</a></th>
+    <td style="--size:calc(1/5);"><span class="data"> 1 </span></td>
+    <td style="--size:calc(4/5);"><span class="data"> 4 </span></td>
+</tr>
+
+
+<tr>
+    <th scope="row" id="linkcnVzc2lhbiBtaWxpdGFyeQ" class=""><a href="Javascript:;" onclick="load_sentiment('cnVzc2lhbiBtaWxpdGFyeQ');">Russian Military</a></th>
+    <td style="--size:calc(3/13);"><span class="data"> 3 </span></td>
+    <td style="--size:calc(10/13);"><span class="data"> 10 </span></td>
+</tr>
+
+
+<tr>
+    <th scope="row" id="linkZXVyb3BlYW4gY29tbWlzc2lvbg" class=""><a href="Javascript:;" onclick="load_sentiment('ZXVyb3BlYW4gY29tbWlzc2lvbg');">European Commission</a></th>
+    <td style="--size:calc(13/17);"><span class="data"> 13 </span></td>
+    <td style="--size:calc(4/17);"><span class="data"> 4 </span></td>
+</tr>
+
+
+<tr>
+    <th scope="row" id="linkdGVsZWdyYW0" class=""><a href="Javascript:;" onclick="load_sentiment('dGVsZWdyYW0');">Telegram</a></th>
+    <td style="--size:calc(2/15);"><span class="data"> 2 </span></td>
+    <td style="--size:calc(13/15);"><span class="data"> 13 </span></td>
+</tr>
+
+
+<tr>
+    <th scope="row" id="linkcnVzc2lhbiBhcm15" class=""><a href="Javascript:;" onclick="load_sentiment('cnVzc2lhbiBhcm15');">Russian Army</a></th>
+    <td style="--size:calc(5/27);"><span class="data"> 5 </span></td>
+    <td style="--size:calc(22/27);"><span class="data"> 22 </span></td>
+</tr>
+
+
+<tr>
+    <th scope="row" id="linkcGVudGFnb24" class=""><a href="Javascript:;" onclick="load_sentiment('cGVudGFnb24');">Pentagon</a></th>
+    <td style="--size:calc(0/1);"><span class="data"> 0 </span></td>
+    <td style="--size:calc(1/1);"><span class="data"> 1 </span></td>
+</tr>
+
+
+<tr>
+    <th scope="row" id="linkdWtyYWluaWFuIG1pbGl0YXJ5" class=""><a href="Javascript:;" onclick="load_sentiment('dWtyYWluaWFuIG1pbGl0YXJ5');">Ukrainian Military</a></th>
+    <td style="--size:calc(2/7);"><span class="data"> 2 </span></td>
+    <td style="--size:calc(5/7);"><span class="data"> 5 </span></td>
+</tr>
+
+
+<tr>
+    <th scope="row" id="linkZ2F6cHJvbQ" class=""><a href="Javascript:;" onclick="load_sentiment('Z2F6cHJvbQ');">Gazprom</a></th>
+    <td style="--size:calc(3/15);"><span class="data"> 3 </span></td>
+    <td style="--size:calc(12/15);"><span class="data"> 12 </span></td>
+</tr>
+
+
+<tr>
+    <th scope="row" id="linkZmFjZWJvb2s" class=""><a href="Javascript:;" onclick="load_sentiment('ZmFjZWJvb2s');">Facebook</a></th>
+    <td style="--size:calc(0/1);"><span class="data"> 0 </span></td>
+    <td style="--size:calc(1/1);"><span class="data"> 1 </span></td>
+</tr>
+
+
+<tr>
+    <th scope="row" id="linkdWtyYWluaWFuIGFybXk" class=""><a href="Javascript:;" onclick="load_sentiment('dWtyYWluaWFuIGFybXk');">Ukrainian Army</a></th>
+    <td style="--size:calc(1/4);"><span class="data"> 1 </span></td>
+    <td style="--size:calc(3/4);"><span class="data"> 3 </span></td>
+</tr>
+
+            </tbody>
+        </table>
+    </div>
+</div>
+</div>
+<div class="row"><h2 class="header">ASIA</h2><div class="docrow">
+<article class="card">
+    <img src="" alt="nothing" style="display: none">
+    <header>
+        <h2 class="document-header"><a href="/record/ukraine-invasion/YUhSMGNITTZMeTl6ZEdkb1p6Um9kbWh1WkdVemFuaGxMbUpzYjJJdVkyOXlaUzUzYVc1a2IzZHpMbTVsZEM5a2IyTjFiV1Z1ZEhNdk1qQXlNeTB0TURFdE1EWmZRVTVMVWtGZk9URTFNUzUwZUhRMQ==">ZEGR1003 : Turkiye and Syria warming relations with first official meeting in a long road towards normalization</a></h2>        
+        <small>2023-01-06</small>
+    </header>  
+    <div class="content">
+        <p>ZEGR1003 : Turkiye and Syria warming relations with first official meeting in a long road towards normalization On 28 December, the Defence Ministers of Turkiye, Syria and Russia held a trilateral meeting in Moscow. This was the first high-level meeting in 11 years, marking progress between Ankara and Damascus, who have been foes since 2011. Turkiye is now planning to hold a meeting of Foreign Ministers with Syria in late January.</p>
+    </div>
+</article>
+<div class="documents">
+<div class="document">
+<small class="date">2022-12-12</small> <a href='/record/ukraine-invasion/YUhSMGNITTZMeTl6ZEdkb1p6Um9kbWh1WkdVemFuaGxMbUpzYjJJdVkyOXlaUzUzYVc1a2IzZHpMbTVsZEM5a2IyTjFiV1Z1ZEhNdk5XWmtOamhsTWpjeVlURTROR05tTldJeE9HVTJPV0l6TldFeU9XTXlaRGt1ZEhoMDA=' class="link">G7 Leaders' Statement</a>
+</div>
+</div></div></div>
+<div class="row"><h2 class="header">OCEANIA</h2><div class="docrow">
+<article class="card">
+    <img src="" alt="nothing" style="display: none">
+    <header>
+        <h2 class="document-header"><a href="/record/ukraine-invasion/YUhSMGNITTZMeTl6ZEdkb1p6Um9kbWh1WkdVemFuaGxMbUpzYjJJdVkyOXlaUzUzYVc1a2IzZHpMbTVsZEM5a2IyTjFiV1Z1ZEhNdk1qQXlNaTB0TVRJdE1qTmZWMHhIVkU1Zk9EVXhOeTUwZUhRMQ==">WLGTN-1640 - New Zealand Update (December 2022)</a></h2>        
+        <small>2022-12-23</small>
+    </header>  
+    <div class="content">
+        <p>1. PM Ardern announces terms of reference for Royal Commission into COVID-19 response On December 5, PM Ardern announced <https://www.beehive.govt.nz/release/royal-commission-draw-lessons-pandemic-response>  a Royal Commission of Inquiry into the NZ Governments health and economic response to COVID-19. Chaired by NZ epidemiologist Tony Blakely, the inquiry will focus on the period February 2020 (which marked NZs first COVID-19 case) until October 2022 (when NZ lifted all travel, vaccination and testing requirements). She expected the inquiry to cost about $NZD15 million, similar to the countrys last such inquiry into the 2019 Christchurch mosque attacks.</p>
+    </div>
+</article>
+<div class="documents">
+<div class="document">
+<small class="date">2022-12-14</small> <a href='/record/ukraine-invasion/YUhSMGNITTZMeTl6ZEdkb1p6Um9kbWh1WkdVemFuaGxMbUpzYjJJdVkyOXlaUzUzYVc1a2IzZHpMbTVsZEM5a2IyTjFiV1Z1ZEhNdk1qQXlNaTB0TVRJdE1UUmZWMHhIVkU1Zk9UQTVNUzUwZUhRMQ==' class="link">WLGTN-1636: Ukrainian President Volodymyr Zelenskyy addresses NZ Parliament; calls for NZ's support on reconstruction efforts</a>
+</div>
+</div></div></div>
+<div class="row"><h2 class="header">AFRICA</h2><div class="docrow">
+<article class="card">
+    <img src="" alt="nothing" style="display: none">
+    <header>
+        <h2 class="document-header"><a href="/record/ukraine-invasion/YUhSMGNITTZMeTl6ZEdkb1p6Um9kbWh1WkdVemFuaGxMbUpzYjJJdVkyOXlaUzUzYVc1a2IzZHpMbTVsZEM5a2IyTjFiV1Z1ZEhNdk1qQXlNeTB0TURFdE1EUmZTMGhTVkUxZk9EYzNPUzUwZUhRMQ==">KHRTM2023-0001: 2022  Not a great year (but some hope for 2023)</a></h2>        
+        <small>2023-01-04</small>
+    </header>  
+    <div class="content">
+        <p>The following have all contributed to making 2022 a year to get through rather than one to celebrate for most people in the Sudan: The continuation of rule by the military after the October 2021 coup; The resignation of the prime minister (with no successor for a year); This report is a summary of the years more notable developments, plus an attempt to look ahead into the year that will be.</p>
+    </div>
+</article>
+<div class="documents">
+<div class="document">
+<small class="date">2022-12-12</small> <a href='/record/ukraine-invasion/YUhSMGNITTZMeTl6ZEdkb1p6Um9kbWh1WkdVemFuaGxMbUpzYjJJdVkyOXlaUzUzYVc1a2IzZHpMbTVsZEM5a2IyTjFiV1Z1ZEhNdk5XWmtOamhsTWpjeVlURTROR05tTldJeE9HVTJPV0l6TldFeU9XTXlaRGt1ZEhoMDA=' class="link">G7 Leaders' Statement</a>
+</div>
+</div></div></div>

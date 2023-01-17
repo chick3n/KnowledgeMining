@@ -31,5 +31,7 @@ namespace KnowledgeMining.Domain.Entities
         public IEnumerable<IndexItemFacet> Facets { get; set; } = Enumerable.Empty<IndexItemFacet>();
         [JsonPropertyName("configuration")]
         public IndexItemConfiguration? Configuration { get; set; }
+        [JsonPropertyName("landing")]
+        public IndexItemLanding? Landing { get; set; }
     }
 }

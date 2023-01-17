@@ -46,8 +46,11 @@
         </MudPaper>
     </MudContainer>
 </MudPaper>
-<MudPaper Height="400px"  Width="100%" Class="d-flex justify-content-end align-items-center" Square="true" Elevation="0">
-
+<MudPaper Width="100%" Class="" Square="true" Elevation="0">
+    @if (string.IsNullOrEmpty(_landingPageContent))
+    {
+        @((MarkupString)_landingPageContent)
+    }
 </MudPaper>
 
 
@@ -59,6 +62,7 @@
 
     private MudTheme Theme = new MudTheme();
     private IndexItem? _indexItem;
+    private string? _landingPageContent;
 
     protected override async Task OnInitializedAsync()
     {
@@ -66,6 +70,9 @@
             throw new ArgumentNullException(nameof(Index));
         var indexResponse = await Mediator.Send(new GetIndexQuery(Index));
         _indexItem = indexResponse.IndexItem;
+        
+        if(!string.IsNullOrEmpty(_indexItem.Landing?.PagePath))
+            _landingPageContent = System.IO.File.ReadAllText(Path.Join("/landings", _indexItem.Landing.PagePath));
     }
 
     private async Task<IEnumerable<string>?> AutoComplete(string value)
