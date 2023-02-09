@@ -6,6 +6,7 @@ using KnowledgeMining.UI.Services.Documents;
 using KnowledgeMining.UI.Services.Links;
 using KnowledgeMining.UI.Services.Metadata;
 using KnowledgeMining.UI.Services.State;
+using MediatR;
 using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.Extensions.Azure;
 using Microsoft.Extensions.FileProviders;
@@ -99,6 +100,13 @@ namespace KnowledgeMining.UI
                     CancellationToken cancellationToken) => 
                 await PreviewFileEndpoint.DownloadInlineFile(fileName, httpClient, cancellationToken))
                .WithName(PreviewFileEndpoint.EndpointName);
+
+            app.MapGet(AzureBlobEndpoint.Route,
+                async (string index, string container, string filename,
+                    IMediator mediator,
+                    CancellationToken cancellationToken) =>
+                await AzureBlobEndpoint.DownloadInlineFile(index, container, filename, mediator, cancellationToken))
+               .WithName(AzureBlobEndpoint.EndpointName);
 
             app.MapGet(DownloadFileEndpoint.Route,
                 async (string fileName,

@@ -1,6 +1,7 @@
 ﻿using KnowledgeMining.Application.Common.Options;
 using KnowledgeMining.Domain.Entities;
 using KnowledgeMining.UI.Api;
+using KnowledgeMining.UI.Models;
 using Microsoft.Extensions.Options;
 
 namespace KnowledgeMining.UI.Services.Links
@@ -38,6 +39,23 @@ namespace KnowledgeMining.UI.Services.Links
             var sourcePath = CleanSourcePath(document.SourcePath);
 
             return GenerateDocumentPreviewUrl(DownloadFileEndpoint.EndpointName, sourcePath);
+        }
+
+        public string GenerateAzureBlobUrl(DocumentMetadata document, AzureBlobConnector azureBlobConnector)
+        {
+            var relativePath = _linker.GetPathByName(AzureBlobEndpoint.EndpointName,
+                values: new { index = azureBlobConnector.Index, container = azureBlobConnector.Container, filename = azureBlobConnector.Filename });
+
+            if (_azureSignalROptions.Enabled)
+            {
+                return relativePath!;
+            }
+            else
+            {
+                var link = new Uri($"{_httpContextAccessor?.HttpContext?.Request.Scheme}{Uri.SchemeDelimiter}{_httpContextAccessor?.HttpContext?.Request.Host}{relativePath}");
+
+                return link.AbsoluteUri;
+            }
         }
 
         public string GenerateDocumentPreviewUrl(DocumentMetadata document)

@@ -11,6 +11,8 @@ using System.Text.Json.Nodes;
 using System.Text.Json;
 using KnowledgeMining.Application.Documents.Queries.SearchDocuments;
 using KnowledgeMining.UI.Services.State;
+using System.Text;
+using KnowledgeMining.UI.Models;
 
 namespace KnowledgeMining.UI.Pages.Record
 {
@@ -40,10 +42,13 @@ namespace KnowledgeMining.UI.Pages.Record
         private IndexItem? _indexItem;
         private string? _textToHighlight;
         private DocumentMetadataWrapper? _moreLikeThis;
+        private AzureBlobConnector? _azureBlobConnector;
 
         private const int LIST_ITEM_VALUE_RECORD = 1;
         private const int LIST_ITEM_VALUE_SOURCE = 3;
         private const int LIST_ITEM_VALUE_METADATA = 4;
+        private readonly string[] INLINE_DOCUMENT_DISPLAY_EXTENSIONS = new string[] { "pdf" };
+        private readonly string[] INLINE_DOCUMENT_DOWNLOAD_EXTENSIONS = new string[] { "docx", "doc", "xlsx", "xls", "msg", "eml" };
 
         protected override async Task OnInitializedAsync()
         {
@@ -106,15 +111,37 @@ namespace KnowledgeMining.UI.Pages.Record
             _documentMetadata = wrapper.Documents().FirstOrDefault();
             _title = wrapper.GetTitle(_documentMetadata) ?? string.Empty;
 
+            // Get file metadata
+            await GetSourceFile();
+
+            _documentMetadataIsLoading = false;
+
+            StateHasChanged();
+        }
+
+        /// <summary>
+        /// Gets the source file content from a storage container in Azure only (field is metadata_storage_path)
+        /// </summary>
+        /// <param name="documentMetadata"></param>
+        /// <returns></returns>
+        private async Task GetSourceFile(bool downloadFile = false)
+        {
             if (_indexItem.Storage != null && _indexItem.Storage.AllowSync && _documentMetadata != null)
             {
+                var sourcePath = GetSourceFilePath(_documentMetadata);
+
+                if (sourcePath == null || !IsAzureStorageBlobUrl(sourcePath))
+                    return;
+
+                var container = GetSourceFileContainer(sourcePath);
+                var filename = GetSourceFileName(sourcePath);
                 var storage = _indexItem.Storage;
-                if (!string.IsNullOrEmpty(storage.Container) && !string.IsNullOrEmpty(storage.Key) && !string.IsNullOrEmpty(_documentMetadata.Name))
+                if (!string.IsNullOrEmpty(storage.Key))
                 {
                     var sourceDocument =
-                        await Mediator.Send(new GetDocumentQuery(_indexItem.Storage.Key, _indexItem.Storage.Container, _documentMetadata.Name));
+                        await Mediator.Send(new GetDocumentQuery(_indexItem.Storage.Key, container, filename));
 
-                    if(sourceDocument.Document.Metadata != null)
+                    if (sourceDocument.Document.Metadata != null)
                     {
                         if (_documentMetadata.ExtensionData == null)
                             _documentMetadata.ExtensionData = new Dictionary<string, JsonElement>();
@@ -122,12 +149,74 @@ namespace KnowledgeMining.UI.Pages.Record
                         foreach (var kvp in sourceDocument.Document.Metadata)
                             _documentMetadata.ExtensionData.TryAdd(kvp.Key, JsonSerializer.SerializeToElement(kvp.Value));
                     }
+
+                    _azureBlobConnector = new AzureBlobConnector(Index, container, filename);
                 }
             }
+        }
 
-            _documentMetadataIsLoading = false;
+        /// <summary>
+        /// Get the metadata_storage_path and decode it if necessary
+        /// </summary>
+        /// <param name="documentMetadata"></param>
+        /// <returns></returns>
+        private string? GetSourceFilePath(DocumentMetadata? documentMetadata)
+        {
+            if (documentMetadata == null || documentMetadata.ExtensionData == null)
+                return null;
 
-            StateHasChanged();
+            if (!documentMetadata.ExtensionData.TryGetValue("metadata_storage_path", out var sourcePathElement))
+                return null;
+
+            var sourcePath = sourcePathElement.GetString();
+
+            if (string.IsNullOrEmpty(sourcePath))
+                return null;
+
+            // handle base64 padding from https://learn.microsoft.com/en-us/azure/search/search-indexer-field-mappings#base64-encoding-options
+            var base64SourcePath = Helpers.Base64Helper.UrlTokenToBase64(sourcePath);
+            return Helpers.Base64Helper.DecodeToString(base64SourcePath);
+        }
+
+        /// <summary>
+        /// Given a URL Azure Blob Resource get the container, folders not supported yet
+        /// </summary>
+        /// <param name="path"></param>
+        /// <returns></returns>
+        private string GetSourceFileContainer(string path)
+        {
+            if (!string.IsNullOrWhiteSpace(path))
+            {
+                var chunks = path.Split('/');
+                if (chunks.Length > 2)
+                    return chunks[chunks.Length - 2];
+            }
+
+            throw new ArgumentException($"Source Path missing container. {path}");
+        }
+
+        /// <summary>
+        /// Given a URL Azure Blob Resource get the file name
+        /// </summary>
+        /// <param name="path"></param>
+        /// <returns></returns>
+        /// <exception cref="ArgumentException"></exception>
+        private string GetSourceFileName(string path)
+        {
+            if (!string.IsNullOrWhiteSpace(path))
+            {
+                var chunks = path.Split('/');
+                if (chunks.Length > 0)
+                    return chunks[chunks.Length - 1];
+            }
+
+            throw new ArgumentException($"Source Path missing filename. {path}");
+        }
+
+        private bool IsAzureStorageBlobUrl(string? path)
+        {
+            return !string.IsNullOrEmpty(path) && 
+                path.Contains(".blob.core.windows.net") && path.StartsWith("https://");
         }
 
         private async Task GetMoreLikeThis()
@@ -211,6 +300,42 @@ namespace KnowledgeMining.UI.Pages.Record
             }
 
             return false;
+        }
+
+        /// <summary>
+        /// Should display content as inline source document (ex: PDF)
+        /// </summary>
+        /// <returns></returns>
+        private bool IsInlineContentType()
+        {
+            return INLINE_DOCUMENT_DISPLAY_EXTENSIONS.Contains(_documentMetadata?.SourceType ?? string.Empty) 
+                && _azureBlobConnector != null;
+        }
+
+        /// <summary>
+        /// Determine if we need to show a download link for the source (ex: Word)
+        /// </summary>
+        /// <returns></returns>
+        private bool ShowDownloadLink()
+        {
+            return INLINE_DOCUMENT_DOWNLOAD_EXTENSIONS.Contains(GetSourceFileExtension())
+                && _azureBlobConnector != null;
+        }
+
+        /// <summary>
+        /// Get the source file extension from the metadata
+        /// </summary>
+        /// <returns></returns>
+        private string GetSourceFileExtension()
+        {
+            if(_documentMetadata == null) return string.Empty;
+            var filename = _documentMetadata.SourcePath ??
+                _documentMetadata.Name ??
+                _documentMetadata.SourceType ??
+                string.Empty;
+
+            var extension = Path.GetExtension(filename);
+            return extension.TrimStart('.');
         }
 
         private async Task AddToCart(string title, string recordId)

@@ -4,11 +4,11 @@ using MediatR;
 
 namespace KnowledgeMining.Application.Documents.Queries.GetDocument
 {
-    public record struct Document(string Name, IDictionary<string, string>? Tags, IDictionary<string, string>? Metadata = null);
+    public record struct Document(string Name, IDictionary<string, string>? Tags, IDictionary<string, string>? Metadata = null, byte[]? rawContent = null);
 
     public readonly record struct GetDocumentResponse(Document Document);
 
-    public readonly record struct GetDocumentQuery(string Key, string Container, string Filename) : IRequest<GetDocumentResponse>;
+    public readonly record struct GetDocumentQuery(string Key, string Container, string Filename, bool downloadContent = false) : IRequest<GetDocumentResponse>;
 
     public class GetDocumentsQueryValidator : AbstractValidator<GetDocumentQuery>
     {
@@ -31,7 +31,7 @@ namespace KnowledgeMining.Application.Documents.Queries.GetDocument
 
         public async Task<GetDocumentResponse> Handle(GetDocumentQuery request, CancellationToken cancellationToken)
         {
-            return await _storageService.GetDocument(request.Key, request.Container, request.Filename, cancellationToken);
+            return await _storageService.GetDocument(request.Key, request.Container, request.Filename, request.downloadContent, cancellationToken);
         }
     }
 }

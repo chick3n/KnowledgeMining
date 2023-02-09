@@ -1,4 +1,5 @@
 ﻿using KnowledgeMining.Domain.Entities;
+using KnowledgeMining.UI.Models;
 
 namespace KnowledgeMining.UI.Services.Links
 {
@@ -6,5 +7,6 @@ namespace KnowledgeMining.UI.Services.Links
     {
         string GenerateDocumentPreviewUrl(DocumentMetadata document);
         string GenerateDocumentDownloadUrl(DocumentMetadata document);
+        string GenerateAzureBlobUrl(DocumentMetadata document, AzureBlobConnector azureBlobConnector);
     }
 }

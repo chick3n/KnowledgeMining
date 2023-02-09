@@ -1,4 +1,5 @@
 ﻿@using KnowledgeMining.Domain.Entities
+@using KnowledgeMining.UI.Models
 @using KnowledgeMining.UI.Services.Links
 @inject ILinkGenerator LinkGenerator;
 
@@ -15,8 +16,9 @@ else
 }
 
 @code {
-    [Parameter]
-    public DocumentMetadata Document { get; set; }
+    [Parameter] public DocumentMetadata Document { get; set; }
+    [Parameter] public AzureBlobConnector? AzureBlobConnector { get; set; } = null;
+
     public string? DocumentUri { get; set; }
 
     private string documentExtention = FileExtensions.UNKNOWN;
@@ -25,9 +27,19 @@ else
 
     protected override void OnParametersSet()
     {
-        DocumentUri = LinkGenerator.GenerateDocumentPreviewUrl(Document);
         documentExtention = Document.SourcePath?.GetFileExtension() ?? Document.Name?.GetFileExtension() ?? string.Empty;
+        DocumentUri = GetLinkerUri(documentExtention);
         contentType = FileExtensions.GetContentTypeForFileExtension(documentExtention);
+    }
+
+    private string GetLinkerUri(string extension)
+    {
+        if(AzureBlobConnector != null)
+        {
+            return LinkGenerator.GenerateAzureBlobUrl(Document, AzureBlobConnector);
+        }
+
+        return LinkGenerator.GenerateDocumentPreviewUrl(Document);        
     }
 
     private bool RenderInline(string extension)

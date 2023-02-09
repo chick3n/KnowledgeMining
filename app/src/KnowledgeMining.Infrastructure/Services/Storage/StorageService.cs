@@ -63,7 +63,10 @@ namespace KnowledgeMining.Infrastructure.Services.Storage
             }
         }
 
-        public async Task<GetDocumentResponse> GetDocument(string key, string container, string filename, CancellationToken cancellationToken)
+        public async Task<GetDocumentResponse> GetDocument(string key, string container, string filename, CancellationToken cancellationToken) =>
+            await GetDocument(key, container, filename, false, cancellationToken);
+
+        public async Task<GetDocumentResponse> GetDocument(string key, string container, string filename, bool downloadContent, CancellationToken cancellationToken)
         {
             object? connectionString = null;
             if(!_storageOptions.ConnectionStrings.TryGetValue(key, out connectionString))
@@ -75,16 +78,25 @@ namespace KnowledgeMining.Infrastructure.Services.Storage
             {
                 var client = GetBlobContainerClient(conn, 
                     container);
-                var blob = client.GetBlobClient(filename);
+                var blobClient = client.GetBlobClient(filename);
 
                 try
                 {
-                    var properties = await blob.GetPropertiesAsync(cancellationToken: cancellationToken);
 
-                    return new GetDocumentResponse
+                    if (!downloadContent)
                     {
-                        Document = new Document(blob.Name, null, properties.Value.Metadata)
-                    };
+                        var properties = await blobClient.GetPropertiesAsync(cancellationToken: cancellationToken);
+                        return new GetDocumentResponse(new Document(blobClient.Name, null, properties.Value.Metadata));
+                    }
+
+                    var blob = await blobClient.DownloadContentAsync(cancellationToken);
+
+                    if(blob != null && !blob.GetRawResponse().IsError)
+                    {
+                        var rawContent = blob.Value.Content.ToArray();
+                        var metadata = blob.Value.Details.Metadata;
+                        return new GetDocumentResponse(new Document(blobClient.Name, null, metadata, rawContent));
+                    }
                 }
                 catch (Azure.RequestFailedException e)
                 {
