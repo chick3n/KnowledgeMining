@@ -113,6 +113,7 @@ namespace KnowledgeMining.UI.Pages.Record
 
             // Get file metadata
             await GetSourceFile();
+            CleanContent();
 
             _documentMetadataIsLoading = false;
 
@@ -303,6 +304,24 @@ namespace KnowledgeMining.UI.Pages.Record
         }
 
         /// <summary>
+        /// Any post processing on the content from a document
+        /// </summary>
+        private void CleanContent()
+        {
+            // Factiva XML feeds come with <ELink tags which refrence external webpages.
+            if(_documentMetadata?.SourceType?.Equals("factiva_xml") ?? false)
+            {
+                var content = _documentMetadata.Content ?? string.Empty;
+
+                content = content.Replace("<ELink ", "<a target=\"blank\" ")
+                    .Replace("</ELink>", "</a>")
+                    .Replace("ref=\"", "href=\"");
+
+                _documentMetadata.Content = content;
+            }
+        }
+
+        /// <summary>
         /// Should display content as inline source document (ex: PDF)
         /// </summary>
         /// <returns></returns>
@@ -320,6 +339,11 @@ namespace KnowledgeMining.UI.Pages.Record
         {
             return INLINE_DOCUMENT_DOWNLOAD_EXTENSIONS.Contains(GetSourceFileExtension())
                 && _azureBlobConnector != null;
+        }
+
+        private bool ShowMarkupContent()
+        {
+            return _documentMetadata?.SourceType?.Equals("factiva_xml") ?? false;
         }
 
         /// <summary>

@@ -94,3 +94,7 @@ a, .btn-link {
     width: 42px;
     height: 42px;
 }
+
+pre.record-content > a {
+    text-decoration: underline;
+}

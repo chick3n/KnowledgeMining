@@ -229,21 +229,29 @@
                             <MudGrid>
                                 <MudItem xs="12" sm="8">
                                     <MudPaper Class="p-2" Elevation="0" Style="border-right: 1px solid #eee; border-radius: 0;">
-                                        <pre style="overflow-x: auto; overflow-y: scroll; white-space: pre-wrap; word-wrap: break-word; ">
-                                            <MudHighlighter Text="@_documentMetadata!.Content" HighlightedText="@_textToHighlight" Style="background-color: darkblue; font-weight:bold; color: white"></MudHighlighter>
+                                        <pre style="overflow-x: auto; overflow-y: scroll; white-space: pre-wrap; word-wrap: break-word; " class="record-content">
+                                            @if(ShowMarkupContent())
+                                            {
+                                                @((MarkupString)_documentMetadata!.Content!)
+                                            }
+                                            else 
+                                            {
+                                                <MudHighlighter Text="@_documentMetadata!.Content" HighlightedText="@_textToHighlight" 
+                                                    Style="background-color: darkblue; font-weight:bold; color: white"></MudHighlighter>
+                                            }
                                         </pre>
                                     </MudPaper>
                                 </MudItem>
                                 <MudItem xs="12" sm="4">
                                     <div class="d-flex flex-column flex-shrink-1" style="position:sticky; top: 70px;">
-                                        <MudTextField T="string" Immediate="true" Placeholder="Search in transcript" 
+                                        <MudTextField T="string" Immediate="true" Placeholder="Search in transcript"  Disabled="@ShowMarkupContent()"
                                             ValueChanged="UpdateTextToHighlight" Variant="Variant.Outlined"></MudTextField>
                                         <MudChipSet SelectedChipChanged="UpdateTextToHighlight" Filter="true" Class="d-flex flex-wrap">
                                             @if (_documentMetadata.KeyPhrases != null)
                                             {
                                                 @foreach (var keyPhrase in _documentMetadata!.KeyPhrases!.Take(5))
                                                 {
-                                                    <MudChip Text="@keyPhrase"></MudChip>
+                                                    <MudChip Text="@keyPhrase" Disabled="@ShowMarkupContent()"></MudChip>
                                                 }
                                             }
                                         </MudChipSet>
