@@ -222,12 +222,19 @@ else
             summary = document.Content ?? string.Empty;
 
         if (string.IsNullOrWhiteSpace(summary))
+            summary = document.MergedContent ?? string.Empty;
+
+        if (string.IsNullOrWhiteSpace(summary))
+            summary = string.Join('\n', document.Text?.Where(x => !string.IsNullOrWhiteSpace(x)) ?? new string[] { });
+
+        if (string.IsNullOrWhiteSpace(summary))
             return NoSummary;
 
         if (summary.Length > SummaryLength)
             summary = summary.Substring(0, SummaryLength-Suffix.Length) + Suffix;
 
         summary = CleanString(summary);
+        summary = Regex.Replace(summary, @"[\r\n]+", "\n");
 
         if (string.IsNullOrWhiteSpace(summary))
             return NoSummary;
