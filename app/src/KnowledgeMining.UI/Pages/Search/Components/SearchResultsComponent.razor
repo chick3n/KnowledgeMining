@@ -192,7 +192,7 @@ else
     private string DocumentPreviewText(DocumentMetadata document)
     {
         var previewText = DocumentHighlightedText(document);
-        if (previewText != null)
+        if (!string.IsNullOrWhiteSpace(previewText))
             return previewText;
         return DocumentSummary(document);
     }
@@ -221,13 +221,18 @@ else
         if (string.IsNullOrWhiteSpace(summary))
             summary = document.Content ?? string.Empty;
 
-        if (string.IsNullOrEmpty(summary))
+        if (string.IsNullOrWhiteSpace(summary))
             return NoSummary;
 
         if (summary.Length > SummaryLength)
             summary = summary.Substring(0, SummaryLength-Suffix.Length) + Suffix;
 
-        return CleanString(summary);
+        summary = CleanString(summary);
+
+        if (string.IsNullOrWhiteSpace(summary))
+            return NoSummary;
+
+        return summary;
     }
 
     private string CleanString(string text)
