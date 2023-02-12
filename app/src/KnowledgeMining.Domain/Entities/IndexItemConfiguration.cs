@@ -14,5 +14,8 @@ namespace KnowledgeMining.Domain.Entities
 
         [JsonPropertyName("display")]
         public IndexConfigurationDisplay? Display { get; set; }
+
+        [JsonPropertyName("orderFacets")]
+        public string[]? OrderFacets { get; set; }
     }
 }

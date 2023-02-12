@@ -20,7 +20,7 @@
 }
 else
 {
-    @foreach (var aggregateFacet in Facets?.OrderBy(x => x.Name) ?? Enumerable.Empty<SummarizedFacet>())
+    @foreach (var aggregateFacet in SortFacets(Facets))
     {
         var selectedAggregateFacets = aggregateFacet.Values?.Where(x => IsSelected(x)).ToList() 
             ?? new List<Facet>();
@@ -140,5 +140,32 @@ else
             }
         }
         return string.Empty;
+    }
+
+    private IEnumerable<SummarizedFacet> SortFacets(IEnumerable<SummarizedFacet>? facets)
+    {
+        if (facets == null)
+            return Enumerable.Empty<SummarizedFacet>();
+
+        var sortedFacets = facets.OrderBy(x => x.Name).ToList();
+
+        if(IndexItem?.Configuration?.OrderFacets != null)
+        {
+            var orderFacets = IndexItem.Configuration.OrderFacets;
+
+            for(var x =0; x<orderFacets.Length && x<sortedFacets.Count; x++)
+            {
+                var facetName = orderFacets[x];
+                var index = sortedFacets.FindIndex(x => x?.Name?.Equals(facetName) ?? false);
+                if(index > -1)
+                {
+                    var facet = sortedFacets[index];
+                    sortedFacets.RemoveAt(index);
+                    sortedFacets.Insert(x, facet);
+                }
+            } 
+        }
+
+        return sortedFacets;
     }
 }
