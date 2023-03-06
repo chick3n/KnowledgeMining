@@ -12,6 +12,9 @@ using Microsoft.Extensions.Azure;
 using Microsoft.Extensions.FileProviders;
 using MudBlazor.Services;
 using System.Text;
+using Microsoft.AspNetCore.Localization;
+using Microsoft.Extensions.Localization;
+using Microsoft.Extensions.Options;
 
 namespace KnowledgeMining.UI
 {
@@ -24,6 +27,9 @@ namespace KnowledgeMining.UI
             builder.WebHost.CaptureStartupErrors(true);
 
             Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
+
+            // Add localization services ----CHECK HERE
+            builder.Services.AddLocalization(options => options.ResourcesPath = "Resources");
 
             // Add services to the container.
             builder.Services.AddApplicationInsightsTelemetry();
@@ -77,6 +83,9 @@ namespace KnowledgeMining.UI
             builder.Services.AddHttpContextAccessor();
 
             var app = builder.Build();
+            ///CHECK HERE
+            var RLopt = app.Services.GetRequiredService<IOptions<RequestLocalizationOptions>>();
+            app.UseRequestLocalization(RLopt.Value);
 
             // Configure the HTTP request pipeline.
             if (!app.Environment.IsDevelopment())
