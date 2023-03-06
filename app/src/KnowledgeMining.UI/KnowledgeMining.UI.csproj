@@ -45,6 +45,15 @@
 	  <ProjectReference Include="..\KnowledgeMining.Infrastructure\KnowledgeMining.Infrastructure.csproj" />
 	</ItemGroup>
 
+	<ItemGroup>
+	  <EmbeddedResource Update="Resources\Resource.fr.resx">
+	    <Generator>PublicResXFileCodeGenerator</Generator>
+	  </EmbeddedResource>
+	  <EmbeddedResource Update="Resources\Resource.resx">
+	    <Generator></Generator>
+	  </EmbeddedResource>
+	</ItemGroup>
+
 	<Target Name="DebugEnsureNodeEnv" BeforeTargets="Build">
 		<!-- Ensure Node.js is installed -->
 		<Exec Command="node --version" ContinueOnError="true">

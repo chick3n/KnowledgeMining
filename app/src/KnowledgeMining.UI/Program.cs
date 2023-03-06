@@ -15,6 +15,7 @@ using System.Text;
 using Microsoft.AspNetCore.Localization;
 using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Options;
+using System.Globalization;
 
 namespace KnowledgeMining.UI
 {
@@ -70,6 +71,18 @@ namespace KnowledgeMining.UI
             builder.Services.Configure<HostOptions>(opt =>
             {
                 opt.BackgroundServiceExceptionBehavior = BackgroundServiceExceptionBehavior.Ignore;
+            });
+
+            builder.Services.Configure<RequestLocalizationOptions>(options =>
+            {
+                var supportedCultures = new[]
+                {
+                    new CultureInfo("en"),
+                    new CultureInfo("fr"),
+                };
+                options.DefaultRequestCulture = new RequestCulture("en");
+                options.SupportedCultures = supportedCultures;
+                options.SupportedUICultures = supportedCultures;
             });
 
             builder.Services.AddApplicationServices(builder.Configuration);
