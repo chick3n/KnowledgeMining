@@ -117,7 +117,22 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="Test123" xml:space="preserve">
-    <value>DocCracker Test</value>
+  <data name="clear" xml:space="preserve">
+    <value>Clear Filters</value>
+  </data>
+  <data name="DocCracker" xml:space="preserve">
+    <value>DocCracker</value>
+  </data>
+  <data name="English" xml:space="preserve">
+    <value>English</value>
+  </data>
+  <data name="Français" xml:space="preserve">
+    <value>Français</value>
+  </data>
+  <data name="search" xml:space="preserve">
+    <value>Search</value>
+  </data>
+  <data name="WhatSearch" xml:space="preserve">
+    <value>What are you searching for today?</value>
   </data>
 </root>

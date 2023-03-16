@@ -1,12 +1,14 @@
 ﻿@page "/search/{Index}/{Hash?}"
 
+@inject IStringLocalizer<SharedResources> Localizer
+
 <style>
     .hide-input > .mud-input-control {
         display: none;
     }
 </style>
 
-<PageTitle>Search</PageTitle>
+<PageTitle>@Localizer["search"]</PageTitle>
 
 <MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="mt-4">
     <MudGrid>
@@ -45,7 +47,7 @@
                 <MudButton Disabled="@DisableClearFilter()"
                     StartIcon="@Icons.Filled.Clear"
                     Color="Color.Error"
-                    OnClick="ClearSearch">Clear Filters</MudButton>
+                           OnClick="ClearSearch">@Localizer["clear"]</MudButton>
             </MudToolBar>
         </MudItem>
         <MudItem xs="12">

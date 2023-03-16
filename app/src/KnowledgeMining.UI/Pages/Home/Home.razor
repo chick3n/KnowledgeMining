@@ -8,7 +8,7 @@
 @using KnowledgeMining.Application.Documents.Queries.GetIndex
 @using KnowledgeMining.Domain.Entities
 
-<PageTitle>Home</PageTitle>
+<PageTitle>@Localizer["home"]</PageTitle>
 
 <style>
     .justify-title {
@@ -25,7 +25,7 @@
 <MudPaper Height="400px" Width="100%" Class="mud-theme-info d-flex align-center" Square="true" Elevation="0">
     <MudContainer MaxWidth="MaxWidth.Small">
         <div class="justify-title">
-            @Localizer["Test123"]
+            @Localizer["DocCracker"]
         </div>
         @if(_indexItem != null) {
             <div style="width:100%">
@@ -33,7 +33,7 @@
             </div>
         }
         <MudPaper Style="@($"background: {Theme.Palette.White}")" Elevation="1">
-            <MudAutocomplete T="string" Label="What are you searching for today?" @bind-Value="searchQuery" SearchFunc="@AutoComplete"
+            <MudAutocomplete T="string" Label=@Localizer["WhatSearch"] @bind-Value="searchQuery" SearchFunc="@AutoComplete"
                              ResetValueOnEmptyText="true"
                              CoerceText="true"
                              CoerceValue="true"

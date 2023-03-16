@@ -4,19 +4,21 @@
 @using MediatR
 @using Microsoft.AspNetCore.Hosting;
 @using Microsoft.Extensions.Hosting;
+@using System.Globalization
 
-
+@inject IJSRuntime JSRuntime
 @inject NavigationManager NavigationManager;
 @inject IMediator Mediator;
 @inject DocumentCartService CartService;
 @inject IWebHostEnvironment HostEnvironment;
-
+@inject IStringLocalizer<SharedResources> Localizer
 
 <MudAppBar Style="@($"color: {Theme.Palette.Black};background: {Theme.Palette.White}")" Elevation="1">
     <MudStack Spacing="4" Row="true">
         <MudImage Src="@_logoPath" Height="25" Elevation="0" onclick="@(() => NavigateToHomePage())" />
         <MudButton Variant="Variant.Text" Href="@($"/search/{IndexName}/")" Target="_self">Search</MudButton>
         @*<MudButton Variant="Variant.Text" OnClick="@NavigateToDocumentsPage">Documents</MudButton>*@
+
         @if(indexNavigationItems != null)
         {
             foreach(var nav in indexNavigationItems)
@@ -47,6 +49,20 @@
     @if (!HostEnvironment.IsProduction())
     {
         <MudSpacer />
+
+        var current_culture = System.Threading.Thread.CurrentThread.CurrentCulture.Name;
+
+
+         @if (current_culture.StartsWith("en", StringComparison.InvariantCultureIgnoreCase))
+         {
+            <Button @onclick="toFrench">@Localizer["Français"]</Button>
+         }
+         else if (current_culture.StartsWith("fr", StringComparison.InvariantCultureIgnoreCase))
+         {
+            <Button @onclick="toEnglish">@Localizer["English"]</Button>
+         }
+
+
         <MudBadge Content="@(_cartCount ?? 0)" Color="Color.Primary" Overlap="true" Bordered="true" Class="mx-6 my-4">
             <MudButtonGroup Color="Color.Dark" Variant="Variant.Outlined">
                 <MudIconButton Icon="@Icons.Filled.List" Title="Jobs" Href="@($"/jobs/{IndexName}")" />
@@ -58,8 +74,8 @@
 </MudAppBar>
 
 @code {
-    [CascadingParameter]
-    public RouteData? RouteData { get; set; }
+        [CascadingParameter]
+        public RouteData? RouteData { get; set; }
 
     private Dictionary<string, List<IndexNavigationItem>>? indexNavigationItems;
     private string? IndexName { get; set; }
@@ -115,6 +131,38 @@
         {
             _cartCount = cartItems?.Count;
             StateHasChanged();
+        }
+    }
+
+    CultureInfo[] cultures = new[]
+    {
+        new CultureInfo("en"),
+        new CultureInfo("fr")
+    };
+
+    void toFrench()
+    {
+        Culture = cultures[1];
+    }
+
+    void toEnglish()
+    {
+        Culture = cultures[0];
+    }
+
+    CultureInfo Culture
+    {
+        get => CultureInfo.CurrentCulture;
+
+        set
+        {
+            if (CultureInfo.CurrentCulture != value)
+            {   
+                Thread.CurrentThread.CurrentCulture = value;
+                Thread.CurrentThread.CurrentUICulture = value;
+                CultureInfo.DefaultThreadCurrentCulture = value;
+                CultureInfo.DefaultThreadCurrentUICulture = value;
+            }
         }
     }
 
