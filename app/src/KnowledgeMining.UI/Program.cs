@@ -31,6 +31,7 @@ namespace KnowledgeMining.UI
 
             // Add localization services ----CHECK HERE
             builder.Services.AddLocalization(options => options.ResourcesPath = "Resources");
+            builder.Services.AddControllers();
 
             // Add services to the container.
             builder.Services.AddApplicationInsightsTelemetry();
@@ -116,6 +117,7 @@ namespace KnowledgeMining.UI
 
             app.UseCookiePolicy();
 
+            app.MapControllers();
             app.MapGet(PreviewFileEndpoint.Route, 
                 async (string fileName,
                     IHttpClientFactory httpClient,

@@ -57,7 +57,7 @@
          {
             <Button @onclick="toFrench">@Localizer["Français"]</Button>
          }
-         else if (current_culture.StartsWith("fr", StringComparison.InvariantCultureIgnoreCase))
+         else
          {
             <Button @onclick="toEnglish">@Localizer["English"]</Button>
          }
@@ -158,10 +158,14 @@
         {
             if (CultureInfo.CurrentCulture != value)
             {   
-                Thread.CurrentThread.CurrentCulture = value;
-                Thread.CurrentThread.CurrentUICulture = value;
-                CultureInfo.DefaultThreadCurrentCulture = value;
-                CultureInfo.DefaultThreadCurrentUICulture = value;
+                var uri = new Uri(NavigationManager.Uri)
+                        .GetComponents(UriComponents.PathAndQuery, UriFormat.Unescaped);
+                var cultureEscaped = Uri.EscapeDataString(value.Name);
+                var uriEscaped = Uri.EscapeDataString(uri);
+
+                NavigationManager.NavigateTo(
+                    $"Culture/Set?culture={cultureEscaped}&redirectUri={uriEscaped}",
+                    forceLoad: true);
             }
         }
     }
