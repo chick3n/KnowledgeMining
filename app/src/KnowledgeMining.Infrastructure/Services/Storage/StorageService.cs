@@ -309,7 +309,7 @@ namespace KnowledgeMining.Infrastructure.Services.Storage
         {
             if (string.IsNullOrEmpty(currentName) || string.IsNullOrEmpty(newName))
             {
-                _logger.LogInformation("One or more arguments were not provided.");
+                _logger.LogWarning("One or more arguments were not provided.");
                 return false;
             }
 
@@ -324,18 +324,19 @@ namespace KnowledgeMining.Infrastructure.Services.Storage
 
             var destinationBlob = container.GetBlobClient(newName);
 
-            await destinationBlob.StartCopyFromUriAsync(new Uri(srcBlob.Uri.ToString()), cancellationToken: cancellationToken);
+            var copyOperation = await destinationBlob.StartCopyFromUriAsync(new Uri(srcBlob.Uri.ToString()), cancellationToken: cancellationToken);
 
             var destBlobProperties = destinationBlob.GetPropertiesAsync(cancellationToken: cancellationToken);
 
             var timeoutCounter = 0;
+
             while (destBlobProperties.Result.Value.BlobCopyStatus == CopyStatus.Pending && timeoutCounter < 100)
             {
                 timeoutCounter++;
                 await Task.Delay(100, cancellationToken);
             }
 
-            if (destBlobProperties.Result.Value.BlobCopyStatus == CopyStatus.Success && timeoutCounter < 100)
+            if (destBlobProperties.Result.Value.BlobCopyStatus == CopyStatus.Success)
             {
                 await srcBlob.DeleteAsync(DeleteSnapshotsOption.IncludeSnapshots, cancellationToken: cancellationToken);
                 return true;
@@ -343,6 +344,45 @@ namespace KnowledgeMining.Infrastructure.Services.Storage
             else
             {
                 _logger.LogWarning("Blob {Name} could not be renamed.", currentName);
+                await destinationBlob.AbortCopyFromUriAsync(copyOperation.Id, cancellationToken: cancellationToken);
+                return false;
+            }
+        }
+
+        public async Task<bool> MoveDocument(string srcContainer, string blobName, string destContainer, CancellationToken cancellationToken)
+        {
+            if (string.IsNullOrEmpty(srcContainer) || string.IsNullOrEmpty(blobName) || string.IsNullOrEmpty(destContainer))
+            {
+                _logger.LogWarning("One or more arguments were not provided.");
+                return false;
+            }
+
+            var sourceContainer = GetBlobContainerClient(srcContainer);
+            var srcBlob = sourceContainer.GetBlobClient(blobName);
+
+            var destinationContainer = GetBlobContainerClient(destContainer);
+            var destBlob = destinationContainer.GetBlobClient(blobName);
+
+            var copyOperation = await destBlob.StartCopyFromUriAsync(new Uri(srcBlob.Uri.ToString()), cancellationToken: cancellationToken);
+
+            var destBlobProperties = destBlob.GetPropertiesAsync();
+
+            var timeoutCounter = 0;
+            while (destBlobProperties.Result.Value.BlobCopyStatus == CopyStatus.Pending)
+            {
+                timeoutCounter++;
+                await Task.Delay(100, cancellationToken);
+            }
+
+            if (destBlobProperties.Result.Value.BlobCopyStatus == CopyStatus.Success)
+            {
+                await srcBlob.DeleteAsync(DeleteSnapshotsOption.IncludeSnapshots, cancellationToken: cancellationToken);
+                return true;
+            }
+            else
+            {
+                _logger.LogWarning("Blob {Name} could not be moved.", blobName);
+                await destBlob.AbortCopyFromUriAsync(copyOperation.Id, cancellationToken: cancellationToken);
                 return false;
             }
         }
