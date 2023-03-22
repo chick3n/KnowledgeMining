@@ -12,6 +12,8 @@ using Document = KnowledgeMining.Application.Documents.Queries.GetDocument.Docum
 using SearchDocument = KnowledgeMining.Application.Documents.Queries.GetDocuments.Document;
 using UploadDocument = KnowledgeMining.Application.Documents.Commands.UploadDocument.Document;
 using KnowledgeMining.Application.Documents.Queries.GetDocument;
+using System.ComponentModel;
+using Azure.Storage.Blobs.Specialized;
 
 namespace KnowledgeMining.Infrastructure.Services.Storage
 {
@@ -301,6 +303,48 @@ namespace KnowledgeMining.Infrastructure.Services.Storage
         {
             var svc = new BlobServiceClient(connectionString);
             return svc.GetBlobContainerClient(container);
+        }
+
+        public async Task<bool> RenameDocument(string currentName, string newName, CancellationToken cancellationToken)
+        {
+            if (string.IsNullOrEmpty(currentName) || string.IsNullOrEmpty(newName))
+            {
+                _logger.LogInformation("One or more arguments were not provided.");
+                return false;
+            }
+
+            var container = GetBlobContainerClient();
+            var srcBlob = container.GetBlobClient(currentName);
+
+            if (!await srcBlob.ExistsAsync(cancellationToken))
+            {
+                _logger.LogWarning("Blob {Name} does not exist", currentName);
+                return false;
+            }
+
+            var destinationBlob = container.GetBlobClient(newName);
+
+            await destinationBlob.StartCopyFromUriAsync(new Uri(srcBlob.Uri.ToString()), cancellationToken: cancellationToken);
+
+            var destBlobProperties = destinationBlob.GetPropertiesAsync(cancellationToken: cancellationToken);
+
+            var timeoutCounter = 0;
+            while (destBlobProperties.Result.Value.BlobCopyStatus == CopyStatus.Pending && timeoutCounter < 100)
+            {
+                timeoutCounter++;
+                await Task.Delay(100, cancellationToken);
+            }
+
+            if (destBlobProperties.Result.Value.BlobCopyStatus == CopyStatus.Success && timeoutCounter < 100)
+            {
+                await srcBlob.DeleteAsync(DeleteSnapshotsOption.IncludeSnapshots, cancellationToken: cancellationToken);
+                return true;
+            }
+            else
+            {
+                _logger.LogWarning("Blob {Name} could not be renamed.", currentName);
+                return false;
+            }
         }
     }
 }
