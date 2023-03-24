@@ -8,7 +8,7 @@ namespace KnowledgeMining.Application.Documents.Queries.GetDocuments
 
     public readonly record struct GetDocumentsResponse(IEnumerable<Document> Documents, string? NextPage);
 
-    public readonly record struct GetDocumentsQuery(string container, string? SearchPrefix, int PageSize, string? ContinuationToken) : IRequest<GetDocumentsResponse>;
+    public readonly record struct GetDocumentsQuery(string container, string? SearchPrefix, int PageSize, string? ContinuationToken, string? key = null) : IRequest<GetDocumentsResponse>;
 
     public class GetDocumentsQueryValidator : AbstractValidator<GetDocumentsQuery>
     {
@@ -29,7 +29,15 @@ namespace KnowledgeMining.Application.Documents.Queries.GetDocuments
 
         public async Task<GetDocumentsResponse> Handle(GetDocumentsQuery request, CancellationToken cancellationToken)
         {
-            return await _storageService.GetDocuments(request.container, request.SearchPrefix, request.PageSize, request.ContinuationToken, cancellationToken);
+            if (request.key == null)
+            {
+                return await _storageService.GetDocuments(request.container, request.SearchPrefix, request.PageSize, request.ContinuationToken, cancellationToken);
+            }
+            else
+            {
+                return await _storageService.GetDocuments(request.key, request.container, request.SearchPrefix, request.PageSize, request.ContinuationToken, cancellationToken);
+            }
+            
         }
     }
 }

@@ -1,0 +1,61 @@
+﻿@page "/{Index}/admin/"
+@using KnowledgeMining.UI.Pages.Admin.Components
+@using Microsoft.AspNetCore.Hosting
+@using Microsoft.Extensions.Hosting
+@using KnowledgeMining.UI.Services.Links
+
+@inject ILinkGenerator LinkGenerator;
+@inject IWebHostEnvironment HostEnvironment
+
+<style>
+    .record_divider {
+        margin-bottom: 20px;
+    }
+    .record_title {
+        padding-bottom: 10px;
+    }
+    .document-title-overflow {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    .mudbutton-text-left {
+        justify-content: normal !important;
+        text-transform: none !important;
+    }
+    .mudbutton-text-left > span {
+        text-align: left;
+    }
+    .header {
+        text-align: center;
+    }
+</style>
+
+<PageTitle>Admin - Error Correction</PageTitle>
+<MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="mt-4">
+   <h1 class="header">Test Header</h1>
+   <table>
+       <tr>
+           <th>Error File Name</th>
+           <th>Error Codes</th>
+       </tr>
+        @if (_documentListIsLoading)
+        {
+            <div class="record_divider">
+                <MudSkeleton Animation="Animation.Wave" SkeletonType="SkeletonType.Rectangle" Height="100p" />
+            </div>
+        }
+        else
+        {
+            @foreach (var document in _errorDocuments)
+            {
+                <tr>
+                    <td>@document.Name</td>
+                    <td>@document.</td>
+                </tr>
+
+            }
+        }
+   </table>
+
+</MudContainer>

@@ -65,6 +65,41 @@ namespace KnowledgeMining.Infrastructure.Services.Storage
             }
         }
 
+        public async Task<GetDocumentsResponse> GetDocuments(string key, string container, string? searchPrefix, int pageSize, string? continuationToken, CancellationToken cancellationToken)
+        {
+            searchPrefix ??= string.Empty;
+            pageSize = pageSize is > 0 and <= MAX_ITEMS_PER_REQUEST ? pageSize : DEFAULT_PAGE_SIZE;
+
+            object? connectionString = null;
+            if (!_storageOptions.ConnectionStrings.TryGetValue(key, out connectionString))
+                _logger.LogWarning("Connection string for {Key} does not exist.", key);
+
+            string conn = connectionString?.ToString() ?? string.Empty;
+
+            var pages = GetBlobContainerClient(conn, container)
+                            .GetBlobsAsync(traits: BlobTraits.Metadata | BlobTraits.Tags, prefix: searchPrefix, cancellationToken: cancellationToken)
+                            .AsPages(continuationToken, pageSize);
+
+            var iterator = pages.GetAsyncEnumerator(cancellationToken);
+
+            try
+            {
+                await iterator.MoveNextAsync();
+
+                var page = iterator.Current;
+
+                return new GetDocumentsResponse()
+                {
+                    Documents = page?.Values?.Select(b => new SearchDocument(b.Name, b.Tags, b.Metadata)) ?? Enumerable.Empty<SearchDocument>(),
+                    NextPage = page?.ContinuationToken
+                };
+            }
+            finally
+            {
+                await iterator.DisposeAsync();
+            }
+        }
+
         public async Task<GetDocumentResponse> GetDocument(string key, string container, string filename, CancellationToken cancellationToken) =>
             await GetDocument(key, container, filename, false, cancellationToken);
 
