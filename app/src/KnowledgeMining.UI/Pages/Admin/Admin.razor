@@ -7,55 +7,58 @@
 @inject ILinkGenerator LinkGenerator;
 @inject IWebHostEnvironment HostEnvironment
 
+@code {
+    [Parameter]
+    public string NavigateTo { get; set; }
+}
 <style>
-    .record_divider {
-        margin-bottom: 20px;
+    .mudcard {
+        margin-bottom: 10px;
     }
-    .record_title {
-        padding-bottom: 10px;
+    .mudcard:hover{
+        background-color: rgba(128, 128, 128, 0.5);
     }
-    .document-title-overflow {
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-    }
-    .mudbutton-text-left {
-        justify-content: normal !important;
-        text-transform: none !important;
-    }
-    .mudbutton-text-left > span {
-        text-align: left;
-    }
-    .header {
+    .header, .subheader-text {
         text-align: center;
+    }
+    li {
+        margin: 0 0 5px 0;
+        list-style-type: circle;
+    }
+    ul {
+        width: 50%;
+        margin: 0 auto 25px auto;
+        padding: 10px 10px 10px 25px;
+        border: solid 1px grey;
+
+        border-radius: 10px;
+        box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2);
+    }
+    li > a {
+        color: black;
+        text-decoration: none !important;
     }
 </style>
 
 <PageTitle>Admin - Error Correction</PageTitle>
 <MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="mt-4">
-   <h1 class="header">Test Header</h1>
-   <table>
-       <tr>
-           <th>Error File Name</th>
-           <th>Error Codes</th>
-       </tr>
-        @if (_documentListIsLoading)
-        {
-            <div class="record_divider">
-                <MudSkeleton Animation="Animation.Wave" SkeletonType="SkeletonType.Rectangle" Height="100p" />
-            </div>
-        }
-        else
-        {
+   <h1 class="header">Flagged Documents</h1>
+   <p class="subheader-text">Documents flagged with errors during injestion.</p>
+   @if (_documentListIsLoading)
+    {
+        <div class="record_divider">
+            <MudSkeleton Animation="Animation.Wave" SkeletonType="SkeletonType.Rectangle" Height="100p" />
+        </div>
+    }
+    else
+    {
+        <ul>
             @foreach (var document in _errorDocuments)
             {
-                <tr>
-                    <td>@document.Name</td>
-                    <td>@document.</td>
-                </tr>
-
+                <li>
+                    <a href="@($"/{Index}/admin/{NavigateTo}{document.Name}")">@document.Name</a>
+                </li>
             }
-        }
-   </table>
-
+        </ul>
+    }
 </MudContainer>
