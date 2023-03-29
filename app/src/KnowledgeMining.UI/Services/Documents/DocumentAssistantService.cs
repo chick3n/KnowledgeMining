@@ -8,11 +8,13 @@ namespace KnowledgeMining.UI.Services.Documents
     {
         private readonly IHttpClientFactory _httpClientFactory;
         private readonly AssistantOptions _assistantOptions;
+        private readonly ILogger _logger;
 
-        public DocumentAssistantService(IHttpClientFactory httpClientFactory, IOptions<AssistantOptions> assistantOptions)
+        public DocumentAssistantService(IHttpClientFactory httpClientFactory, IOptions<AssistantOptions> assistantOptions, ILogger<DocumentAssistantService> logger)
         {
             _httpClientFactory = httpClientFactory;
             _assistantOptions = assistantOptions.Value;
+            _logger = logger;
         }
 
         public bool CanAssist() => _assistantOptions != null && _assistantOptions.BaseUri != null;
@@ -48,11 +50,18 @@ namespace KnowledgeMining.UI.Services.Documents
             var client = _httpClientFactory.CreateClient(AssistantOptions.Name);
             client.BaseAddress = new Uri(_assistantOptions!.BaseUri!);
 
-            var response = await client.PostAsJsonAsync("prompt", request);
-
-            if (response.StatusCode == System.Net.HttpStatusCode.OK)
+            try
             {
-                return await response.Content.ReadFromJsonAsync<GptIndexerPromptResponse>();                
+                var response = await client.PostAsJsonAsync("prompt", request);
+
+                if (response.StatusCode == System.Net.HttpStatusCode.OK)
+                {
+                    return await response.Content.ReadFromJsonAsync<GptIndexerPromptResponse>();
+                }
+            }
+            catch(Exception ex)
+            {
+                _logger.LogCritical(ex, "Assistant failed with {payload}", request);
             }
 
             return null;

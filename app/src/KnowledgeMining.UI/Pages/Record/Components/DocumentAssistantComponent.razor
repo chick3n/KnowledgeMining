@@ -65,7 +65,7 @@
     {
         if (firstRender)
         {
-            chat.Add(new Tuple<responseType, string>(responseType.ai, GetIntroResponse()));
+            AddResponseToChat(responseType.ai, GetIntroResponse());
         }
     }
 
@@ -115,8 +115,7 @@
 
     private void PromptAssistantGenericFailure()
     {
-        waitingForResponse = true;
-        chat.Add(new Tuple<responseType, string>(responseType.ai, "Something went wrong, refresh the page to try again."));
+        AddResponseToChat(responseType.ai, "Something went wrong, refresh the page to try again.", false);
     }
 
     private async Task PromptAssistant(string query)
@@ -140,7 +139,13 @@
             return;
         }
 
-        chat.Add(new Tuple<responseType, string>(responseType.ai, response));
-        waitingForResponse = false;        
+        AddResponseToChat(responseType.ai, response);
+    }
+
+    private void AddResponseToChat(responseType rtype, string message, bool acceptMoreResponses = true)
+    {
+        chat.Add(new Tuple<responseType, string>(rtype, message));
+        waitingForResponse = !acceptMoreResponses;  
+        StateHasChanged();
     }
 }
