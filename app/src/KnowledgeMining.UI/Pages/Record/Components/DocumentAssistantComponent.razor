@@ -1,0 +1,146 @@
+﻿@using KnowledgeMining.Domain.Entities
+@using KnowledgeMining.UI.Models
+@using System.Text.Json.Serialization
+@using KnowledgeMining.UI.Services.Documents
+
+<MudExpansionPanels>
+    <MudExpansionPanel Text="Virtual Assistant" 
+        IsInitiallyExpanded="CanAssit()" Disabled="!CanAssit()">
+        <div>
+            @foreach(var response in chat)
+            {
+
+                if(response.Item1 == responseType.human)
+                {
+                    <MudField Variant="Variant.Outlined"
+                        Style="text-align:right"
+                        >@response.Item2</MudField>
+                }
+                else
+                {
+                    <MudField Variant="Variant.Outlined"
+                        Style="background-color:#fafafa"
+                        Label="Assistant"
+                        >@response.Item2</MudField>
+                }
+
+                
+            }
+            @if(waitingForResponse) {
+                <MudSkeleton SkeletonType="SkeletonType.Text" Height="40px" />
+            }
+        </div>
+
+        <MudTextField  @bind-Value="Prompt" 
+            Disabled="waitingForResponse"
+            Variant="Variant.Text" 
+            Adornment="Adornment.End" 
+            AdornmentIcon="@Icons.Material.Filled.Chat" 
+            OnKeyUp="PromptIfKeyPressed"
+            AdornmentColor="Color.Secondary"
+            OnAdornmentClick="PromptClicked" />
+    </MudExpansionPanel>
+</MudExpansionPanels>
+
+
+
+<hr />
+
+@code {
+    [Parameter] public DocumentMetadata? Document { get; set; }
+    [Inject]    public DocumentAssistantService? DocumentAssistantService { get; set; }
+
+
+    public string? Prompt { get; set; }
+
+    private enum responseType {
+        ai,
+        human
+    };
+
+    private List<Tuple<responseType, string>> chat = new();
+    private bool waitingForResponse = false;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            chat.Add(new Tuple<responseType, string>(responseType.ai, GetIntroResponse()));
+        }
+    }
+
+    private bool CanAssit()
+    {
+        return DocumentAssistantService != null && DocumentAssistantService.CanAssist();
+    }
+
+    private string GetIntroResponse()
+    {
+        var documentType = "article";
+        switch(Document?.GetValue("documentType") ?? string.Empty)
+        {
+            case "Multilateral Forum Statements":
+                documentType = "multilateral forum statement"; break;
+            default:
+                documentType = "article"; break;
+        }
+
+        return $"What would you like to know about this {documentType}?";
+    }
+
+    private async Task PromptClicked(MouseEventArgs args)
+    {
+        await PromptAssistantStart();
+    }
+
+    private async Task PromptIfKeyPressed(KeyboardEventArgs e)
+    {
+        if (e.Code == "Enter" || e.Code == "NumpadEnter")
+        {
+            await PromptAssistantStart();
+        }
+    }
+
+    private async Task PromptAssistantStart()
+    {
+        if (string.IsNullOrWhiteSpace(Prompt))
+            return;
+
+        var query = Prompt.Trim();
+        Prompt = "";
+        chat.Add(new Tuple<responseType, string>(responseType.human, query));
+        waitingForResponse = true;
+        await PromptAssistant(query);
+    }
+
+    private void PromptAssistantGenericFailure()
+    {
+        waitingForResponse = true;
+        chat.Add(new Tuple<responseType, string>(responseType.ai, "Something went wrong, refresh the page to try again."));
+    }
+
+    private async Task PromptAssistant(string query)
+    {
+        var invalid = string.IsNullOrWhiteSpace(query) || 
+            Document == null || 
+            string.IsNullOrEmpty(Document.Content) ||
+            DocumentAssistantService == null;
+
+        if(invalid)
+        {
+            PromptAssistantGenericFailure();
+            return;
+        }
+
+        var response = await DocumentAssistantService!.SimplePrompt(query, Document!.Content!, Document.Name!);
+
+        if(string.IsNullOrEmpty(response))
+        {
+            PromptAssistantGenericFailure();
+            return;
+        }
+
+        chat.Add(new Tuple<responseType, string>(responseType.ai, response));
+        waitingForResponse = false;        
+    }
+}

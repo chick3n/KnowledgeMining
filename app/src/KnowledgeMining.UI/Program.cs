@@ -41,6 +41,7 @@ namespace KnowledgeMining.UI
                 config.SnackbarConfiguration.SnackbarVariant = MudBlazor.Variant.Filled;
             });
             builder.Services.AddHttpClient(PreviewFileEndpoint.EndpointName);
+            builder.Services.AddHttpClient(Application.Common.Options.AssistantOptions.Name);
             builder.Services.AddBlazoredLocalStorage();
 
             builder.Services.AddSignalR().AddAzureSignalR(options =>
@@ -72,6 +73,7 @@ namespace KnowledgeMining.UI
             builder.Services.AddScoped<StateService>();
             builder.Services.AddScoped<ILinkGenerator, DocumentPreviewLinkGenerator>();
             builder.Services.AddScoped<DocumentCartService>();
+            builder.Services.AddScoped<DocumentAssistantService>();
 
             builder.Services.AddApplicationInsightsTelemetry();
             builder.Services.AddHttpContextAccessor();
