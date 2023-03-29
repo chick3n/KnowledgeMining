@@ -10,6 +10,8 @@ namespace KnowledgeMining.UI.Services.Documents
         private readonly AssistantOptions _assistantOptions;
         private readonly ILogger _logger;
 
+        private bool? _online = null;
+
         public DocumentAssistantService(IHttpClientFactory httpClientFactory, IOptions<AssistantOptions> assistantOptions, ILogger<DocumentAssistantService> logger)
         {
             _httpClientFactory = httpClientFactory;
@@ -18,6 +20,38 @@ namespace KnowledgeMining.UI.Services.Documents
         }
 
         public bool CanAssist() => _assistantOptions != null && _assistantOptions.BaseUri != null;
+
+        public async Task<bool> IsOnline()
+        {
+            if (_online != null)
+                return _online.Value;
+
+            if (!CanAssist())
+            {
+                _online = false;
+                return _online.Value;
+            }
+
+            var client = _httpClientFactory.CreateClient(AssistantOptions.Name);
+            client.BaseAddress = new Uri(_assistantOptions!.BaseUri!);
+
+            try
+            {
+                var response = await client.GetAsync("health");
+
+                if (response.StatusCode == System.Net.HttpStatusCode.OK)
+                {
+                    _online = true;
+                    return _online.Value;
+                }
+            }
+            catch (Exception)
+            {
+            }
+
+            _online = false;
+            return _online.Value;
+        }
 
         public async Task<string?> SimplePrompt(string query, string content, string identifier = null)
         {
