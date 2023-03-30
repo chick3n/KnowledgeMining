@@ -3,48 +3,49 @@
 @using System.Text.Json.Serialization
 @using KnowledgeMining.UI.Services.Documents
 
-<MudExpansionPanels>
-    <MudExpansionPanel Text="@title" 
-        IsExpanded="CanAssit()" Disabled="!CanAssit()">
-        <div>
-            @foreach(var response in chat)
-            {
+@if(DocumentAssistantService?.IsEnabled ?? false) 
+{
+    <MudExpansionPanels>
+        <MudExpansionPanel Text="@title" 
+            IsExpanded="CanAssit()" Disabled="!CanAssit()">
+            <div>
+                @foreach(var response in chat)
+                {
 
-                if(response.Item1 == responseType.human)
-                {
-                    <MudField Variant="Variant.Outlined"
-                        Style="text-align:right"
-                        >@response.Item2</MudField>
-                }
-                else
-                {
-                    <MudField Variant="Variant.Outlined"
-                        Style="background-color:#fafafa"
-                        Label="Assistant"
-                        >@response.Item2</MudField>
-                }
+                    if(response.Item1 == responseType.human)
+                    {
+                        <MudField Variant="Variant.Outlined"
+                            Style="text-align:right"
+                            >@response.Item2</MudField>
+                    }
+                    else
+                    {
+                        <MudField Variant="Variant.Outlined"
+                            Style="background-color:#fafafa"
+                            Label="Assistant"
+                            >@response.Item2</MudField>
+                    }
 
                 
-            }
-            @if(waitingForResponse) {
-                <MudSkeleton SkeletonType="SkeletonType.Text" Height="40px" />
-            }
-        </div>
+                }
+                @if(waitingForResponse) {
+                    <MudSkeleton SkeletonType="SkeletonType.Text" Height="40px" />
+                }
+            </div>
 
-        <MudTextField  @bind-Value="Prompt" 
-            Disabled="waitingForResponse"
-            Variant="Variant.Text" 
-            Adornment="Adornment.End" 
-            AdornmentIcon="@Icons.Material.Filled.Chat" 
-            OnKeyUp="PromptIfKeyPressed"
-            AdornmentColor="Color.Secondary"
-            OnAdornmentClick="PromptClicked" />
-    </MudExpansionPanel>
-</MudExpansionPanels>
+            <MudTextField  @bind-Value="Prompt" 
+                Disabled="waitingForResponse"
+                Variant="Variant.Text" 
+                Adornment="Adornment.End" 
+                AdornmentIcon="@Icons.Material.Filled.Chat" 
+                OnKeyUp="PromptIfKeyPressed"
+                AdornmentColor="Color.Secondary"
+                OnAdornmentClick="PromptClicked" />
+        </MudExpansionPanel>
+    </MudExpansionPanels>
 
-
-
-<hr />
+    <hr />
+}
 
 @code {
     [Parameter] public DocumentMetadata? Document { get; set; }
@@ -94,16 +95,10 @@
 
     private string GetIntroResponse()
     {
-        var documentType = "article";
-        switch(Document?.GetValue("documentType") ?? string.Empty)
-        {
-            case "Multilateral Forum Statements":
-                documentType = "multilateral forum statement"; break;
-            default:
-                documentType = "article"; break;
-        }
-
-        return $"What would you like to know about this {documentType}?";
+        var documentType = Document?.GetValue("documentType") ?? "article";
+        if (documentType.Equals("News Media"))
+            documentType = "news article";
+        return $"What would you like to know about this {documentType.ToLower()}?";
     }
 
     private async Task PromptClicked(MouseEventArgs args)

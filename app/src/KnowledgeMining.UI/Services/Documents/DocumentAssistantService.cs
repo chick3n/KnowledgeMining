@@ -19,7 +19,9 @@ namespace KnowledgeMining.UI.Services.Documents
             _logger = logger;
         }
 
-        public bool CanAssist() => _assistantOptions != null && _assistantOptions.BaseUri != null;
+        public bool IsEnabled => _assistantOptions != null && _assistantOptions.Enabled;
+
+        public bool CanAssist() => _assistantOptions != null && _assistantOptions.BaseUri != null && IsEnabled;
 
         public async Task<bool> IsOnline()
         {

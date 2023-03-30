@@ -11,5 +11,6 @@ namespace KnowledgeMining.Application.Common.Options
         public const string Name = "Assistant";
 
         public string? BaseUri { get; set; }
+        public bool Enabled { get; set; }
     }
 }
