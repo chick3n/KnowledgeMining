@@ -14,7 +14,7 @@ namespace KnowledgeMining.Domain.Entities
         [JsonPropertyName("index")]
         public string? IndexName { get; set; }
         [JsonPropertyName("name")]
-        public string? Name { get; set; }
+        public Localization? Name { get; set; }
         [JsonPropertyName("route")]
         public string? Route { get; set; }
         [JsonPropertyName("keyField")]

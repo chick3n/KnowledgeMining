@@ -7,6 +7,7 @@
 @using KnowledgeMining.Application.Documents.Queries.GetAutocompleteSuggestions
 @using KnowledgeMining.Application.Documents.Queries.GetIndex
 @using KnowledgeMining.Domain.Entities
+@using KnowledgeMining.UI.Helpers
 
 <PageTitle>@Localizer["home"]</PageTitle>
 
@@ -29,7 +30,7 @@
         </div>
         @if(_indexItem != null) {
             <div style="width:100%">
-                <MudText Typo="Typo.h5" Align="Align.Right">@_indexItem.Name</MudText>
+                <MudText Typo="Typo.h5" Align="Align.Right">@GetCurrentLanguage.GetLocalizedText(@_indexItem.Name)</MudText>
             </div>
         }
         <MudPaper Style="@($"background: {Theme.Palette.White}")" Elevation="1">

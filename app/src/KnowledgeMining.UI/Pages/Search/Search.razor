@@ -31,16 +31,16 @@
             <MudToolBar Style="height: 20px">
                 <MudText><MudIcon Icon="@Icons.Filled.CalendarMonth" Color="Color.Primary" Title="Time Span"></MudIcon> Time Span:</MudText>
                 <MudMenu EndIcon="@Icons.Filled.ArrowDropDown" Label="@_timespanLabel">
-                    <MudMenuItem OnClick="@TimeSpanAnyOnClick">Any</MudMenuItem>
-                    <MudMenuItem OnClick="@TimeSpanTodayOnClick">Today</MudMenuItem>
-                    <MudMenuItem OnClick="@TimeSpanThisWeekOnClick">This Week</MudMenuItem>
-                    <MudMenuItem OnClick="@TimeSpanThisMonthOnClick">This Month</MudMenuItem>
-                    <MudMenuItem OnClick="@TimeSpanCustomOnClick">Custom</MudMenuItem>
+                    <MudMenuItem OnClick="@TimeSpanAnyOnClick">@Localizer["any"]</MudMenuItem>
+                    <MudMenuItem OnClick="@TimeSpanTodayOnClick">@Localizer["today"]</MudMenuItem>
+                    <MudMenuItem OnClick="@TimeSpanThisWeekOnClick">@Localizer["week"]</MudMenuItem>
+                    <MudMenuItem OnClick="@TimeSpanThisMonthOnClick">@Localizer["month"]</MudMenuItem>
+                    <MudMenuItem OnClick="@TimeSpanCustomOnClick">@Localizer["custom"]</MudMenuItem>
                 </MudMenu>
                 <MudText Class="pl-6"><MudIcon Icon="@Icons.Filled.Sort" Color="Color.Primary" Title="Sort By"></MudIcon> Sort By:</MudText>
                 <MudMenu EndIcon="@Icons.Filled.ArrowDropDown" Label="@_sortLabel" Disabled="@(_searchState?.TotalCount == 0)">
-                    <MudMenuItem OnClick="@SortBestMatchClicked">Best Match</MudMenuItem>
-                    <MudMenuItem OnClick="@SortDateClicked">Date</MudMenuItem>
+                    <MudMenuItem OnClick="@SortBestMatchClicked">@Localizer["bestMatch"]</MudMenuItem>
+                    <MudMenuItem OnClick="@SortDateClicked">@Localizer["date"]</MudMenuItem>
                 </MudMenu>
 
                 <MudSpacer />
