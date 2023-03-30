@@ -73,6 +73,11 @@
 
     private bool CanAssit()
     {
+        var documentType = Document?.GetValue("documentType") ?? "article";
+        if (!documentType.Equals("News Media"))
+            return false;
+
+
         return DocumentAssistantService != null && DocumentAssistantService.CanAssist() && IsOnline;
     }
 
