@@ -10,7 +10,10 @@ namespace KnowledgeMining.Domain.Entities
 {
     public class Localization
     {
+        
+        [JsonPropertyName("En")]
         public string?En{ get; set; }
+        [JsonPropertyName("Fr")]
         public string?Fr{ get; set; }
     }
 }
