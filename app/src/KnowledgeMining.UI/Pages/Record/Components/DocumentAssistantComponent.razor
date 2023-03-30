@@ -6,8 +6,8 @@
 @if(DocumentAssistantService?.IsEnabled ?? false) 
 {
     <MudExpansionPanels>
-        <MudExpansionPanel Text="@title" 
-            IsExpanded="CanAssit()" Disabled="!CanAssit()">
+        <MudExpansionPanel Text="@title"  
+            IsInitiallyExpanded="CanAssit()" Disabled="!CanAssit()">
             <div>
                 @foreach(var response in chat)
                 {
@@ -86,8 +86,7 @@
         IsOnline = await DocumentAssistantService!.IsOnline();
 
         if (!IsOnline) {
-            title = title + " Offline";
-            StateHasChanged();
+            AddResponseToChat(responseType.ai, GetOfflineResponse());
         }
         else
             AddResponseToChat(responseType.ai, GetIntroResponse());
@@ -99,6 +98,11 @@
         if (documentType.Equals("News Media"))
             documentType = "news article";
         return $"What would you like to know about this {documentType.ToLower()}?";
+    }
+
+    private string GetOfflineResponse()
+    {
+        return $"I am currently offline.";
     }
 
     private async Task PromptClicked(MouseEventArgs args)
