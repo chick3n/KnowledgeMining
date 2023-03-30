@@ -41,7 +41,6 @@ namespace KnowledgeMining.UI.Pages.Admin
         protected override async Task OnInitializedAsync()
         {
             _ = Index ?? throw new ArgumentNullException(nameof(Index));
-            //_ = RecordId ?? throw new ArgumentNullException(nameof(RecordId));
 
             await GetErrorBlobs();
             await base.OnInitializedAsync();
@@ -69,14 +68,6 @@ namespace KnowledgeMining.UI.Pages.Admin
         public override Task SetParametersAsync(ParameterView parameters)
         {
             return base.SetParametersAsync(parameters);
-        }
-
-        private async Task GetIndexItem()
-        {
-            var indexResponse = await Mediator.Send(new GetIndexQuery(Index));
-            if (indexResponse.IndexItem == null)
-                throw new Exception("Did not receive index reponse.");
-            _indexItem = indexResponse.IndexItem;
         }
 
         private async Task GetErrorBlobs()

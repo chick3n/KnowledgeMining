@@ -1,0 +1,128 @@
+﻿@page "/{Index}/admin/{DocumentName}"
+@using KnowledgeMining.UI.Pages.ErrorDocument.Components
+@using Microsoft.AspNetCore.Hosting
+@using Microsoft.Extensions.Hosting
+@using KnowledgeMining.UI.Services.Links
+
+@inject ILinkGenerator LinkGenerator;
+@inject IWebHostEnvironment HostEnvironment
+
+<style>
+    .document-title-overflow {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    .mudbutton-text-left {
+        justify-content: normal !important;
+        text-transform: none !important;
+    }
+    .mudbutton-text-left > span {
+        text-align: left;
+    }
+    .row-item {
+        margin: auto 0 auto 0;
+    }
+    .section-title {
+        padding: 20px 0 10px 0;
+    }
+    .muditem {
+        margin: 20px 0 0 0;
+    }
+    .mudbutton {
+        margin: 0 10px 0 10px;
+    }
+</style>
+
+<PageTitle>Ingestion Error Correction</PageTitle>
+<MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="mt-4">
+    <MudGrid>
+        <MudItem xs="12" sm="2">
+            <MudButton Disabled="@(!_canNavigateBack)" StartIcon="@Icons.Material.Filled.ArrowBack" Title="Back" Color="Color.Inherit" OnClick="GoBack">Back</MudButton>
+        </MudItem>
+        <MudItem xs="0" sm="10">
+            @if(!_documentIsLoading)
+            {
+                <MudItem>
+                    <MudStack Row="true">
+                        <MudTextField style="font-size: 25px;" T="string" HelperText="File name changes do not take effect until the page is saved" HelperTextOnFocus="true" Label="File Name" Value="@DisplayFilename" Class="row-item document-title-overflow" ValueChanged="@( (string s) => UpdateDisplayFilename(s))"></MudTextField>
+                        <MudIcon Class="@FilenameChangeWarningIconClass" Icon="@Icons.Material.Filled.WarningAmber" Color="Color.Warning" Size="Size.Large" Title="Unsaved Change"></MudIcon>
+                    </MudStack>
+                </MudItem>
+
+                @if (@_document.Metadata != null)
+                {
+                    <MudItem Class="">
+                        <MudStack Row="true" Class="section-title">
+                            <MudAvatar Color="Color.Info" Variant="Variant.Filled" Class="row-item"><MudIcon Icon="@Icons.Material.Filled.Article"></MudIcon></MudAvatar>
+                            <h3 class="row-item">Document Metadata</h3>
+                        </MudStack>
+                        <MudSimpleTable>
+                            <thead>
+                                <tr>
+                                    <th>Key</th>
+                                    <th>Value</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var key in _document.Metadata.Keys)
+                                {
+                                    <tr>
+                                        <td>@key</td>
+                                        <td>@_document.Metadata[key]</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </MudSimpleTable>
+                    </MudItem>
+                }
+
+                <MudItem Class="muditem">
+                    <MudStack Row="true" Class="section-title">
+                        <MudAvatar Color="Color.Info" Variant="Variant.Filled" Class="row-item"><MudIcon Icon="@Icons.Material.Filled.Error"></MudIcon></MudAvatar>
+                        <h3 class="row-item">Errors</h3>
+                    </MudStack>
+                    <MudSimpleTable>
+                        <thead>
+                            <tr>
+                                <th>Error Name</th>
+                                <th>Error Value</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var error in _document.Metadata["error"].Split(';'))
+                            {
+                                <tr>
+                                    <!-- add Title="@(()=> GetErrorHint(error.Split(':')[0]))" to a mudIcon or mudAvatar-->
+                                    <td>@error.Split(':')[0]</td>
+                                    @if (error.Split(':').Length > 1 )
+                                    {
+                                        <td>@error.Split(':')[1]</td>
+                                    }
+                                    else
+                                    {
+                                        <td></td>
+                                    }
+                                    
+                                </tr>
+                            }
+                        </tbody>
+                    </MudSimpleTable>
+                </MudItem>
+                <MudItem Class="muditem">
+                    <div style="display: flex; flex-direction: row; justify-content: center; align-items: center;">
+                        <MudButton Class="mudbutton" Variant="Variant.Filled" Color="Color.Success" StartIcon="@Icons.Material.Filled.Save" @onclick="Save">Save</MudButton>
+                        <MudButton Class="mudbutton" Variant="Variant.Filled" Color="Color.Error" StartIcon="@Icons.Material.Filled.Delete" @onclick="DisplayConfirmDeleteDialog">Delete</MudButton>
+                    </div>
+                </MudItem>
+            }
+            else 
+            {
+                <MudStack Row="true">
+                    <MudSkeleton Animation="Animation.Wave" SkeletonType="SkeletonType.Circle" Width="42px" Height="42px" />
+                    <MudSkeleton Animation="Animation.Wave" Height="42px" Width="100%" />
+                </MudStack>
+            }
+        </MudItem>
+    </MudGrid>
+</MudContainer>

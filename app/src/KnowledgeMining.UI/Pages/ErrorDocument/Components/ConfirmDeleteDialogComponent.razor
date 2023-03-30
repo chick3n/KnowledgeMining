@@ -1,0 +1,32 @@
+﻿<style>
+    p {
+        margin-top: 10px;
+    }
+</style>
+
+<MudDialog>
+    <TitleContent>
+        <MudText Typo="Typo.h6">
+            <MudIcon Icon="@Icons.Material.Filled.Delete"></MudIcon>
+            Delete Document
+        </MudText>
+    </TitleContent>
+    <DialogContent>
+        Do you really want to delete @Filename?
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel">Cancel</MudButton>
+        <MudButton Color="Color.Error" OnClick="Delete">
+            <MudIcon Icon="@Icons.Material.Filled.Delete"></MudIcon>
+            Delete
+        </MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [Parameter] public string? Filename { get; set; }
+    [CascadingParameter] MudDialogInstance MudDialog { get; set; }
+
+    void Delete() => MudDialog.Close(DialogResult.Ok(true));
+    void Cancel() => MudDialog.Cancel();
+}

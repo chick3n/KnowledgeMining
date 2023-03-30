@@ -33,5 +33,9 @@ namespace KnowledgeMining.Domain.Entities
         public IndexItemConfiguration? Configuration { get; set; }
         [JsonPropertyName("landing")]
         public IndexItemLanding? Landing { get; set; }
+        /*
+        [JsonPropertyName("errorHints")]
+        public IndexItemErrors? ErrorHints { get; set; }
+        */
     }
 }
