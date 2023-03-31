@@ -51,6 +51,8 @@
     [Parameter] public DocumentMetadata? Document { get; set; }
     [Inject]    public DocumentAssistantService? DocumentAssistantService { get; set; }
 
+    private string[] restrictedDocumentTypes = new [] { "sitrep", "readouts", "multilateral forum statements", "reports and assessments" };
+
     public string? Prompt { get; set; }
 
     private enum responseType {
@@ -74,7 +76,7 @@
     private bool CanAssit()
     {
         var documentType = Document?.GetValue("documentType") ?? "article";
-        if (!documentType.Equals("News Media"))
+        if (restrictedDocumentTypes.Contains(documentType.ToLower()))
             return false;
 
 
