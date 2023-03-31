@@ -1,6 +1,8 @@
 ﻿using KnowledgeMining.Application.Common.Options;
 using KnowledgeMining.UI.Models;
 using Microsoft.Extensions.Options;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace KnowledgeMining.UI.Services.Documents
 {
@@ -88,7 +90,12 @@ namespace KnowledgeMining.UI.Services.Documents
 
             try
             {
-                var response = await client.PostAsJsonAsync("prompt", request);
+                //var response = await client.PostAsJsonAsync("prompt", request);
+                var content = JsonSerializer.Serialize(request, new JsonSerializerOptions
+                {
+                    PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+                });
+                var response = await client.PostAsync("prompt", new StringContent(content, System.Text.Encoding.UTF8, "application/json"));
 
                 if (response.StatusCode == System.Net.HttpStatusCode.OK)
                 {
