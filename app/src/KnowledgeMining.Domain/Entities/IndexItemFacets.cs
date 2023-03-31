@@ -31,7 +31,7 @@ namespace KnowledgeMining.Domain.Entities
         [JsonPropertyName("id")]
         public string? Id { get; set; }
         [JsonPropertyName("name")]
-        public string? Name { get; set; }
+        public Localization? Name { get; set; }
         [JsonPropertyName("description")]
         public string? Description { get; set; }
     }
