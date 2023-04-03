@@ -11,9 +11,9 @@ namespace KnowledgeMining.Domain.Entities
     public class Localization
     {
         
-        [JsonPropertyName("En")]
+        [JsonPropertyName("en")]
         public string?En{ get; set; }
-        [JsonPropertyName("Fr")]
+        [JsonPropertyName("fr")]
         public string?Fr{ get; set; }
     }
 }
