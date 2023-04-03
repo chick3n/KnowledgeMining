@@ -76,7 +76,7 @@ else
                             <MudCardContent>
                                 <div class="d-flex flex-row gap-10">
                                     <div class="flex-grow-1" style="min-width: 50%; max-width:50%">
-                                        <pre style="overflow-x: auto; overflow-y: scroll; white-space: pre-wrap; word-wrap: break-word; font-size: inherit">
+                                    <pre style="overflow-x: auto; overflow-y: scroll; white-space: pre-wrap; word-wrap: break-word; font-size: inherit; max-height:240px">
                                         @((MarkupString)DocumentPreviewText(document))
                                         </pre>
                                     </div>
@@ -186,9 +186,19 @@ else
     private string DocumentPreviewText(DocumentMetadata document)
     {
         var previewText = DocumentHighlightedText(document);
-        if (!string.IsNullOrWhiteSpace(previewText))
-            return previewText;
-        return DocumentSummary(document);
+        if (string.IsNullOrWhiteSpace(previewText)) {
+            previewText = DocumentSummary(document);
+            return DocumentPreviewTextCleanup(previewText);
+        }
+        return previewText;
+    }
+
+    private string DocumentPreviewTextCleanup(string text)
+    {
+        text = Regex.Replace(text, "<.*?>", string.Empty);
+        text = Regex.Replace(text, @"[\r\n]+", "\n");
+
+        return text.Trim();
     }
 
     private string? DocumentHighlightedText(DocumentMetadata document)
