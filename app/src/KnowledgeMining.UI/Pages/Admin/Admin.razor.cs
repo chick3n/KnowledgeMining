@@ -42,6 +42,7 @@ namespace KnowledgeMining.UI.Pages.Admin
         {
             _ = Index ?? throw new ArgumentNullException(nameof(Index));
 
+            await GetIndexItem();
             await GetErrorBlobs();
             await base.OnInitializedAsync();
         }
@@ -70,9 +71,15 @@ namespace KnowledgeMining.UI.Pages.Admin
             return base.SetParametersAsync(parameters);
         }
 
+        private async Task GetIndexItem()
+        {
+            var indexResponse = await Mediator.Send(new GetIndexQuery(Index));
+            _indexItem = indexResponse.IndexItem;
+        }
+
         private async Task GetErrorBlobs()
         {
-            var documentResponse = await Mediator.Send(new GetDocumentsQuery("error-documents", null, PAGESIZE, null));
+            var documentResponse = await Mediator.Send(new GetDocumentsQuery(_indexItem.Storage.ErrorContainer, null, PAGESIZE, null));
             
             _errorDocuments = new();
             foreach (var document in documentResponse.Documents)

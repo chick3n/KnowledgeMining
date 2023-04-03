@@ -18,5 +18,6 @@ namespace KnowledgeMining.Application.Common.Interfaces
         ValueTask<byte[]> DownloadDocument(string documentName, CancellationToken cancellationToken);
         ValueTask<byte[]> DownloadSource(string documentName, CancellationToken cancellationToken);
         ValueTask DeleteDocument(string documentName, CancellationToken cancellationToken);
+        ValueTask<bool> DeleteDocument(string key, string container, string filename, CancellationToken cancellationToken);
     }
 }

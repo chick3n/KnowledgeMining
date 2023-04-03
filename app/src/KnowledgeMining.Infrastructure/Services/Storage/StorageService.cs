@@ -324,6 +324,36 @@ namespace KnowledgeMining.Infrastructure.Services.Storage
             await blobContainer.DeleteBlobIfExistsAsync(documentName, cancellationToken: cancellationToken);
         }
 
+        public async ValueTask<bool> DeleteDocument(string key, string container, string filename, CancellationToken cancellationToken)
+        {
+            object? connectionString = null;
+            if (!_storageOptions.ConnectionStrings.TryGetValue(key, out connectionString))
+                _logger.LogWarning("Connection string for {Key} does not exist.", key);
+
+            string conn = connectionString?.ToString() ?? string.Empty;
+
+            if (!string.IsNullOrEmpty(conn))
+            {
+                var blobContainer = GetBlobContainerClient(conn,
+                    container);
+                try
+                {
+                    await blobContainer.DeleteBlobIfExistsAsync(filename, DeleteSnapshotsOption.IncludeSnapshots, cancellationToken: cancellationToken);
+                }
+                catch (Azure.RequestFailedException e)
+                {
+                    _logger.LogCritical(e, "Failed to mark {Filename} for deletion.", filename);
+                    return false;
+                }
+            }
+            else
+            {
+                _logger.LogWarning("Connection string for {Key} does not exist.", key);
+                return false;
+            }
+            return true;
+        }
+
         private BlobContainerClient GetBlobContainerClient()
         {
             return GetBlobContainerClient(_storageOptions.ContainerName);
@@ -338,6 +368,7 @@ namespace KnowledgeMining.Infrastructure.Services.Storage
         {
             var svc = new BlobServiceClient(connectionString);
             return svc.GetBlobContainerClient(container);
+
         }
 
         public async Task<bool> RenameDocument(string currentName, string newName, CancellationToken cancellationToken)

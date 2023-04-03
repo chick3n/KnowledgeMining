@@ -15,6 +15,8 @@ using System.Text;
 using KnowledgeMining.UI.Models;
 using KnowledgeMining.UI.Pages.Record;
 using KnowledgeMining.UI.Pages.ErrorDocument.Components;
+using KnowledgeMining.Application.Documents.Commands.DeleteDocument;
+using KnowledgeMining.UI.Services.Documents;
 
 namespace KnowledgeMining.UI.Pages.ErrorDocument
 {
@@ -23,7 +25,6 @@ namespace KnowledgeMining.UI.Pages.ErrorDocument
         [Inject] public ISnackbar Snackbar { get; set; }
         [Inject] public IMediator Mediator { get; set; }
         [Inject] public IJSRuntime jsRuntime { get; set; }
-        [Inject] public DocumentCartService CartService { get; set; }
         [Inject] public IDialogService DialogService { get; set; }
 
         [Parameter] public string Index { get; set; } = default!;
@@ -45,6 +46,7 @@ namespace KnowledgeMining.UI.Pages.ErrorDocument
         private Document _document;
         private string? DisplayFilename { get; set; }
         private string? FilenameChangeWarningIconClass { get; set; }
+        private bool SaveButtonDisabled { get; set; }
 
         private const int LIST_ITEM_VALUE_RECORD = 1;
         private const int LIST_ITEM_VALUE_SOURCE = 3;
@@ -62,6 +64,7 @@ namespace KnowledgeMining.UI.Pages.ErrorDocument
 
             DisplayFilename = _document.Name;
             FilenameChangeWarningIconClass = "row-item invisible";
+            SaveButtonDisabled = true;
 
             await base.OnInitializedAsync();
         }
@@ -226,12 +229,6 @@ namespace KnowledgeMining.UI.Pages.ErrorDocument
             }
         }
 
-        private int GetNumberOfErrors()
-        {
-            var errors = _document.Metadata["error"].Split(';');
-            return errors.Length;
-        }
-
         /*
         private string GetErrorHint(string errorName, string language)
         {
@@ -239,7 +236,7 @@ namespace KnowledgeMining.UI.Pages.ErrorDocument
         }
         */
 
-        private async void DisplayConfirmDeleteDialog()
+        private async void DeleteDocument()
         {
             var options = new DialogOptions { CloseOnEscapeKey = false };
             var parameters = new DialogParameters { ["Filename"]=_document.Name };
@@ -251,21 +248,23 @@ namespace KnowledgeMining.UI.Pages.ErrorDocument
             {
                 _containsUnsavedChanges = false;
 
-                // Delete file from error-document
+                try
+                {
+                    var deleteResponse = await Mediator.Send(new DeleteErrorDocumentCommand("(Test_file)-justin.txt", _indexItem.Storage.ErrorContainer, _indexItem.Storage.Key));
 
-                // Success Snackbar
-                Snackbar.Add(_document.Name + " was deleted.", Severity.Success);
+                    Snackbar.Add(_document.Name + " was marked to be deleted. This may take a few minutes.", Severity.Success);
+                }
+                catch
+                {
+                    Snackbar.Add(_document.Name + " could not be deleted.", Severity.Error);
+                }
                 
-
-                // Failed Snackbar
-                Snackbar.Add(_document.Name + " could not be deleted.", Severity.Error);
                 await GoBack();
             }
         }
 
         private async void Save()
         {
-
             // Rename the file and copy it to source container (using _displayedFilename, source container metadata)
             // Delete file in error-documents
             // display snackbar
@@ -277,7 +276,6 @@ namespace KnowledgeMining.UI.Pages.ErrorDocument
             // Failed Snackbar
             Snackbar.Add(_document.Name + " could not be renamed and/or resubmitted for ingestion.", Severity.Error);
 
-
             await GoBack();
         }
 
@@ -287,11 +285,7 @@ namespace KnowledgeMining.UI.Pages.ErrorDocument
             FilenameChangeWarningIconClass = "row-item";
             DisplayFilename = newName;
             _containsUnsavedChanges = true;
-        }
-
-        private string GetErrorHint(string errorName)
-        {
-            return "Test";
+            SaveButtonDisabled = false;
         }
     }
 }

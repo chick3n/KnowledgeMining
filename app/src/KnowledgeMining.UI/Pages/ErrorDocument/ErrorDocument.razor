@@ -94,7 +94,10 @@
                             {
                                 <tr>
                                     <!-- add Title="@(()=> GetErrorHint(error.Split(':')[0]))" to a mudIcon or mudAvatar-->
-                                    <td>@error.Split(':')[0]</td>
+                                    <td>
+                                        <MudIcon Icon="@Icons.Material.Outlined.Info" Size="Size.Small" Title="Test"></MudIcon>
+                                        @error.Split(':')[0]
+                                    </td>
                                     @if (error.Split(':').Length > 1 )
                                     {
                                         <td>@error.Split(':')[1]</td>
@@ -111,8 +114,8 @@
                 </MudItem>
                 <MudItem Class="muditem">
                     <div style="display: flex; flex-direction: row; justify-content: center; align-items: center;">
-                        <MudButton Class="mudbutton" Variant="Variant.Filled" Color="Color.Success" StartIcon="@Icons.Material.Filled.Save" @onclick="Save">Save</MudButton>
-                        <MudButton Class="mudbutton" Variant="Variant.Filled" Color="Color.Error" StartIcon="@Icons.Material.Filled.Delete" @onclick="DisplayConfirmDeleteDialog">Delete</MudButton>
+                        <MudButton Class="mudbutton" Variant="Variant.Filled" Color="Color.Success" StartIcon="@Icons.Material.Filled.Save" @onclick="Save" Disabled="SaveButtonDisabled">Save</MudButton>
+                        <MudButton Class="mudbutton" Variant="Variant.Filled" Color="Color.Error" StartIcon="@Icons.Material.Filled.Delete" @onclick="DeleteDocument">Delete</MudButton>
                     </div>
                 </MudItem>
             }
