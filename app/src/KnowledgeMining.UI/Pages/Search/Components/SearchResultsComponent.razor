@@ -92,16 +92,10 @@ else
                             @if(DocumentFooterValues(document) != null) 
                             {
                                 var footerValues = DocumentFooterValues(document);
+                                var footerValuesString = string.Join(" · ", footerValues.Take(10));
+                                var footerValuesMore = footerValues.Length > 10 ? "..." : string.Empty;
                                 <MudCardActions>
-                                    @for(var x = 0; x<footerValues.Length; x++) 
-                                    {
-                                        var index = x; //Needed due to razor for loops issue
-                                        <MudText Typo="Typo.caption" Style="color:gray">@footerValues[index]</MudText>
-                                        @if(x+1 < footerValues.Length)
-                                        {
-                                            <span>&nbsp;·&nbsp;</span>
-                                        }
-                                    }
+                                    <MudText Typo="Typo.caption" Style="color:gray">@footerValuesString @footerValuesMore</MudText>
                                 </MudCardActions> 
                             }
                         </MudCard>
@@ -252,21 +246,21 @@ else
         return text.PreWrap();
     }
 
-    private string[]? DocumentFooterValues(DocumentMetadata document)
+    private string[] DocumentFooterValues(DocumentMetadata document)
     {
         if (DocumentFooterFields == null || DocumentFooterFields.Length == 0)
         {
-            return null;   
+            return Array.Empty<string>();   
         }
 
         var values = new List<string>();
         foreach(var footerField in DocumentFooterFields)
         {
-            var fieldValue = document.GetValue(footerField, seperator: " · ");
+            var fieldValue = document.GetValue(footerField, seperator: ",");
 
             if(!string.IsNullOrWhiteSpace(fieldValue))
             {
-                values.Add(fieldValue);
+                values.AddRange(fieldValue.Split(","));
             }
         }
 
