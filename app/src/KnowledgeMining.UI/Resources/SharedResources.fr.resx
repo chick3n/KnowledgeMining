@@ -129,6 +129,9 @@
   <data name="custom" xml:space="preserve">
     <value>coutume</value>
   </data>
+  <data name="dashboards" xml:space="preserve">
+    <value>Tableau de Bord</value>
+  </data>
   <data name="date" xml:space="preserve">
     <value>Date</value>
   </data>

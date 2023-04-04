@@ -129,6 +129,9 @@
   <data name="custom" xml:space="preserve">
     <value>Custom</value>
   </data>
+  <data name="dashboards" xml:space="preserve">
+    <value>Dashboards</value>
+  </data>
   <data name="date" xml:space="preserve">
     <value>Date</value>
   </data>

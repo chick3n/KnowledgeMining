@@ -5,6 +5,7 @@
 @using Microsoft.AspNetCore.Hosting;
 @using Microsoft.Extensions.Hosting;
 @using System.Globalization
+@using KnowledgeMining.UI.Helpers
 
 @inject IJSRuntime JSRuntime
 @inject NavigationManager NavigationManager;
@@ -16,7 +17,7 @@
 <MudAppBar Style="@($"color: {Theme.Palette.Black};background: {Theme.Palette.White}")" Elevation="1">
     <MudStack Spacing="4" Row="true">
         <MudImage Src="@_logoPath" Height="25" Elevation="0" onclick="@(() => NavigateToHomePage())" />
-        <MudButton Variant="Variant.Text" Href="@($"/search/{IndexName}/")" Target="_self">Search</MudButton>
+        <MudButton Variant="Variant.Text" Href="@($"/search/{IndexName}/")" Target="_self">@Localizer["search"]</MudButton>
         @*<MudButton Variant="Variant.Text" OnClick="@NavigateToDocumentsPage">Documents</MudButton>*@
 
         @if(indexNavigationItems != null)
@@ -28,7 +29,7 @@
                     foreach(var link in nav.Value)
                     {
                         <MudButton 
-                            Variant="Variant.Text" Href="@link.Url" Target="_self">@link.Name</MudButton>
+                            Variant="Variant.Text" Href="@link.Url" Target="_self">@GetCurrentLanguage.GetLocalizedText(link.Name)</MudButton>
                     }
                 }
                 else
@@ -38,7 +39,7 @@
                         ButtonType="ButtonType.Button" Variant="Variant.Text">
                         @foreach(var link in nav.Value)
                         {
-                            <MudButton Variant="Variant.Text" Href="@link.Url" Target="_self">@link.Name</MudButton>
+                            <MudButton Variant="Variant.Text" Href="@link.Url" Target="_self">@GetCurrentLanguage.GetLocalizedText(@link.Name)</MudButton>
                         }
                     </MudMenu>
                 }
