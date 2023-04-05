@@ -1,22 +1,15 @@
-﻿using KnowledgeMining.Application.Documents.Queries.GetDocumentMetadata;
-using KnowledgeMining.Application.Documents.Queries.GetDocument;
+﻿using KnowledgeMining.Application.Documents.Queries.GetDocument;
 using KnowledgeMining.Application.Documents.Queries.GetIndex;
 using KnowledgeMining.Domain.Entities;
-using KnowledgeMining.UI.Wrappers;
 using MediatR;
 using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
 using MudBlazor;
-using System.Text.Json.Nodes;
 using System.Text.Json;
-using KnowledgeMining.Application.Documents.Queries.SearchDocuments;
-using KnowledgeMining.UI.Services.State;
-using System.Text;
 using KnowledgeMining.UI.Models;
-using KnowledgeMining.UI.Pages.Record;
 using KnowledgeMining.UI.Pages.ErrorDocument.Components;
 using KnowledgeMining.Application.Documents.Commands.DeleteDocument;
-using KnowledgeMining.UI.Services.Documents;
+using KnowledgeMining.Application.Common.Exceptions;
 
 namespace KnowledgeMining.UI.Pages.ErrorDocument
 {
@@ -62,6 +55,8 @@ namespace KnowledgeMining.UI.Pages.ErrorDocument
             await GetIndexItem();
             await GetErrorDocument();
 
+            _indexItem.DeserializedErrorHints = Newtonsoft.Json.JsonConvert.DeserializeObject<Dictionary<string, Dictionary<string, string>>>(_indexItem.ErrorHints.ToString());
+
             DisplayFilename = _document.Name;
             FilenameChangeWarningIconClass = "row-item invisible";
             SaveButtonDisabled = true;
@@ -100,7 +95,7 @@ namespace KnowledgeMining.UI.Pages.ErrorDocument
 
         private async Task GetErrorDocument()
         {
-            var documentResponse = await Mediator.Send(new GetDocumentQuery(_indexItem.Storage.Key, "error-documents", DocumentName));
+            var documentResponse = await Mediator.Send(new GetDocumentQuery(_indexItem.Storage.Key, _indexItem.Storage.ErrorContainer, DocumentName));
 
             _document = documentResponse.Document;
 
@@ -250,7 +245,7 @@ namespace KnowledgeMining.UI.Pages.ErrorDocument
 
                 try
                 {
-                    var deleteResponse = await Mediator.Send(new DeleteErrorDocumentCommand("(Test_file)-justin.txt", _indexItem.Storage.ErrorContainer, _indexItem.Storage.Key));
+                    await Mediator.Send(new DeleteErrorDocumentCommand("(Test_file)-justin.txt", _indexItem.Storage.ErrorContainer, _indexItem.Storage.Key));
 
                     Snackbar.Add(_document.Name + " was marked to be deleted. This may take a few minutes.", Severity.Success);
                 }
@@ -268,15 +263,20 @@ namespace KnowledgeMining.UI.Pages.ErrorDocument
             // Rename the file and copy it to source container (using _displayedFilename, source container metadata)
             // Delete file in error-documents
             // display snackbar
-
-            // Success Snackbar
-            Snackbar.Add(_document.Name + " was renamed and resubmitted for ingestion.", Severity.Success);
-            _containsUnsavedChanges = false;
-
-            // Failed Snackbar
-            Snackbar.Add(_document.Name + " could not be renamed and/or resubmitted for ingestion.", Severity.Error);
-
-            await GoBack();
+            
+            try
+            {
+                // Rename the file
+                await Mediator.Send(new MoveDocumentCommand(_indexItem.Storage.Key, _indexItem.Storage.ErrorContainer, _document.Name, _document.Metadata["source_container"], DisplayFilename));
+                Snackbar.Add(_document.Name + " was renamed.", Severity.Success);
+                
+                _containsUnsavedChanges = false;
+                await GoBack();
+            }
+            catch (StorageServiceOperationException ex)
+            {
+                Snackbar.Add(_document.Name + " could not be renamed and/or resubmitted for ingestion. Try again.", Severity.Error);
+            }
         }
 
         private void UpdateDisplayFilename(string newName)

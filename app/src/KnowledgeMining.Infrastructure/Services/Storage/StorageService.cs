@@ -14,6 +14,7 @@ using UploadDocument = KnowledgeMining.Application.Documents.Commands.UploadDocu
 using KnowledgeMining.Application.Documents.Queries.GetDocument;
 using System.ComponentModel;
 using Azure.Storage.Blobs.Specialized;
+using KnowledgeMining.Application.Common.Exceptions;
 
 namespace KnowledgeMining.Infrastructure.Services.Storage
 {
@@ -371,85 +372,64 @@ namespace KnowledgeMining.Infrastructure.Services.Storage
 
         }
 
-        public async Task<bool> RenameDocument(string currentName, string newName, CancellationToken cancellationToken)
+        public async Task RenameDocument(string key, string container, string currentName, string newName, CancellationToken cancellationToken)
         {
-            if (string.IsNullOrEmpty(currentName) || string.IsNullOrEmpty(newName))
+            if (string.IsNullOrEmpty(key) || string.IsNullOrEmpty(container) || string.IsNullOrEmpty(currentName) || string.IsNullOrEmpty(newName))
             {
                 _logger.LogWarning("One or more arguments were not provided.");
-                return false;
+                throw new ArgumentException("One or more required arguments are null or empty.");
             }
 
-            var container = GetBlobContainerClient();
-            var srcBlob = container.GetBlobClient(currentName);
-
-            if (!await srcBlob.ExistsAsync(cancellationToken))
-            {
-                _logger.LogWarning("Blob {Name} does not exist", currentName);
-                return false;
-            }
-
-            var destinationBlob = container.GetBlobClient(newName);
-
-            var copyOperation = await destinationBlob.StartCopyFromUriAsync(new Uri(srcBlob.Uri.ToString()), cancellationToken: cancellationToken);
-
-            var destBlobProperties = destinationBlob.GetPropertiesAsync(cancellationToken: cancellationToken);
-
-            var timeoutCounter = 0;
-
-            while (destBlobProperties.Result.Value.BlobCopyStatus == CopyStatus.Pending && timeoutCounter < 100)
-            {
-                timeoutCounter++;
-                await Task.Delay(100, cancellationToken);
-            }
-
-            if (destBlobProperties.Result.Value.BlobCopyStatus == CopyStatus.Success)
-            {
-                await srcBlob.DeleteAsync(DeleteSnapshotsOption.IncludeSnapshots, cancellationToken: cancellationToken);
-                return true;
-            }
-            else
-            {
-                _logger.LogWarning("Blob {Name} could not be renamed.", currentName);
-                await destinationBlob.AbortCopyFromUriAsync(copyOperation.Id, cancellationToken: cancellationToken);
-                return false;
-            }
+            // Renaming a blob involves the copy operations. Reusing the move document method with the source and destination container names being the same.
+            await MoveDocument(key, container, currentName, container, newName, cancellationToken);
         }
 
-        public async Task<bool> MoveDocument(string srcContainer, string blobName, string destContainer, CancellationToken cancellationToken)
+        public async Task MoveDocument(string key, string srcContainer, string srcName, string destContainer, string destName, CancellationToken cancellationToken)
         {
-            if (string.IsNullOrEmpty(srcContainer) || string.IsNullOrEmpty(blobName) || string.IsNullOrEmpty(destContainer))
+            if (string.IsNullOrEmpty(srcContainer) || string.IsNullOrEmpty(srcName) || string.IsNullOrEmpty(destContainer) || string.IsNullOrEmpty(destName))
             {
                 _logger.LogWarning("One or more arguments were not provided.");
-                return false;
+                throw new ArgumentException("One or more arguments were not provided.");
             }
 
-            var sourceContainer = GetBlobContainerClient(srcContainer);
-            var srcBlob = sourceContainer.GetBlobClient(blobName);
-
-            var destinationContainer = GetBlobContainerClient(destContainer);
-            var destBlob = destinationContainer.GetBlobClient(blobName);
-
-            var copyOperation = await destBlob.StartCopyFromUriAsync(new Uri(srcBlob.Uri.ToString()), cancellationToken: cancellationToken);
-
-            var destBlobProperties = destBlob.GetPropertiesAsync();
-
-            var timeoutCounter = 0;
-            while (destBlobProperties.Result.Value.BlobCopyStatus == CopyStatus.Pending)
+            object? connectionString = null;
+            if (!_storageOptions.ConnectionStrings.TryGetValue(key, out connectionString))
             {
-                timeoutCounter++;
-                await Task.Delay(100, cancellationToken);
+                _logger.LogWarning("Connection string for {Key} does not exist.", key);
+                throw new ArgumentException("Connection string for " + key + " does not exist.");
+            }
+                
+            string conn = connectionString?.ToString() ?? string.Empty;
+
+            if (string.IsNullOrEmpty(conn))
+            {
+                throw new StorageServiceOperationException("Connection string cannot be null or empty.");
             }
 
-            if (destBlobProperties.Result.Value.BlobCopyStatus == CopyStatus.Success)
+            // Set source and destination blobs
+            var sourceContainer = GetBlobContainerClient(conn, srcContainer);
+            var srcBlob = sourceContainer.GetBlobClient(srcName);
+
+            var destinationContainer = GetBlobContainerClient(conn, destContainer);
+            var destBlob = destinationContainer.GetBlobClient(destName);
+
+            // Copy blob with new name
+            try
             {
-                await srcBlob.DeleteAsync(DeleteSnapshotsOption.IncludeSnapshots, cancellationToken: cancellationToken);
-                return true;
+                var copyOperation = await destBlob.StartCopyFromUriAsync(new Uri(srcBlob.Uri.ToString()), cancellationToken: cancellationToken);
             }
-            else
+            catch
             {
-                _logger.LogWarning("Blob {Name} could not be moved.", blobName);
-                await destBlob.AbortCopyFromUriAsync(copyOperation.Id, cancellationToken: cancellationToken);
-                return false;
+                throw new StorageServiceOperationException("Move Operation Failed: Blob " + srcName + " could not be moved.");
+            }
+            
+            try
+            {
+                var response = await srcBlob.DeleteAsync(DeleteSnapshotsOption.IncludeSnapshots, cancellationToken: cancellationToken);
+            }
+            catch
+            {
+                throw new StorageServiceOperationException("Move Operation Failed: Blob " + srcBlob + " could not be moved.");
             }
         }
     }
