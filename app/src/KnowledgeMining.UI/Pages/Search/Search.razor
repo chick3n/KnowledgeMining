@@ -29,7 +29,7 @@
         </MudItem>
         <MudItem xs="12" md="12">
             <MudToolBar Style="height: 20px">
-                <MudText><MudIcon Icon="@Icons.Filled.CalendarMonth" Color="Color.Primary" Title="Time Span"></MudIcon> Time Span:</MudText>
+                <MudText><MudIcon Icon="@Icons.Filled.CalendarMonth" Color="Color.Primary" Title="Time Span"></MudIcon> @Localizer["timeSpan"]</MudText>
                 <MudMenu EndIcon="@Icons.Filled.ArrowDropDown" Label="@_timespanLabel">
                     <MudMenuItem OnClick="@TimeSpanAnyOnClick">@Localizer["any"]</MudMenuItem>
                     <MudMenuItem OnClick="@TimeSpanTodayOnClick">@Localizer["today"]</MudMenuItem>
@@ -37,7 +37,7 @@
                     <MudMenuItem OnClick="@TimeSpanThisMonthOnClick">@Localizer["month"]</MudMenuItem>
                     <MudMenuItem OnClick="@TimeSpanCustomOnClick">@Localizer["custom"]</MudMenuItem>
                 </MudMenu>
-                <MudText Class="pl-6"><MudIcon Icon="@Icons.Filled.Sort" Color="Color.Primary" Title="Sort By"></MudIcon> Sort By:</MudText>
+                <MudText Class="pl-6"><MudIcon Icon="@Icons.Filled.Sort" Color="Color.Primary" Title="Sort By"></MudIcon> @Localizer["sortBy"]</MudText>
                 <MudMenu EndIcon="@Icons.Filled.ArrowDropDown" Label="@_sortLabel" Disabled="@(_searchState?.TotalCount == 0)">
                     <MudMenuItem OnClick="@SortBestMatchClicked">@Localizer["bestMatch"]</MudMenuItem>
                     <MudMenuItem OnClick="@SortDateClicked">@Localizer["date"]</MudMenuItem>
@@ -73,7 +73,7 @@
                             NavigateTo="@($"/record/{Index}/")" OnPageSelectedChanged="@SearchPageSelected" 
                             PageSelected="@_selectedPage"></SearchResultsComponent>
                     </MudTabPanel>
-                    <MudTabPanel Text="Entity Map">
+                    <MudTabPanel Text=@Localizer["entityMap"]>
                         <EntityMapComponent FacetableFields="@_searchState.FacetableFields" IndexName="@_indexItem.IndexName" SearchText="@SearchText" />
                     </MudTabPanel>
                 </div>

@@ -1,6 +1,7 @@
 ﻿@page "/metrics/{Index}"
+@inject IStringLocalizer<SharedResources> Localizer
 
-<PageTitle>Metrics</PageTitle>
+<PageTitle>@Localizer["metrics"]</PageTitle>
 
 <MudContainer MaxWidth="MaxWidth.Large" Class="mt-4">
     @if(TotalWords != null || TotalWordsExclude != null || TotalDocuments != null || IndexSize != null) 
@@ -16,7 +17,7 @@
                             <MudIcon Icon="@Icons.Filled.Grid4x4" Style="@("font-size: 4rem; color: " + GetColorAsHex())" />
                             <MudStack Row="false"  Spacing="0">
                                 <MudText Typo="Typo.h4">@TotalWords</MudText>
-                                <MudText Typo="Typo.h5" Align="Align.Right">Total Words</MudText>
+                                <MudText Typo="Typo.h5" Align="Align.Right">@Localizer["totalWords"]</MudText>
                             </MudStack>
                         </MudStack>
                     </MudPaper>
@@ -29,8 +30,8 @@
                             <MudIcon Icon="@Icons.Filled.Grid3x3"  Style="@("font-size: 4rem; color: " + GetColorAsHex())" />
                             <MudStack Row="false" Spacing="0">
                                 <MudText Typo="Typo.h4">@TotalWordsExclude</MudText>
-                                <MudText Typo="Typo.h5" Align="Align.Right">Total Words</MudText>
-                                <MudText Typo="Typo.caption" Align="Align.Right">Excluding Stop Words</MudText>
+                                <MudText Typo="Typo.h5" Align="Align.Right">@Localizer["totalWords"]</MudText>
+                                <MudText Typo="Typo.caption" Align="Align.Right">@Localizer["exTotalWords"]</MudText>
                             </MudStack>
                         </MudStack>
                     </MudPaper>
@@ -43,7 +44,7 @@
                             <MudIcon Icon="@Icons.Outlined.InsertDriveFile"  Style="@("font-size: 4rem; color: " + GetColorAsHex())" />
                             <MudStack Row="false" Spacing="0">
                                 <MudText Typo="Typo.h4">@TotalDocuments</MudText>
-                                <MudText Typo="Typo.h5" Align="Align.Right">Documents</MudText>
+                                <MudText Typo="Typo.h5" Align="Align.Right">@Localizer["documents"]</MudText>
                             </MudStack>
                         </MudStack>
                     </MudPaper>
@@ -56,7 +57,7 @@
                             <MudIcon Icon="@Icons.Filled.Storage"  Style="@("font-size: 4rem; color: " + GetColorAsHex())" />
                             <MudStack Row="false" Spacing="0">
                                 <MudText Typo="Typo.h4">@IndexSize</MudText>
-                                <MudText Typo="Typo.h5" Align="Align.Right">Index Size</MudText>
+                                <MudText Typo="Typo.h5" Align="Align.Right">@Localizer["indexSize"]</MudText>
                             </MudStack>
                         </MudStack>
                     </MudPaper>
@@ -93,7 +94,7 @@
 
     @if(TopWordsExclude != null || TopWords != null) 
     {
-        <MudText Typo="Typo.h5">Top Words</MudText>
+        <MudText Typo="Typo.h5">@Localizer["TopWords"]</MudText>
         <hr/>
         <MudGrid>
             @if (TopWordsExclude != null)

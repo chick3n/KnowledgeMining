@@ -2,6 +2,7 @@
 @using KnowledgeMining.UI.Pages.Search.Components
 @using KnowledgeMining.UI.Services.Links
 @inject ILinkGenerator LinkGenerator;
+@inject IStringLocalizer<SharedResources> Localizer
 
 <MudDialog>
     <TitleContent>
@@ -23,7 +24,7 @@
         </MudContainer>
     </DialogContent>
     <DialogActions>
-        <MudButton OnClick="Cancel">Close</MudButton>
+        <MudButton OnClick="Cancel">@Localizer["close"]</MudButton>
     </DialogActions>
 </MudDialog>
 

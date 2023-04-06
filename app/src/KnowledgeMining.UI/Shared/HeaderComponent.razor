@@ -34,9 +34,9 @@
                 }
                 else
                 {    
-                    <MudMenu AnchorOrigin="Origin.BottomLeft" 
-                        FullWidth="true" Label="@nav.Key"  EndIcon="@Icons.Outlined.ArrowDropDown" 
-                        ButtonType="ButtonType.Button" Variant="Variant.Text">
+                    <MudMenu AnchorOrigin="Origin.BottomLeft"
+                 FullWidth="true" Label=@Localizer["dashboards"] EndIcon="@Icons.Outlined.ArrowDropDown"
+                 ButtonType="ButtonType.Button" Variant="Variant.Text">
                         @foreach(var link in nav.Value)
                         {
                             <MudButton Variant="Variant.Text" Href="@link.Url" Target="_self">@GetCurrentLanguage.GetLocalizedText(@link.Name)</MudButton>
@@ -77,6 +77,7 @@
 @code {
         [CascadingParameter]
         public RouteData? RouteData { get; set; }
+
 
     private Dictionary<string, List<IndexNavigationItem>>? indexNavigationItems;
     private string? IndexName { get; set; }

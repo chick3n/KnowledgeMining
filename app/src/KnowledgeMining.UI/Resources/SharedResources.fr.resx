@@ -117,17 +117,35 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <data name="action" xml:space="preserve">
+    <value>Action</value>
+  </data>
   <data name="any" xml:space="preserve">
     <value>N'importe Quel</value>
   </data>
   <data name="bestMatch" xml:space="preserve">
     <value>Meilleure correspondance</value>
   </data>
+  <data name="cancel" xml:space="preserve">
+    <value>Annuler</value>
+  </data>
   <data name="clear" xml:space="preserve">
     <value>Effacer les Filtres</value>
   </data>
+  <data name="clear1" xml:space="preserve">
+    <value>Claire</value>
+  </data>
+  <data name="close" xml:space="preserve">
+    <value>Fermer</value>
+  </data>
+  <data name="createdBy" xml:space="preserve">
+    <value>Créé par</value>
+  </data>
+  <data name="createdOn" xml:space="preserve">
+    <value>Créé sur</value>
+  </data>
   <data name="custom" xml:space="preserve">
-    <value>coutume</value>
+    <value>Coutume</value>
   </data>
   <data name="dashboards" xml:space="preserve">
     <value>Tableau de Bord</value>
@@ -135,11 +153,38 @@
   <data name="date" xml:space="preserve">
     <value>Date</value>
   </data>
+  <data name="delete" xml:space="preserve">
+    <value>Suprrimer</value>
+  </data>
+  <data name="deleteDocument" xml:space="preserve">
+    <value>Supprimer le document</value>
+  </data>
+  <data name="details" xml:space="preserve">
+    <value>Détails</value>
+  </data>
   <data name="DocCracker" xml:space="preserve">
     <value>Doc Cracker</value>
   </data>
+  <data name="documentName" xml:space="preserve">
+    <value>Nom du Document</value>
+  </data>
+  <data name="documents" xml:space="preserve">
+    <value>Documents</value>
+  </data>
+  <data name="documentType" xml:space="preserve">
+    <value>Type de Document</value>
+  </data>
   <data name="English" xml:space="preserve">
     <value>English</value>
+  </data>
+  <data name="entityMap" xml:space="preserve">
+    <value>Carte D'entité</value>
+  </data>
+  <data name="external" xml:space="preserve">
+    <value>Externe</value>
+  </data>
+  <data name="exTotalWords" xml:space="preserve">
+    <value>Exclure les mots vides</value>
   </data>
   <data name="Français" xml:space="preserve">
     <value>Français</value>
@@ -147,14 +192,107 @@
   <data name="home" xml:space="preserve">
     <value>Maison</value>
   </data>
+  <data name="indexSize" xml:space="preserve">
+    <value>Taille de l'index</value>
+  </data>
+  <data name="jobID" xml:space="preserve">
+    <value>ID de tâche</value>
+  </data>
+  <data name="key" xml:space="preserve">
+    <value>Clé</value>
+  </data>
+  <data name="loading" xml:space="preserve">
+    <value>Chargement...</value>
+  </data>
+  <data name="metadata" xml:space="preserve">
+    <value>Métadonnées</value>
+  </data>
+  <data name="metrics" xml:space="preserve">
+    <value>Métrique</value>
+  </data>
   <data name="month" xml:space="preserve">
     <value>Ce Mois-Ci</value>
+  </data>
+  <data name="name" xml:space="preserve">
+    <value>Nom</value>
+  </data>
+  <data name="noDocumentsFound" xml:space="preserve">
+    <value>Aucun document trouvé</value>
+  </data>
+  <data name="parameters" xml:space="preserve">
+    <value>Paramètres</value>
+  </data>
+  <data name="property" xml:space="preserve">
+    <value>Propriété</value>
+  </data>
+  <data name="readMore" xml:space="preserve">
+    <value>En Savoir Plus</value>
+  </data>
+  <data name="record" xml:space="preserve">
+    <value>Enregistrer</value>
+  </data>
+  <data name="refresh" xml:space="preserve">
+    <value>Rafraîchir</value>
+  </data>
+  <data name="relatedDocs" xml:space="preserve">
+    <value>Documents Connexes</value>
+  </data>
+  <data name="remove" xml:space="preserve">
+    <value>Retirer</value>
+  </data>
+  <data name="request" xml:space="preserve">
+    <value>Demande</value>
+  </data>
+  <data name="save" xml:space="preserve">
+    <value>Sauvegarder</value>
   </data>
   <data name="search" xml:space="preserve">
     <value>Recherche</value>
   </data>
+  <data name="searchResults" xml:space="preserve">
+    <value>Résultats de recherche</value>
+  </data>
+  <data name="searchTranscript" xml:space="preserve">
+    <value>Rechercher dans la transcription</value>
+  </data>
+  <data name="selectDocumentType" xml:space="preserve">
+    <value>Sélectionnez le type de document</value>
+  </data>
+  <data name="sortBy" xml:space="preserve">
+    <value>Trier Par:</value>
+  </data>
+  <data name="source" xml:space="preserve">
+    <value>Source</value>
+  </data>
+  <data name="state" xml:space="preserve">
+    <value>État</value>
+  </data>
+  <data name="summary" xml:space="preserve">
+    <value>Résumé</value>
+  </data>
+  <data name="timeSpan" xml:space="preserve">
+    <value>Période:</value>
+  </data>
   <data name="today" xml:space="preserve">
     <value>Aujourd'hui</value>
+  </data>
+  <data name="TopWords" xml:space="preserve">
+    <value>Principaux mots</value>
+  </data>
+  <data name="totalWords" xml:space="preserve">
+    <value>Mots totaux</value>
+  </data>
+  <data name="transcript" xml:space="preserve">
+    <value>Transcription</value>
+  </data>
+  <data name="upload" xml:space="preserve">
+    <value>Télécharger</value>
+  </data>
+  <data name="uploadDocuments" xml:space="preserve">
+    <value>Télécharger des documents</value>
+  </data>
+  <data name="value" xml:space="preserve">
+    <value>Valeur</value>
   </data>
   <data name="week" xml:space="preserve">
     <value>Cette Semaine</value>

@@ -3,8 +3,9 @@
 @using MediatR
 @using KnowledgeMining.Application.Documents.Queries.GetIndex
 @inject IMediator Mediator;
+@inject IStringLocalizer<SharedResources> Localizer
 
-<PageTitle>External</PageTitle>
+<PageTitle>@Localizer["external"]</PageTitle>
 
 <div style="height: 90vh">
     <iframe title=""
