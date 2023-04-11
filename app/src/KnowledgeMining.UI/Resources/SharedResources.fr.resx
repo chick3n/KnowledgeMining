@@ -121,19 +121,19 @@
     <value>Action</value>
   </data>
   <data name="any" xml:space="preserve">
-    <value>N'importe Quel</value>
+    <value>N'importe quel</value>
   </data>
   <data name="bestMatch" xml:space="preserve">
-    <value>Meilleure correspondance</value>
+    <value>Meilleurs résultats</value>
   </data>
   <data name="cancel" xml:space="preserve">
     <value>Annuler</value>
   </data>
   <data name="clear" xml:space="preserve">
-    <value>Effacer les Filtres</value>
+    <value>Effacer les filtres</value>
   </data>
   <data name="clear1" xml:space="preserve">
-    <value>Claire</value>
+    <value>Effacer</value>
   </data>
   <data name="close" xml:space="preserve">
     <value>Fermer</value>
@@ -145,16 +145,16 @@
     <value>Créé sur</value>
   </data>
   <data name="custom" xml:space="preserve">
-    <value>Coutume</value>
+    <value>Sur mesure</value>
   </data>
   <data name="dashboards" xml:space="preserve">
-    <value>Tableau de Bord</value>
+    <value>Tableau de bord</value>
   </data>
   <data name="date" xml:space="preserve">
     <value>Date</value>
   </data>
   <data name="delete" xml:space="preserve">
-    <value>Suprrimer</value>
+    <value>Supprimer</value>
   </data>
   <data name="deleteDocument" xml:space="preserve">
     <value>Supprimer le document</value>
@@ -166,19 +166,19 @@
     <value>Doc Cracker</value>
   </data>
   <data name="documentName" xml:space="preserve">
-    <value>Nom du Document</value>
+    <value>Nom du document</value>
   </data>
   <data name="documents" xml:space="preserve">
     <value>Documents</value>
   </data>
   <data name="documentType" xml:space="preserve">
-    <value>Type de Document</value>
+    <value>Type de document</value>
   </data>
   <data name="English" xml:space="preserve">
     <value>English</value>
   </data>
   <data name="entityMap" xml:space="preserve">
-    <value>Carte D'entité</value>
+    <value>Carte d'entité</value>
   </data>
   <data name="external" xml:space="preserve">
     <value>Externe</value>
@@ -190,7 +190,7 @@
     <value>Français</value>
   </data>
   <data name="home" xml:space="preserve">
-    <value>Maison</value>
+    <value>Accueil</value>
   </data>
   <data name="indexSize" xml:space="preserve">
     <value>Taille de l'index</value>
@@ -211,7 +211,7 @@
     <value>Métrique</value>
   </data>
   <data name="month" xml:space="preserve">
-    <value>Ce Mois-Ci</value>
+    <value>Ce mois-ci</value>
   </data>
   <data name="name" xml:space="preserve">
     <value>Nom</value>
@@ -226,7 +226,7 @@
     <value>Propriété</value>
   </data>
   <data name="readMore" xml:space="preserve">
-    <value>En Savoir Plus</value>
+    <value>En savoir plus</value>
   </data>
   <data name="record" xml:space="preserve">
     <value>Enregistrer</value>
@@ -271,16 +271,16 @@
     <value>Résumé</value>
   </data>
   <data name="timeSpan" xml:space="preserve">
-    <value>Période:</value>
+    <value>Durée:</value>
   </data>
   <data name="today" xml:space="preserve">
     <value>Aujourd'hui</value>
   </data>
   <data name="TopWords" xml:space="preserve">
-    <value>Principaux mots</value>
+    <value>Mots principaux</value>
   </data>
   <data name="totalWords" xml:space="preserve">
-    <value>Mots totaux</value>
+    <value>Total des mots</value>
   </data>
   <data name="transcript" xml:space="preserve">
     <value>Transcription</value>
@@ -295,7 +295,7 @@
     <value>Valeur</value>
   </data>
   <data name="week" xml:space="preserve">
-    <value>Cette Semaine</value>
+    <value>Cette semaine</value>
   </data>
   <data name="WhatSearch" xml:space="preserve">
     <value>Que recherchez-vous aujourd'hui ?</value>
