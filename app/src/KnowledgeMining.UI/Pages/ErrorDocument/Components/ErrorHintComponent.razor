@@ -1,0 +1,28 @@
+﻿<style>
+    p {
+        margin-top: 10px;
+    }
+</style>
+
+<MudDialog>
+    <TitleContent>
+        <MudText Typo="Typo.h6">
+            <MudIcon Color="Color.Info" Icon="@Icons.Material.Filled.Info"></MudIcon>
+            @ErrorName
+        </MudText>
+    </TitleContent>
+    <DialogContent>
+        @Hint
+    </DialogContent>
+    <DialogActions>
+        <MudButton Color="Color.Error" OnClick="Okay">Okay</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [Parameter] public string? ErrorName { get; set; }
+    [Parameter] public string? Hint { get; set; }
+    [CascadingParameter] MudDialogInstance MudDialog { get; set; }
+
+    void Okay() => MudDialog.Close(DialogResult.Ok(true));
+}

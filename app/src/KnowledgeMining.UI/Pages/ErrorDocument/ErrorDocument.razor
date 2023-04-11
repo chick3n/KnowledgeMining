@@ -3,6 +3,7 @@
 @using Microsoft.AspNetCore.Hosting
 @using Microsoft.Extensions.Hosting
 @using KnowledgeMining.UI.Services.Links
+@using KnowledgeMining.UI.Helpers;
 
 @inject ILinkGenerator LinkGenerator;
 @inject IWebHostEnvironment HostEnvironment
@@ -32,6 +33,15 @@
     .mudbutton {
         margin: 0 10px 0 10px;
     }
+    .error-col {
+        width: 33%;
+    }
+    .metadata-key-col {
+        width: 33%;
+    }
+    .metadata-value-col {
+        width: 66%;
+    }
 </style>
 
 <PageTitle>Ingestion Error Correction</PageTitle>
@@ -60,16 +70,16 @@
                         <MudSimpleTable>
                             <thead>
                                 <tr>
-                                    <th>Key</th>
-                                    <th>Value</th>
+                                    <th class="metadata-key-col">Key</th>
+                                    <th class="metadata-value-col">Value</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 @foreach (var key in _document.Metadata.Keys)
                                 {
                                     <tr>
-                                        <td>@key</td>
-                                        <td>@_document.Metadata[key]</td>
+                                        <td class="metadata-key-col">@key</td>
+                                        <td class="metadata-value-col">@_document.Metadata[key]</td>
                                     </tr>
                                 }
                             </tbody>
@@ -85,27 +95,25 @@
                     <MudSimpleTable>
                         <thead>
                             <tr>
-                                <th>Error Name</th>
-                                <th>Error Value</th>
+                                <th class="error-col">Error Code</th>
+                                <th class="error-col">Error Name</th>
+                                <th class="error-col">Error Value</th>
                             </tr>
                         </thead>
                         <tbody>
-                            @foreach (var error in _document.Metadata["error"].Split(';'))
-                            {
+                            @foreach (var error in ErrorHelper.GetErrorsFromMetadata(_document.Metadata["error"]))
+                            {   
                                 <tr>
                                     <!-- add Title="@(()=> GetErrorHint(error.Split(':')[0]))" to a mudIcon or mudAvatar-->
-                                    <td>
-                                        <MudIcon Icon="@Icons.Material.Outlined.Info" Size="Size.Small" Title="Test"></MudIcon>
-                                        @error.Split(':')[0]
+                                    <td class="error-col">
+                                        <MudIcon Icon="@Icons.Material.Outlined.Info" Size="Size.Small" Title="@ErrorHelper.GetErrorHint(error, _indexItem)"></MudIcon>
+                                        @error.Code.ToString()
                                     </td>
-                                    @if (error.Split(':').Length > 1 )
-                                    {
-                                        <td>@error.Split(':')[1]</td>
-                                    }
-                                    else
-                                    {
-                                        <td></td>
-                                    }
+
+                                    <td class="error-col">@ErrorHelper.GetErrorName(error, _indexItem)</td>
+
+                                    
+                                    <td class="error-col">@error.Value</td>
                                     
                                 </tr>
                             }

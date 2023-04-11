@@ -55,7 +55,7 @@ namespace KnowledgeMining.UI.Pages.ErrorDocument
             await GetIndexItem();
             await GetErrorDocument();
 
-            _indexItem.DeserializedErrorHints = Newtonsoft.Json.JsonConvert.DeserializeObject<Dictionary<string, Dictionary<string, string>>>(_indexItem.ErrorHints.ToString());
+            _indexItem.DeserializedErrorHints = Newtonsoft.Json.JsonConvert.DeserializeObject<Dictionary<string, Dictionary<string, dynamic>>>(_indexItem.ErrorHints.ToString());
 
             DisplayFilename = _document.Name;
             FilenameChangeWarningIconClass = "row-item invisible";
@@ -225,9 +225,16 @@ namespace KnowledgeMining.UI.Pages.ErrorDocument
         }
 
         /*
-        private string GetErrorHint(string errorName, string language)
+        private async void DisplayHintDialog(ErrorHelper.Error error)
         {
-            return _indexItem.ErrorHints.InvalidDate.FrenchString;
+            var options = new DialogOptions { CloseOnEscapeKey = false };
+            var parameters = new DialogParameters {
+                ["ErrorName"] = ErrorHelper.GetErrorName(error, _indexItem),
+                ["Hint"] = ErrorHelper.GetErrorHint(error, _indexItem)
+            };
+
+            var dialog = DialogService.Show<ConfirmDeleteDialogComponent>("Error Hint", parameters, options);
+            var result = await dialog.Result;
         }
         */
 
