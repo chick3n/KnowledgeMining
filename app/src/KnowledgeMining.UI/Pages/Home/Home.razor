@@ -2,12 +2,14 @@
 
 @inject NavigationManager NavigationManager
 @inject IMediator Mediator
+@inject IStringLocalizer<SharedResources> Localizer
 
 @using KnowledgeMining.Application.Documents.Queries.GetAutocompleteSuggestions
 @using KnowledgeMining.Application.Documents.Queries.GetIndex
 @using KnowledgeMining.Domain.Entities
+@using KnowledgeMining.UI.Helpers
 
-<PageTitle>Home</PageTitle>
+<PageTitle>@Localizer["home"]</PageTitle>
 
 <style>
     .justify-title {
@@ -24,15 +26,15 @@
 <MudPaper Height="400px" Width="100%" Class="mud-theme-info d-flex align-center" Square="true" Elevation="0">
     <MudContainer MaxWidth="MaxWidth.Small">
         <div class="justify-title">
-            Document Cracker
+            @Localizer["DocCracker"]
         </div>
         @if(_indexItem != null) {
             <div style="width:100%">
-                <MudText Typo="Typo.h5" Align="Align.Right">@_indexItem.Name</MudText>
+                <MudText Typo="Typo.h5" Align="Align.Right">@GetCurrentLanguage.GetLocalizedText(_indexItem.Name)</MudText>
             </div>
         }
         <MudPaper Style="@($"background: {Theme.Palette.White}")" Elevation="1">
-            <MudAutocomplete T="string" Label="What are you searching for today?" @bind-Value="searchQuery" SearchFunc="@AutoComplete"
+            <MudAutocomplete T="string" Label=@Localizer["WhatSearch"] @bind-Value="searchQuery" SearchFunc="@AutoComplete"
                              ResetValueOnEmptyText="true"
                              CoerceText="true"
                              CoerceValue="true"

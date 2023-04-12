@@ -1,16 +1,18 @@
-﻿<MudDialog>
+﻿@inject IStringLocalizer<SharedResources> Localizer
+
+<MudDialog>
     <TitleContent>
         <MudText Typo="Typo.h6">
             <MudIcon Icon="@Icons.Material.Filled.DeleteForever" Class="mr-3 mb-n1"/>
-            Delete document?
+            @Localizer["deleteDocument"]
         </MudText>
     </TitleContent>
     <DialogContent>
-        <MudTextField Value="@Document.Name" Label="Document Name" ReadOnly="true"/>
+        <MudTextField Value="@Document.Name" Label=@Localizer["documentName"] ReadOnly="true" />
     </DialogContent>
     <DialogActions>
-        <MudButton OnClick="Cancel">Cancel</MudButton>
-        <MudButton Color="Color.Error" OnClick="DeleteDocument">Delete</MudButton>
+        <MudButton OnClick="Cancel">@Localizer["cancel"]</MudButton>
+        <MudButton Color="Color.Error" OnClick="DeleteDocument">@Localizer["delete"]</MudButton>
     </DialogActions>
 </MudDialog>
 

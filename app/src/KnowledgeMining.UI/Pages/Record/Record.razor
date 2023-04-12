@@ -4,6 +4,7 @@
 @using Microsoft.Extensions.Hosting
 @using KnowledgeMining.UI.Services.Links
 
+@inject IStringLocalizer<SharedResources> Localizer
 @inject ILinkGenerator LinkGenerator;
 @inject IWebHostEnvironment HostEnvironment
 
@@ -28,7 +29,7 @@
     }
 </style>
 
-<PageTitle>Record</PageTitle>
+<PageTitle>@Localizer["record"]</PageTitle>
 <MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="mt-4">
     <MudGrid>
         <MudItem xs="12" sm="2">
@@ -144,7 +145,7 @@
                     @if(!string.IsNullOrEmpty(_title) || !string.IsNullOrEmpty(_documentMetadata?.SourcePath))
                     {
                         <div class="record_divider">
-                            <MudText Typo="Typo.h6">Details</MudText>
+                            <MudText Typo="Typo.h6">@Localizer["details"]</MudText>
                             <hr />
                             <MudStack Row="false" Spacing="1">
                                 @if(_documentMetadata?.DateTime != null)
@@ -174,8 +175,8 @@
                 {
                     @if (_moreLikeThis != null && _moreLikeThis.HasDocuments)
                     {
-                        <div class="record_divider">   
-                            <MudText Typo="Typo.h6">Related Documents</MudText>
+                        <div class="record_divider">
+                            <MudText Typo="Typo.h6">@Localizer["relatedDocs"]</MudText>
                             <hr />
                             @foreach (var document in _moreLikeThis.Documents().DistinctBy(x => x.Id))
                             {
@@ -197,7 +198,7 @@
                     @if (!string.IsNullOrWhiteSpace(_documentMetadata?.Summary))
                     {
                         <div class="record_divider">
-                            <MudText Typo="Typo.h6">Summary</MudText>
+                            <MudText Typo="Typo.h6">@Localizer["summary"]</MudText>
                             <hr />
                             <MudPaper Class="p-2" Elevation="0">
                                 <pre style="overflow-x: auto; overflow-y: scroll; white-space: pre-wrap; word-wrap: break-word; ">
@@ -210,7 +211,7 @@
                     @if (IsInlineContentType())
                     {
                         <div class="record_divider">
-                            <MudText Typo="Typo.h6">Source</MudText>
+                            <MudText Typo="Typo.h6">@Localizer["source"]</MudText>
                             <hr />
                             <MudGrid>
                                 <MudItem xs="12" sm="12">
@@ -224,7 +225,7 @@
                     else
                     {
                         <div class="record_divider">
-                            <MudText Typo="Typo.h6">Transcript</MudText>
+                            <MudText Typo="Typo.h6">@Localizer["transcript"]</MudText>
                             <hr />
                             <MudGrid>
                                 <MudItem xs="12" sm="8">
@@ -244,7 +245,7 @@
                                 </MudItem>
                                 <MudItem xs="12" sm="4">
                                     <div class="d-flex flex-column flex-shrink-1" style="position:sticky; top: 70px;">
-                                        <MudTextField T="string" Immediate="true" Placeholder="Search in transcript"  Disabled="@ShowMarkupContent()"
+                                        <MudTextField T="string" Immediate="true" Placeholder=@Localizer["searchTranscript"] Disabled="@ShowMarkupContent()"
                                             ValueChanged="UpdateTextToHighlight" Variant="Variant.Outlined"></MudTextField>
                                         <MudChipSet SelectedChipChanged="UpdateTextToHighlight" Filter="true" Class="d-flex flex-wrap">
                                             @if (_documentMetadata.KeyPhrases != null)
@@ -280,12 +281,12 @@
                     <MudTable Items="@_documentMetadata!.ToDictionary()" Hover="true"  Elevation="0"
                     Breakpoint="Breakpoint.Sm" HorizontalScrollbar="true" Virtualize="true" FixedHeader="true">
                         <HeaderContent>
-                            <MudTh>Property</MudTh>
-                            <MudTh>Value</MudTh>
+                            <MudTh>@Localizer["property"]</MudTh>
+                            <MudTh>@Localizer["value"]</MudTh>
                         </HeaderContent>
                         <RowTemplate>
-                            <MudTd DataLabel="Property" Style="vertical-align:top;">@context.Key</MudTd>
-                            <MudTd DataLabel="Value" >
+                            <MudTd DataLabel=@Localizer["property"] Style="vertical-align:top;">@context.Key</MudTd>
+                            <MudTd DataLabel=@Localizer["value"]>
                                 @if (context.Value != null && _documentMetadata.IsMetadataValueAnArray(context.Value))
                                 {
                                     <ul>
