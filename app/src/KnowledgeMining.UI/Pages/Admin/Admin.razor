@@ -3,6 +3,7 @@
 @using Microsoft.AspNetCore.Hosting
 @using Microsoft.Extensions.Hosting
 @using KnowledgeMining.UI.Services.Links
+@using KnowledgeMining.UI.Helpers;
 
 @inject ILinkGenerator LinkGenerator;
 @inject IWebHostEnvironment HostEnvironment
@@ -40,10 +41,10 @@
     }
 </style>
 
-<PageTitle>Ingestion Error Documents</PageTitle>
+<PageTitle>@Localizer["ingestionErrorDocsHeader"]</PageTitle>
 <MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="mt-4">
-   <h1 class="header">Ingestion Error Documents</h1>
-   <p class="subheader-text">Documents flagged with errors during ingestion.</p>
+   <h1 class="header">@Localizer["ingestionErrorDocsHeader"]</h1>
+   <p class="subheader-text">@Localizer["ingestionErrorDocsSubHeader"]</p>
    @if (_documentListIsLoading)
     {
         <div class="record_divider">

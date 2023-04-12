@@ -40,14 +40,14 @@ namespace KnowledgeMining.UI.Helpers
             return errors;
         }
 
-        public static string GetErrorName(Error error, IndexItem indexItem)
+        public static Localization GetErrorName(Error error, IndexItem indexItem)
         {
-            return indexItem.DeserializedErrorHints[error.Code.ToString()]["name"].ToString();
+            return indexItem.DeserializedErrorHints[error.Code.ToString()]["name"];
         }
 
-        public static string GetErrorHint(Error error, IndexItem indexItem)
+        public static Localization GetErrorHint(Error error, IndexItem indexItem)
         {
-            return indexItem.DeserializedErrorHints[error.Code.ToString()]["hint"].ToString();
+            return indexItem.DeserializedErrorHints[error.Code.ToString()]["hint"];
         }
 
         public static List<int> GetValidErrorCodes(IndexItem indexItem)

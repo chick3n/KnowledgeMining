@@ -10,6 +10,7 @@ using KnowledgeMining.UI.Models;
 using KnowledgeMining.UI.Pages.ErrorDocument.Components;
 using KnowledgeMining.Application.Documents.Commands.DeleteDocument;
 using KnowledgeMining.Application.Common.Exceptions;
+using Microsoft.Extensions.Localization;
 
 namespace KnowledgeMining.UI.Pages.ErrorDocument
 {
@@ -19,6 +20,7 @@ namespace KnowledgeMining.UI.Pages.ErrorDocument
         [Inject] public IMediator Mediator { get; set; }
         [Inject] public IJSRuntime jsRuntime { get; set; }
         [Inject] public IDialogService DialogService { get; set; }
+        [Inject] public IStringLocalizer<SharedResources> Localizer { get; set; }
 
         [Parameter] public string Index { get; set; } = default!;
         [Parameter] public string DocumentName { get; set; } = null!;
@@ -55,7 +57,7 @@ namespace KnowledgeMining.UI.Pages.ErrorDocument
             await GetIndexItem();
             await GetErrorDocument();
 
-            _indexItem.DeserializedErrorHints = Newtonsoft.Json.JsonConvert.DeserializeObject<Dictionary<string, Dictionary<string, dynamic>>>(_indexItem.ErrorHints.ToString());
+            _indexItem.DeserializedErrorHints = Newtonsoft.Json.JsonConvert.DeserializeObject<Dictionary<string, Dictionary<string, Localization>>>(_indexItem.ErrorHints.ToString());
 
             DisplayFilename = _document.Name;
             FilenameChangeWarningIconClass = "row-item invisible";

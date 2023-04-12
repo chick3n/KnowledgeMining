@@ -38,6 +38,6 @@ namespace KnowledgeMining.Domain.Entities
         [JsonPropertyName("errorHints")]
         public JsonObject? ErrorHints { get; set; }
 
-        public Dictionary<string, Dictionary<string, dynamic>>? DeserializedErrorHints { get; set; }
+        public Dictionary<string, Dictionary<string, Localization>>? DeserializedErrorHints { get; set; }
     }
 }

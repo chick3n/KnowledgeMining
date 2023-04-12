@@ -1,4 +1,7 @@
-﻿<style>
+﻿@using KnowledgeMining.UI.Helpers;
+@using Microsoft.Extensions.Localization;
+
+<style>
     p {
         margin-top: 10px;
     }
@@ -8,19 +11,20 @@
     <TitleContent>
         <MudText Typo="Typo.h6">
             <MudIcon Color="Color.Warning" Icon="@Icons.Material.Filled.WarningAmber"></MudIcon>
-            Unsaved Changes
+            @Localizer["unsavedChange"]
         </MudText>
     </TitleContent>
     <DialogContent>
-        Are you sure you want to leave this page? Unsaved changes will not be saved.
+        @Localizer["unsavedChangeDialogText"]
     </DialogContent>
     <DialogActions>
-        <MudButton OnClick="Cancel">No, stay on this page</MudButton>
-        <MudButton Color="Color.Error" OnClick="Leave">Yes, leave Anyway</MudButton>
+        <MudButton OnClick="Cancel">@Localizer["unsavedChangeDialogCancel"]</MudButton>
+        <MudButton Color="Color.Error" OnClick="Leave">@Localizer["unsavedChangeDialogLeave"]</MudButton>
     </DialogActions>
 </MudDialog>
 
 @code {
+    [Inject] public IStringLocalizer<SharedResources> Localizer { get; set; }
     [CascadingParameter] MudDialogInstance MudDialog { get; set; }
 
     void Leave() => MudDialog.Close(DialogResult.Ok(true));

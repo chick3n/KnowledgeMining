@@ -8,6 +8,8 @@ using MudBlazor;
 using KnowledgeMining.Application.Documents.Queries.GetDocuments;
 using KnowledgeMining.UI.Services.State;
 using KnowledgeMining.UI.Models;
+using KnowledgeMining.UI.Helpers;
+using Microsoft.Extensions.Localization;
 
 namespace KnowledgeMining.UI.Pages.Admin
 {
@@ -17,6 +19,7 @@ namespace KnowledgeMining.UI.Pages.Admin
         [Inject] public IMediator Mediator { get; set; }
         [Inject] public IJSRuntime jsRuntime { get; set; }
         [Inject] public DocumentCartService CartService { get; set; }
+        [Inject] public IStringLocalizer<SharedResources> Localizer { get; set; }
 
         [Parameter] public string Index { get; set; } = default!;
 

@@ -1,4 +1,7 @@
-﻿<style>
+﻿@using KnowledgeMining.UI.Helpers;
+@using Microsoft.Extensions.Localization;
+
+<style>
     p {
         margin-top: 10px;
     }
@@ -8,22 +11,23 @@
     <TitleContent>
         <MudText Typo="Typo.h6">
             <MudIcon Icon="@Icons.Material.Filled.Delete"></MudIcon>
-            Delete Document
+            @Localizer["deleteDocument"]
         </MudText>
     </TitleContent>
     <DialogContent>
-        Do you really want to delete @Filename?
+        @Localizer["confirmDeleteDialogText"] @Filename?
     </DialogContent>
     <DialogActions>
-        <MudButton OnClick="Cancel">Cancel</MudButton>
+        <MudButton OnClick="Cancel">@Localizer["cancel"]</MudButton>
         <MudButton Color="Color.Error" OnClick="Delete">
             <MudIcon Icon="@Icons.Material.Filled.Delete"></MudIcon>
-            Delete
+            @Localizer["delete"]
         </MudButton>
     </DialogActions>
 </MudDialog>
 
 @code {
+    [Inject] public IStringLocalizer<SharedResources> Localizer { get; set; }
     [Parameter] public string? Filename { get; set; }
     [CascadingParameter] MudDialogInstance MudDialog { get; set; }
 

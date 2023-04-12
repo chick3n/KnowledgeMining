@@ -4,6 +4,7 @@
 @using Microsoft.Extensions.Hosting
 @using KnowledgeMining.UI.Services.Links
 @using KnowledgeMining.UI.Helpers;
+@using KnowledgeMining.Domain.Entities;
 
 @inject ILinkGenerator LinkGenerator;
 @inject IWebHostEnvironment HostEnvironment
@@ -44,19 +45,19 @@
     }
 </style>
 
-<PageTitle>Ingestion Error Correction</PageTitle>
+<PageTitle>@Localizer["errorCorrectionHeader"]</PageTitle>
 <MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="mt-4">
     <MudGrid>
         <MudItem xs="12" sm="2">
-            <MudButton Disabled="@(!_canNavigateBack)" StartIcon="@Icons.Material.Filled.ArrowBack" Title="Back" Color="Color.Inherit" OnClick="GoBack">Back</MudButton>
+            <MudButton Disabled="@(!_canNavigateBack)" StartIcon="@Icons.Material.Filled.ArrowBack" Title="@Localizer["back"]" Color="Color.Inherit" OnClick="GoBack">@Localizer["back"]</MudButton>
         </MudItem>
         <MudItem xs="0" sm="10">
             @if(!_documentIsLoading)
             {
                 <MudItem>
                     <MudStack Row="true">
-                        <MudTextField style="font-size: 25px;" T="string" HelperText="File name changes do not take effect until the page is saved" HelperTextOnFocus="true" Label="File Name" Value="@DisplayFilename" Class="row-item document-title-overflow" ValueChanged="@( (string s) => UpdateDisplayFilename(s))"></MudTextField>
-                        <MudIcon Class="@FilenameChangeWarningIconClass" Icon="@Icons.Material.Filled.WarningAmber" Color="Color.Warning" Size="Size.Large" Title="Unsaved Change"></MudIcon>
+                        <MudTextField style="font-size: 25px;" T="string" HelperText="@Localizer["errorDocNameHelperText"]" HelperTextOnFocus="true" Label="@Localizer["documentName"]" Value="@DisplayFilename" Class="row-item document-title-overflow" ValueChanged="@( (string s) => UpdateDisplayFilename(s))"></MudTextField>
+                        <MudIcon Class="@FilenameChangeWarningIconClass" Icon="@Icons.Material.Filled.WarningAmber" Color="Color.Warning" Size="Size.Large" Title="@Localizer["unsavedChange"]"></MudIcon>
                     </MudStack>
                 </MudItem>
 
@@ -65,13 +66,13 @@
                     <MudItem Class="">
                         <MudStack Row="true" Class="section-title">
                             <MudAvatar Color="Color.Info" Variant="Variant.Filled" Class="row-item"><MudIcon Icon="@Icons.Material.Filled.Article"></MudIcon></MudAvatar>
-                            <h3 class="row-item">Document Metadata</h3>
+                            <h3 class="row-item">@Localizer["metadata"]</h3>
                         </MudStack>
                         <MudSimpleTable>
                             <thead>
                                 <tr>
-                                    <th class="metadata-key-col">Key</th>
-                                    <th class="metadata-value-col">Value</th>
+                                    <th class="metadata-key-col">@Localizer["key"]</th>
+                                    <th class="metadata-value-col">@Localizer["value"]</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -90,14 +91,14 @@
                 <MudItem Class="muditem">
                     <MudStack Row="true" Class="section-title">
                         <MudAvatar Color="Color.Info" Variant="Variant.Filled" Class="row-item"><MudIcon Icon="@Icons.Material.Filled.Error"></MudIcon></MudAvatar>
-                        <h3 class="row-item">Errors</h3>
+                        <h3 class="row-item">@Localizer["errors"]</h3>
                     </MudStack>
                     <MudSimpleTable>
                         <thead>
                             <tr>
-                                <th class="error-col">Error Code</th>
-                                <th class="error-col">Error Name</th>
-                                <th class="error-col">Error Value</th>
+                                <th class="error-col">@Localizer["code"]</th>
+                                <th class="error-col">@Localizer["name"]</th>
+                                <th class="error-col">@Localizer["value"]</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -106,15 +107,13 @@
                                 <tr>
                                     <!-- add Title="@(()=> GetErrorHint(error.Split(':')[0]))" to a mudIcon or mudAvatar-->
                                     <td class="error-col">
-                                        <MudIcon Icon="@Icons.Material.Outlined.Info" Size="Size.Small" Title="@ErrorHelper.GetErrorHint(error, _indexItem)"></MudIcon>
+                                        <MudIcon Icon="@Icons.Material.Outlined.Info" Size="Size.Small" Title="@GetCurrentLanguage.GetLocalizedText(ErrorHelper.GetErrorHint(error, _indexItem))"></MudIcon>
                                         @error.Code.ToString()
                                     </td>
 
-                                    <td class="error-col">@ErrorHelper.GetErrorName(error, _indexItem)</td>
+                                    <td class="error-col">@GetCurrentLanguage.GetLocalizedText(ErrorHelper.GetErrorName(error, _indexItem))</td>
 
-                                    
                                     <td class="error-col">@error.Value</td>
-                                    
                                 </tr>
                             }
                         </tbody>
@@ -122,8 +121,8 @@
                 </MudItem>
                 <MudItem Class="muditem">
                     <div style="display: flex; flex-direction: row; justify-content: center; align-items: center;">
-                        <MudButton Class="mudbutton" Variant="Variant.Filled" Color="Color.Success" StartIcon="@Icons.Material.Filled.Save" @onclick="Save" Disabled="SaveButtonDisabled">Save</MudButton>
-                        <MudButton Class="mudbutton" Variant="Variant.Filled" Color="Color.Error" StartIcon="@Icons.Material.Filled.Delete" @onclick="DeleteDocument">Delete</MudButton>
+                        <MudButton Class="mudbutton" Variant="Variant.Filled" Color="Color.Success" StartIcon="@Icons.Material.Filled.Save" @onclick="Save" Disabled="SaveButtonDisabled">@Localizer["save"]</MudButton>
+                        <MudButton Class="mudbutton" Variant="Variant.Filled" Color="Color.Error" StartIcon="@Icons.Material.Filled.Delete" @onclick="DeleteDocument">@Localizer["delete"]</MudButton>
                     </div>
                 </MudItem>
             }

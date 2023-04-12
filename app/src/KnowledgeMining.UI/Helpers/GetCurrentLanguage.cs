@@ -28,8 +28,6 @@ namespace KnowledgeMining.UI.Helpers
             if (currentLanguage.Equals("fr")) return obj.Fr;
 
             return obj.En ?? string.Empty;
-
-
         }
     }
 }

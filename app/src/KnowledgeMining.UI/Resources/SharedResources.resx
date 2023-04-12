@@ -123,6 +123,9 @@
   <data name="any" xml:space="preserve">
     <value>Any</value>
   </data>
+  <data name="back" xml:space="preserve">
+    <value>Back</value>
+  </data>
   <data name="bestMatch" xml:space="preserve">
     <value>Best Match</value>
   </data>
@@ -137,6 +140,12 @@
   </data>
   <data name="close" xml:space="preserve">
     <value>Close</value>
+  </data>
+  <data name="code" xml:space="preserve">
+    <value>Code</value>
+  </data>
+  <data name="confirmDeleteDialogText" xml:space="preserve">
+    <value>Do you really want to delete</value>
   </data>
   <data name="createdBy" xml:space="preserve">
     <value>Created By</value>
@@ -180,6 +189,15 @@
   <data name="entityMap" xml:space="preserve">
     <value>Entity Map</value>
   </data>
+  <data name="errorCorrectionHeader" xml:space="preserve">
+    <value>Ingestion Error Correction</value>
+  </data>
+  <data name="errorDocNameHelperText" xml:space="preserve">
+    <value>Document name changes do not take effect until the document is saved</value>
+  </data>
+  <data name="errors" xml:space="preserve">
+    <value>Errors</value>
+  </data>
   <data name="external" xml:space="preserve">
     <value>External</value>
   </data>
@@ -194,6 +212,12 @@
   </data>
   <data name="indexSize" xml:space="preserve">
     <value>Index Size</value>
+  </data>
+  <data name="ingestionErrorDocsHeader" xml:space="preserve">
+    <value>Ingestion Error Documents</value>
+  </data>
+  <data name="ingestionErrorDocsSubHeader" xml:space="preserve">
+    <value>Documents flagged with errors during ingestion.</value>
   </data>
   <data name="jobID" xml:space="preserve">
     <value>Job Id</value>
@@ -212,6 +236,9 @@
   </data>
   <data name="month" xml:space="preserve">
     <value>This Month</value>
+  </data>
+  <data name="name" xml:space="preserve">
+    <value>Name</value>
   </data>
   <data name="noDocumentsFound" xml:space="preserve">
     <value>No Documents Found</value>
@@ -281,6 +308,18 @@
   </data>
   <data name="transcript" xml:space="preserve">
     <value>Transcript</value>
+  </data>
+  <data name="unsavedChange" xml:space="preserve">
+    <value>Unsaved Change</value>
+  </data>
+  <data name="unsavedChangeDialogCancel" xml:space="preserve">
+    <value>No, stay on this page</value>
+  </data>
+  <data name="unsavedChangeDialogLeave" xml:space="preserve">
+    <value>Yes, leave anyway</value>
+  </data>
+  <data name="unsavedChangeDialogText" xml:space="preserve">
+    <value>Are you sure you want to leave this page? Unsaved changes will not be saved.</value>
   </data>
   <data name="upload" xml:space="preserve">
     <value>Upload</value>

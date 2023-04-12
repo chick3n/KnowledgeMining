@@ -123,6 +123,9 @@
   <data name="any" xml:space="preserve">
     <value>N'importe quel</value>
   </data>
+  <data name="back" xml:space="preserve">
+    <value>Retourner</value>
+  </data>
   <data name="bestMatch" xml:space="preserve">
     <value>Meilleurs résultats</value>
   </data>
@@ -137,6 +140,12 @@
   </data>
   <data name="close" xml:space="preserve">
     <value>Fermer</value>
+  </data>
+  <data name="code" xml:space="preserve">
+    <value>Code</value>
+  </data>
+  <data name="confirmDeleteDialogText" xml:space="preserve">
+    <value>Voulez-vous vraiment supprimer</value>
   </data>
   <data name="createdBy" xml:space="preserve">
     <value>Créé par</value>
@@ -180,6 +189,15 @@
   <data name="entityMap" xml:space="preserve">
     <value>Carte d'entité</value>
   </data>
+  <data name="errorCorrectionHeader" xml:space="preserve">
+    <value>Correction d'erreur d'ingestion</value>
+  </data>
+  <data name="errorDocNameHelperText" xml:space="preserve">
+    <value>Les changements de nom de document ne prennent qu'effet qu'une fois le document soit sauvegardé</value>
+  </data>
+  <data name="errors" xml:space="preserve">
+    <value>Erreurs</value>
+  </data>
   <data name="external" xml:space="preserve">
     <value>Externe</value>
   </data>
@@ -194,6 +212,12 @@
   </data>
   <data name="indexSize" xml:space="preserve">
     <value>Taille de l'index</value>
+  </data>
+  <data name="ingestionErrorDocsHeader" xml:space="preserve">
+    <value>Documents d'erreur d'ingestion</value>
+  </data>
+  <data name="ingestionErrorDocsSubHeader" xml:space="preserve">
+    <value>Documents marqués par des erreurs lors de l'ingestion.</value>
   </data>
   <data name="jobID" xml:space="preserve">
     <value>ID de tâche</value>
@@ -284,6 +308,18 @@
   </data>
   <data name="transcript" xml:space="preserve">
     <value>Transcription</value>
+  </data>
+  <data name="unsavedChange" xml:space="preserve">
+    <value>Changement non sauvegardé</value>
+  </data>
+  <data name="unsavedChangeDialogCancel" xml:space="preserve">
+    <value>Non, rester sur cette page</value>
+  </data>
+  <data name="unsavedChangeDialogLeave" xml:space="preserve">
+    <value>Oui, partir quand même</value>
+  </data>
+  <data name="unsavedChangeDialogText" xml:space="preserve">
+    <value>Voulez-vous vraiment quitter cette page? Les changements non enregistrer ne serons pas sauvegardés.</value>
   </data>
   <data name="upload" xml:space="preserve">
     <value>Télécharger</value>
