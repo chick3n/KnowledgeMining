@@ -93,6 +93,10 @@ namespace KnowledgeMining.UI.Pages.ErrorDocument
             _indexItem = indexResponse.IndexItem;
         }
 
+        /// <summary>
+        /// Gets document information (including metadata) from the error storage container.
+        /// </summary>
+        /// <returns></returns>
         private async Task GetErrorDocument()
         {
             var documentResponse = await Mediator.Send(new GetDocumentQuery(_indexItem.Storage.Key, _indexItem.Storage.ErrorContainer, DocumentName));
@@ -238,6 +242,9 @@ namespace KnowledgeMining.UI.Pages.ErrorDocument
         }
         */
 
+        /// <summary>
+        /// Marks document for deletion in the error storage container, displays a Snackbar indicating success and calls the GoBack method to return to the list of error files.
+        /// </summary>
         private async void DeleteDocument()
         {
             var options = new DialogOptions { CloseOnEscapeKey = false };
@@ -252,6 +259,7 @@ namespace KnowledgeMining.UI.Pages.ErrorDocument
 
                 try
                 {
+                    // TODO: Use current filename (Justin)
                     await Mediator.Send(new DeleteErrorDocumentCommand("(Test_file)-justin.txt", _indexItem.Storage.ErrorContainer, _indexItem.Storage.Key));
 
                     Snackbar.Add(_document.Name + " was marked to be deleted. This may take a few minutes.", Severity.Success);
@@ -265,12 +273,13 @@ namespace KnowledgeMining.UI.Pages.ErrorDocument
             }
         }
 
+        /// <summary>
+        /// Save changes made to the document.
+        /// 
+        /// Includes renaming the document and moving the document from the error container to the document's source container.
+        /// </summary>
         private async void Save()
-        {
-            // Rename the file and copy it to source container (using _displayedFilename, source container metadata)
-            // Delete file in error-documents
-            // display snackbar
-            
+        {           
             try
             {
                 // Rename the file
@@ -286,6 +295,10 @@ namespace KnowledgeMining.UI.Pages.ErrorDocument
             }
         }
 
+        /// <summary>
+        /// Method called when the value of the document name input field changes. Sets the flags for warnings of unsaved changes (dialogs and icons) and enables the save button.
+        /// </summary>
+        /// <param name="newName">New name to assign to the document.</param>
         private void UpdateDisplayFilename(string newName)
         {
             // Display warning icon indicating that the filename was changed but not saved.
