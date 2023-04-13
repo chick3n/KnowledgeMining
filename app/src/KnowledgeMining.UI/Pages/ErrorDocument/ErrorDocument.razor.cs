@@ -11,6 +11,7 @@ using KnowledgeMining.UI.Pages.ErrorDocument.Components;
 using KnowledgeMining.Application.Documents.Commands.DeleteDocument;
 using KnowledgeMining.Application.Common.Exceptions;
 using Microsoft.Extensions.Localization;
+using System;
 
 namespace KnowledgeMining.UI.Pages.ErrorDocument
 {
@@ -21,6 +22,7 @@ namespace KnowledgeMining.UI.Pages.ErrorDocument
         [Inject] public IJSRuntime jsRuntime { get; set; }
         [Inject] public IDialogService DialogService { get; set; }
         [Inject] public IStringLocalizer<SharedResources> Localizer { get; set; }
+        [Inject] public NavigationManager NavigationManager { get; set; }
 
         [Parameter] public string Index { get; set; } = default!;
         [Parameter] public string DocumentName { get; set; } = null!;
@@ -220,14 +222,22 @@ namespace KnowledgeMining.UI.Pages.ErrorDocument
 
                 if (!result.Cancelled && _canNavigateBack)
                 {
-                    await jsRuntime.InvokeVoidAsync("history.back");
+                    // Forcefully go back to the admin page. Avoids issues if the language was changed before the file is deleted.
+                    NavigationManager.NavigateTo(
+                        NavigationManager.BaseUri + "/" + Index + "/admin/",
+                        forceLoad: true
+                    );
                 }
             }
             else
             {
                 if (_canNavigateBack)
                 {
-                    await jsRuntime.InvokeVoidAsync("history.back");
+                    // Forcefully go back to the admin page. Avoids issues if the language was changed before the file is deleted.
+                    NavigationManager.NavigateTo(
+                        NavigationManager.BaseUri + "/" + Index + "/admin/",
+                        forceLoad: true
+                    );
                 }
             }
         }
@@ -264,7 +274,7 @@ namespace KnowledgeMining.UI.Pages.ErrorDocument
                 try
                 {
                     // TODO: Use current filename (Justin)
-                    await Mediator.Send(new DeleteErrorDocumentCommand("(Test_file)-justin.txt", _indexItem.Storage.ErrorContainer, _indexItem.Storage.Key));
+                    await Mediator.Send(new DeleteErrorDocumentCommand(_document.Name, _indexItem.Storage.ErrorContainer, _indexItem.Storage.Key));
 
                     Snackbar.Add(_document.Name + " was marked to be deleted. This may take a few minutes.", Severity.Success);
                 }
