@@ -322,6 +322,10 @@ namespace KnowledgeMining.UI.Pages.Record
                 && _azureBlobConnector != null;
         }
 
+        /// <summary>
+        /// Determines if the record content is meant to be displayed with markeup
+        /// </summary>
+        /// <returns></returns>
         private bool ShowMarkupContent()
         {
             return _documentMetadata?.SourceType?.Equals("html") ?? false;
