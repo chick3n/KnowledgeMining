@@ -53,6 +53,8 @@ namespace KnowledgeMining.UI.Pages.ErrorDocument
         {
             _ = Index ?? throw new ArgumentNullException(nameof(Index));
             _ = DocumentName ?? throw new ArgumentNullException(nameof(DocumentName));
+            var valueBytes = Convert.FromBase64String(DocumentName);
+            DocumentName = System.Text.Encoding.UTF8.GetString(valueBytes);
 
             await GetIndexItem();
             await GetErrorDocument();

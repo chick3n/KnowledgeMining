@@ -57,7 +57,7 @@
             @foreach (var document in _errorDocuments)
             {
                 <li>
-                    <a href="@($"/{Index}/admin/{NavigateTo}{document.Name}")">@document.Name</a>
+                    <a href="@($"/{Index}/admin/{NavigateTo}{ToBase64(document.Name)}")">@document.Name</a>
                 </li>
             }
         </ul>

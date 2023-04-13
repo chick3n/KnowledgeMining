@@ -92,5 +92,11 @@ namespace KnowledgeMining.UI.Pages.Admin
 
             _documentListIsLoading = false;
         }
+
+        private string ToBase64(string documentName)
+        {
+            var bytes = System.Text.Encoding.UTF8.GetBytes(documentName);
+            return System.Convert.ToBase64String(bytes);
+        }
     }
 }
