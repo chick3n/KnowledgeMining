@@ -162,6 +162,9 @@
   <data name="date" xml:space="preserve">
     <value>Date</value>
   </data>
+  <data name="dateFormat" xml:space="preserve">
+    <value>AAAA-MM-JJ</value>
+  </data>
   <data name="delete" xml:space="preserve">
     <value>Supprimer</value>
   </data>
@@ -224,6 +227,9 @@
   </data>
   <data name="key" xml:space="preserve">
     <value>Clé</value>
+  </data>
+  <data name="lastModifiedOn" xml:space="preserve">
+    <value>Dernière modification</value>
   </data>
   <data name="loading" xml:space="preserve">
     <value>Chargement...</value>

@@ -98,5 +98,19 @@ namespace KnowledgeMining.UI.Pages.Admin
             var bytes = System.Text.Encoding.UTF8.GetBytes(documentName);
             return System.Convert.ToBase64String(bytes);
         }
+
+        private string GetLastModifiedDate(DateTimeOffset? dateTimeOffset)
+        {
+            if (dateTimeOffset != null)
+            {
+                var dateTime = dateTimeOffset.Value.Date;
+
+                return dateTime.ToString("yyyy-MM-dd");
+            }
+            else
+            {
+                return string.Empty;
+            }
+        }
     }
 }

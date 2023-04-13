@@ -56,7 +56,7 @@ namespace KnowledgeMining.Infrastructure.Services.Storage
 
                 return new GetDocumentsResponse()
                 {
-                    Documents = page?.Values?.Select(b => new SearchDocument(b.Name, b.Tags, b.Metadata)) ?? Enumerable.Empty<SearchDocument>(),
+                    Documents = page?.Values?.Select(b => new SearchDocument(b.Name, b.Tags, b.Properties.LastModified, b.Metadata)) ?? Enumerable.Empty<SearchDocument>(),
                     NextPage = page?.ContinuationToken
                 };
             }
@@ -91,7 +91,7 @@ namespace KnowledgeMining.Infrastructure.Services.Storage
 
                 return new GetDocumentsResponse()
                 {
-                    Documents = page?.Values?.Select(b => new SearchDocument(b.Name, b.Tags, b.Metadata)) ?? Enumerable.Empty<SearchDocument>(),
+                    Documents = page?.Values?.Select(b => new SearchDocument(b.Name, b.Tags, b.Properties.LastModified, b.Metadata)) ?? Enumerable.Empty<SearchDocument>(),
                     NextPage = page?.ContinuationToken
                 };
             }
