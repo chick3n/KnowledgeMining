@@ -1,0 +1,345 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <!-- 
+    Microsoft ResX Schema 
+    
+    Version 2.0
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
+    associated with the data types.
+    
+    Example:
+    
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+                
+    There are any number of "resheader" rows that contain simple 
+    name/value pairs.
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
+    mimetype set.
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
+    extensible. For a given mimetype the value must be set accordingly:
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
+    read any of the formats listed below.
+    
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+    
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array 
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="action" xml:space="preserve">
+    <value>Action</value>
+  </data>
+  <data name="any" xml:space="preserve">
+    <value>N'importe quel</value>
+  </data>
+  <data name="back" xml:space="preserve">
+    <value>Retourner</value>
+  </data>
+  <data name="bestMatch" xml:space="preserve">
+    <value>Meilleurs résultats</value>
+  </data>
+  <data name="cancel" xml:space="preserve">
+    <value>Annuler</value>
+  </data>
+  <data name="clear" xml:space="preserve">
+    <value>Effacer les filtres</value>
+  </data>
+  <data name="clear1" xml:space="preserve">
+    <value>Effacer</value>
+  </data>
+  <data name="close" xml:space="preserve">
+    <value>Fermer</value>
+  </data>
+  <data name="code" xml:space="preserve">
+    <value>Code</value>
+  </data>
+  <data name="confirmDeleteDialogText" xml:space="preserve">
+    <value>Voulez-vous vraiment supprimer</value>
+  </data>
+  <data name="createdBy" xml:space="preserve">
+    <value>Créé par</value>
+  </data>
+  <data name="createdOn" xml:space="preserve">
+    <value>Créé sur</value>
+  </data>
+  <data name="custom" xml:space="preserve">
+    <value>Sur mesure</value>
+  </data>
+  <data name="dashboards" xml:space="preserve">
+    <value>Tableau de bord</value>
+  </data>
+  <data name="date" xml:space="preserve">
+    <value>Date</value>
+  </data>
+  <data name="dateFormat" xml:space="preserve">
+    <value>AAAA-MM-JJ</value>
+  </data>
+  <data name="delete" xml:space="preserve">
+    <value>Supprimer</value>
+  </data>
+  <data name="deleteDocument" xml:space="preserve">
+    <value>Supprimer le document</value>
+  </data>
+  <data name="details" xml:space="preserve">
+    <value>Détails</value>
+  </data>
+  <data name="DocCracker" xml:space="preserve">
+    <value>Doc Cracker</value>
+  </data>
+  <data name="documentName" xml:space="preserve">
+    <value>Nom du document</value>
+  </data>
+  <data name="documents" xml:space="preserve">
+    <value>Documents</value>
+  </data>
+  <data name="documentType" xml:space="preserve">
+    <value>Type de document</value>
+  </data>
+  <data name="English" xml:space="preserve">
+    <value>English</value>
+  </data>
+  <data name="entityMap" xml:space="preserve">
+    <value>Carte d'entité</value>
+  </data>
+  <data name="errorCorrectionHeader" xml:space="preserve">
+    <value>Correction d'erreur d'ingestion</value>
+  </data>
+  <data name="errorDocNameHelperText" xml:space="preserve">
+    <value>Les changements de nom de document ne prennent qu'effet qu'une fois le document soit sauvegardé</value>
+  </data>
+  <data name="errors" xml:space="preserve">
+    <value>Erreurs</value>
+  </data>
+  <data name="external" xml:space="preserve">
+    <value>Externe</value>
+  </data>
+  <data name="exTotalWords" xml:space="preserve">
+    <value>Exclure les mots vides</value>
+  </data>
+  <data name="Français" xml:space="preserve">
+    <value>Français</value>
+  </data>
+  <data name="home" xml:space="preserve">
+    <value>Accueil</value>
+  </data>
+  <data name="indexSize" xml:space="preserve">
+    <value>Taille de l'index</value>
+  </data>
+  <data name="ingestionErrorDocsHeader" xml:space="preserve">
+    <value>Documents d'erreur d'ingestion</value>
+  </data>
+  <data name="ingestionErrorDocsSubHeader" xml:space="preserve">
+    <value>Documents marqués par des erreurs lors de l'ingestion.</value>
+  </data>
+  <data name="jobID" xml:space="preserve">
+    <value>ID de tâche</value>
+  </data>
+  <data name="key" xml:space="preserve">
+    <value>Clé</value>
+  </data>
+  <data name="lastModifiedOn" xml:space="preserve">
+    <value>Dernière modification</value>
+  </data>
+  <data name="loading" xml:space="preserve">
+    <value>Chargement...</value>
+  </data>
+  <data name="metadata" xml:space="preserve">
+    <value>Métadonnées</value>
+  </data>
+  <data name="metrics" xml:space="preserve">
+    <value>Métrique</value>
+  </data>
+  <data name="month" xml:space="preserve">
+    <value>Ce mois-ci</value>
+  </data>
+  <data name="name" xml:space="preserve">
+    <value>Nom</value>
+  </data>
+  <data name="noDocumentsFound" xml:space="preserve">
+    <value>Aucun document trouvé</value>
+  </data>
+  <data name="parameters" xml:space="preserve">
+    <value>Paramètres</value>
+  </data>
+  <data name="property" xml:space="preserve">
+    <value>Propriété</value>
+  </data>
+  <data name="readMore" xml:space="preserve">
+    <value>En savoir plus</value>
+  </data>
+  <data name="record" xml:space="preserve">
+    <value>Enregistrer</value>
+  </data>
+  <data name="refresh" xml:space="preserve">
+    <value>Rafraîchir</value>
+  </data>
+  <data name="relatedDocs" xml:space="preserve">
+    <value>Documents Connexes</value>
+  </data>
+  <data name="remove" xml:space="preserve">
+    <value>Retirer</value>
+  </data>
+  <data name="request" xml:space="preserve">
+    <value>Demande</value>
+  </data>
+  <data name="save" xml:space="preserve">
+    <value>Sauvegarder</value>
+  </data>
+  <data name="search" xml:space="preserve">
+    <value>Recherche</value>
+  </data>
+  <data name="searchResults" xml:space="preserve">
+    <value>Résultats de recherche</value>
+  </data>
+  <data name="searchTranscript" xml:space="preserve">
+    <value>Rechercher dans la transcription</value>
+  </data>
+  <data name="selectDocumentType" xml:space="preserve">
+    <value>Sélectionnez le type de document</value>
+  </data>
+  <data name="sortBy" xml:space="preserve">
+    <value>Trier Par:</value>
+  </data>
+  <data name="source" xml:space="preserve">
+    <value>Source</value>
+  </data>
+  <data name="state" xml:space="preserve">
+    <value>État</value>
+  </data>
+  <data name="summary" xml:space="preserve">
+    <value>Résumé</value>
+  </data>
+  <data name="timeSpan" xml:space="preserve">
+    <value>Durée:</value>
+  </data>
+  <data name="today" xml:space="preserve">
+    <value>Aujourd'hui</value>
+  </data>
+  <data name="TopWords" xml:space="preserve">
+    <value>Mots principaux</value>
+  </data>
+  <data name="totalWords" xml:space="preserve">
+    <value>Total des mots</value>
+  </data>
+  <data name="transcript" xml:space="preserve">
+    <value>Transcription</value>
+  </data>
+  <data name="unsavedChange" xml:space="preserve">
+    <value>Changement non sauvegardé</value>
+  </data>
+  <data name="unsavedChangeDialogCancel" xml:space="preserve">
+    <value>Non, rester sur cette page</value>
+  </data>
+  <data name="unsavedChangeDialogLeave" xml:space="preserve">
+    <value>Oui, partir quand même</value>
+  </data>
+  <data name="unsavedChangeDialogText" xml:space="preserve">
+    <value>Voulez-vous vraiment quitter cette page? Les changements non enregistrer ne serons pas sauvegardés.</value>
+  </data>
+  <data name="upload" xml:space="preserve">
+    <value>Télécharger</value>
+  </data>
+  <data name="uploadDocuments" xml:space="preserve">
+    <value>Télécharger des documents</value>
+  </data>
+  <data name="value" xml:space="preserve">
+    <value>Valeur</value>
+  </data>
+  <data name="week" xml:space="preserve">
+    <value>Cette semaine</value>
+  </data>
+  <data name="WhatSearch" xml:space="preserve">
+    <value>Que recherchez-vous aujourd'hui ?</value>
+  </data>
+</root>

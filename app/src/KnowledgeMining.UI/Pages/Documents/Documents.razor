@@ -1,5 +1,6 @@
 ﻿@*@page "/documents";*@
- 
+@inject IStringLocalizer<SharedResources> Localizer
+
 <PageTitle>Documents</PageTitle>
  
 <style>
@@ -9,9 +10,9 @@
 </style>
 
 <div class="d-flex flex-row-reverse mt-5 mb-5 mr-5">
-    <MudButton StartIcon="@Icons.Filled.Refresh" Variant="Variant.Filled" Color="Color.Warning" OnClick="RefreshCacheClicked">Refresh</MudButton>
-    <MudButton StartIcon="@Icons.Filled.CloudUpload" Variant="Variant.Filled" Color="Color.Info" 
-        OnClick="OpenUploadComponent" style="margin-right: 20px">Upload Documents</MudButton> 
+    <MudButton StartIcon="@Icons.Filled.Refresh" Variant="Variant.Filled" Color="Color.Warning" OnClick="RefreshCacheClicked">@Localizer["refresh"]Refresh</MudButton>
+    <MudButton StartIcon="@Icons.Filled.CloudUpload" Variant="Variant.Filled" Color="Color.Info"
+               OnClick="OpenUploadComponent" style="margin-right: 20px">@Localizer["uploadDocuments"]</MudButton>
 </div>
 <MudTable T="Document" Items="@_documents" Hover="true" Loading="@_isLoading" Style="table-layout: fixed;"
              ReadOnly="true"
@@ -24,29 +25,29 @@
             AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
     </ToolBarContent>
     <HeaderContent>
-        <MudTh>Name</MudTh>
-        <MudTh>Metadata</MudTh>
+        <MudTh>@Localizer["name"]</MudTh>
+        <MudTh>@Localizer["metadata"]</MudTh>
         <MudTh style="width: 6%;">Actions</MudTh>
     </HeaderContent>
     <RowTemplate>
-        <MudTd DataLabel="Name">@context.Name</MudTd>
-        <MudTd DataLabel="Metadata" 
-            Style="max-width: 200px; white-space:nowrap; overflow: hidden; text-overflow: ellipsis;">
-            <MudIconButton Title="Metadata" Size="@Size.Small" Icon="@Icons.Outlined.Edit" OnClick="@(async (e) => await EditDocumentMetadata(context))" />
+        <MudTd DataLabel=@Localizer["name"]>@context.Name</MudTd>
+        <MudTd DataLabel=@Localizer["metadata"]
+               Style="max-width: 200px; white-space:nowrap; overflow: hidden; text-overflow: ellipsis;">
+            <MudIconButton Title=@Localizer["metadata"] Size="@Size.Small" Icon="@Icons.Outlined.Edit" OnClick="@(async (e) => await EditDocumentMetadata(context))" />
                 @if(context.Metadata != null) {
                     @DisplayAuthorizedFields(AuthorizedMetadataFields, context.Metadata)
                 }
         </MudTd>
         <MudTd DataLabel="Actions" >
-            <MudIconButton Title="Read More" Size="@Size.Small" Icon="@Icons.Outlined.ReadMore" OnClick="@(async (e) => await ReadMoreDocument(context))" />
-            <MudIconButton Title="Delete" Size="@Size.Small" Icon="@Icons.Outlined.DeleteForever" OnClick="@(async (e) => await DeleteDocument(context))" />
+            <MudIconButton Title=@Localizer["readMore"] Size="@Size.Small" Icon="@Icons.Outlined.ReadMore" OnClick="@(async (e) => await ReadMoreDocument(context))" />
+            <MudIconButton Title=@Localizer["delete"] Size="@Size.Small" Icon="@Icons.Outlined.DeleteForever" OnClick="@(async (e) => await DeleteDocument(context))" />
         </MudTd>
     </RowTemplate>
     <NoRecordsContent>
-        <MudText>No documents found</MudText>
+        <MudText>@Localizer["noDocumentsFound"]</MudText>
     </NoRecordsContent>
     <LoadingContent>
-        <MudText>Loading...</MudText>
+        <MudText>@Localizer["loading"]</MudText>
     </LoadingContent>
     <PagerContent>
         <MudTablePager />

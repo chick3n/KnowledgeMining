@@ -6,6 +6,8 @@
 @using KnowledgeMining.Domain.Entities.Jobs
 @using KnowledgeMining.UI.Helpers
 
+@inject IStringLocalizer<SharedResources> Localizer
+
 @if(_jobNotFound)
 {
     <MudAlert Severity="Severity.Error">Job @ServiceId cannot be found.</MudAlert>
@@ -13,10 +15,10 @@
 else
 {
     <MudContainer MaxWidth="MaxWidth.Large"  Style="margin-top: 20px">
-        <MudText Typo="Typo.h5">Request</MudText>
+        <MudText Typo="Typo.h5">@Localizer["request"]</MudText>
         <MudGrid>
             <MudItem xs="12" sm="6" md="4">
-                <MudField Label="Job Id" Variant="Variant.Text">
+                <MudField Label=@Localizer["jobId"] Variant="Variant.Text">
                     @if(!_isLoadingJobRequest)
                     {
                         <MudText>@_jobRequest!.Id</MudText>
@@ -28,7 +30,7 @@ else
                 </MudField>
             </MudItem>
             <MudItem xs="12" sm="6" md="4">
-                <MudField Label="Action" Variant="Variant.Text">
+                <MudField Label=@Localizer["action"] Variant="Variant.Text">
                     @if(!_isLoadingJobRequest)
                     {
                         <MudText>@_jobRequest!.Action</MudText>
@@ -40,7 +42,7 @@ else
                 </MudField>
             </MudItem>
             <MudItem xs="12" sm="6" md="4">
-                <MudField Label="State" Variant="Variant.Text">
+                <MudField Label=@Localizer["state"] Variant="Variant.Text">
                     @if(!_isLoadingJobRequest)
                     {
                         <MudText>@_jobRequest!.State</MudText>
@@ -52,7 +54,7 @@ else
                 </MudField>
             </MudItem>
             <MudItem xs="12" sm="6" md="4">
-                <MudField Label="Created By" Variant="Variant.Text">
+                <MudField Label=@Localizer["createdBy"] Variant="Variant.Text">
                     @if(!_isLoadingJobRequest)
                     {
                         <MudText>@CreatedByWho(_jobRequest!.CreatedBy)</MudText>
@@ -64,7 +66,7 @@ else
                 </MudField>
             </MudItem>
             <MudItem xs="12" sm="6" md="4">
-                <MudField Label="Created On" Variant="Variant.Text">
+                <MudField Label=@Localizer["createdOn"] Variant="Variant.Text">
                     @if(!_isLoadingJobRequest)
                     {
                         <MudText>@TicksToString(_jobRequest!.CreatedOn, _jobRequest!.CreatedOnOffset)</MudText>
@@ -101,7 +103,7 @@ else
             @if (!_isLoadingJobRequest && _jobRequest != null && _jobRequest.Options != null && _jobRequest.Options.Count > 0)
             {
                 <MudItem xs="12" sm="12" md="12">
-                    <MudText Typo="Typo.h6">Parameters</MudText>
+                    <MudText Typo="Typo.h6">@Localizer["parameters"]</MudText>
                     <dl>
                         @foreach (var option in _jobRequest!.Options)
                         {

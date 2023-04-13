@@ -1,0 +1,32 @@
+﻿@using KnowledgeMining.UI.Helpers;
+@using Microsoft.Extensions.Localization;
+
+<style>
+    p {
+        margin-top: 10px;
+    }
+</style>
+
+<MudDialog>
+    <TitleContent>
+        <MudText Typo="Typo.h6">
+            <MudIcon Color="Color.Warning" Icon="@Icons.Material.Filled.WarningAmber"></MudIcon>
+            @Localizer["unsavedChange"]
+        </MudText>
+    </TitleContent>
+    <DialogContent>
+        @Localizer["unsavedChangeDialogText"]
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel">@Localizer["unsavedChangeDialogCancel"]</MudButton>
+        <MudButton Color="Color.Error" OnClick="Leave">@Localizer["unsavedChangeDialogLeave"]</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [Inject] public IStringLocalizer<SharedResources> Localizer { get; set; }
+    [CascadingParameter] MudDialogInstance MudDialog { get; set; }
+
+    void Leave() => MudDialog.Close(DialogResult.Ok(true));
+    void Cancel() => MudDialog.Cancel();
+}

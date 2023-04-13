@@ -1,6 +1,7 @@
 ﻿@using KnowledgeMining.UI.Pages.Documents.ViewModels
 @inject ISnackbar Snackbar
 @inject IMediator Mediator
+@inject IStringLocalizer<SharedResources> Localizer
 
 <MudDialog>
     <DialogContent>
@@ -12,20 +13,21 @@
                    StartIcon="@Icons.Filled.CloudUpload"
                    Style="margin-bottom: 10px"
                    for="fileInput">
+                @Localizer["home"]
             Add your documents
         </MudButton>
         <MudDivider Light="true" Style="margin-bottom: 10px" />
         <MudTable Items="_files" Height="@_tableHeight">
             <HeaderContent>
-                <MudTh>Document Name</MudTh>
-                <MudTh>Document Type</MudTh>
+                    <MudTh>@Localizer["documentName"]</MudTh>
+                    <MudTh>@Localizer["documentType"]</MudTh>
                 <MudTh></MudTh>
             </HeaderContent>
             <RowTemplate>
-                <MudTd DataLabel="Document Name">@context.File.Name</MudTd>
-                <MudTd DataLabel="Document Type">
-                    <MudSelect Required="true" T="string" Placeholder="Select document type" 
-                        ValueChanged="@(e => ApplyTagToUploadFile(context.File.Name, "documenttype", e))">
+                    <MudTd DataLabel=@Localizer["documentName"]>@context.File.Name</MudTd>
+                    <MudTd DataLabel=@Localizer["documentType"]>
+                        <MudSelect Required="true" T="string" Placeholder=@Localizer["selectDocumentType"]
+                                   ValueChanged="@(e => ApplyTagToUploadFile(context.File.Name, "documenttype", e))">
                         @foreach (var allowedValue in DocumentTags.SelectMany(x => x.AllowedValues))
                         {
                             <MudSelectItem Value="@allowedValue" />
@@ -33,7 +35,7 @@
                     </MudSelect>
                 </MudTd>
                 <MudTd DataLabel="">
-                    <MudIconButton Title="Remove" Icon="@Icons.Filled.RemoveCircleOutline" OnClick="@(_ => RemoveUploadFile(context))" />
+                        <MudIconButton Title=@Localizer["remove"] Icon="@Icons.Filled.RemoveCircleOutline" OnClick="@(_ => RemoveUploadFile(context))" />
                 </MudTd>
             </RowTemplate>
         </MudTable>
@@ -45,11 +47,11 @@
                        Variant="Variant.Filled"
                        Color="Color.Primary"
                        StartIcon="@Icons.Filled.CloudUpload">
-                Upload
+            @Localizer["upload"]
             </MudButton>
-            <MudButton OnClick="Clear" Disabled="@(!_files.Any())" Color="Color.Error" Variant="Variant.Filled">Clear</MudButton>
+        <MudButton OnClick="Clear" Disabled="@(!_files.Any())" Color="Color.Error" Variant="Variant.Filled">@Localizer["clear1"]</MudButton>
             <MudSpacer />
-            <MudButton OnClick="@Close" Color="Color.Error" Variant="Variant.Filled">Close</MudButton>
+        <MudButton OnClick="@Close" Color="Color.Error" Variant="Variant.Filled">@Localizer["close"]</MudButton>
     </DialogActions>
 </MudDialog>
 
