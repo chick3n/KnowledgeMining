@@ -33,7 +33,7 @@
 <MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="mt-4">
     <MudGrid>
         <MudItem xs="12" sm="2">
-            <MudButton Disabled="@(!_canNavigateBack)" StartIcon="@Icons.Material.Filled.ArrowBack" Title="Back" Color="Color.Inherit" OnClick="GoBack">Back</MudButton>
+            <MudButton Disabled="@(!_canNavigateBack)" StartIcon="@Icons.Material.Filled.ArrowBack" Title="@Localizer["back"]" Color="Color.Inherit" OnClick="GoBack">@Localizer["back"]</MudButton>
         </MudItem>
         <MudItem xs="0" sm="10">
             @if(!_documentMetadataIsLoading)
