@@ -69,7 +69,7 @@
                 <MudPaper>
                     <MudList Clickable="true" @bind-SelectedItem="_selectedItem" @bind-SelectedValue="_selectedValue">
                         <MudListItem Text="Record" Value="@LIST_ITEM_VALUE_RECORD" />
-                        @if (!string.IsNullOrEmpty(_documentMetadata?.SourcePath))
+                        @*@if (!string.IsNullOrEmpty(_documentMetadata?.SourcePath))
                         {
                             @if (IsUrlPath())
                             {
@@ -78,7 +78,7 @@
                                     <MudListItem Text="Preview" Value="@LIST_ITEM_VALUE_SOURCE"/>
                                 }
                             }
-                        }
+                        }*@
                         <MudListItem Text="Metadata" Value="@LIST_ITEM_VALUE_METADATA" />
                     </MudList>                    
                 </MudPaper>
@@ -232,6 +232,7 @@
                                 </MudItem>
                                 <MudItem xs="12" sm="4">
                                     <div class="d-flex flex-column flex-shrink-1" style="position:sticky; top: 70px;">
+                                        <DocumentAssistantComponent Document="_documentMetadata"></DocumentAssistantComponent>
                                         @if(!ShowMarkupContent())
                                         {
                                             <MudTextField T="string" Immediate="true" Placeholder="@Localizer["searchTranscript"]" 

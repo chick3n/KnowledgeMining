@@ -25,6 +25,7 @@ namespace Microsoft.Extensions.DependencyInjection
             services.Configure<DatabaseOptions>(configuration.GetSection(DatabaseOptions.Database));
             services.Configure<KeyVaultOptions>(configuration.GetSection(KeyVaultOptions.KeyVault));
             services.Configure<QueueOptions>(configuration.GetSection(QueueOptions.Queue));
+            services.Configure<AssistantOptions>(configuration.GetSection(AssistantOptions.Name));
 
             return services;
         }
