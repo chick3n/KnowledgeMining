@@ -76,7 +76,7 @@ else
                             <MudCardContent>
                                 <div class="d-flex flex-row gap-10">
                                     <div class="flex-grow-1" style="min-width: 50%; max-width:50%">
-                                        <pre style="overflow-x: auto; overflow-y: scroll; white-space: pre-wrap; word-wrap: break-word; font-size: inherit">
+                                    <pre style="overflow-x: auto; overflow-y: scroll; white-space: pre-wrap; word-wrap: break-word; font-size: inherit; max-height:240px">
                                         @((MarkupString)DocumentPreviewText(document))
                                         </pre>
                                     </div>
@@ -92,16 +92,10 @@ else
                             @if(DocumentFooterValues(document) != null) 
                             {
                                 var footerValues = DocumentFooterValues(document);
+                                var footerValuesString = string.Join(" · ", footerValues.Take(10));
+                                var footerValuesMore = footerValues.Length > 10 ? "..." : string.Empty;
                                 <MudCardActions>
-                                    @for(var x = 0; x<footerValues.Length; x++) 
-                                    {
-                                        var index = x; //Needed due to razor for loops issue
-                                        <MudText Typo="Typo.caption" Style="color:gray">@footerValues[index]</MudText>
-                                        @if(x+1 < footerValues.Length)
-                                        {
-                                            <span>&nbsp;·&nbsp;</span>
-                                        }
-                                    }
+                                    <MudText Typo="Typo.caption" Style="color:gray">@footerValuesString @footerValuesMore</MudText>
                                 </MudCardActions> 
                             }
                         </MudCard>
@@ -192,9 +186,19 @@ else
     private string DocumentPreviewText(DocumentMetadata document)
     {
         var previewText = DocumentHighlightedText(document);
-        if (!string.IsNullOrWhiteSpace(previewText))
-            return previewText;
-        return DocumentSummary(document);
+        if (string.IsNullOrWhiteSpace(previewText)) {
+            previewText = DocumentSummary(document);
+            return DocumentPreviewTextCleanup(previewText);
+        }
+        return previewText;
+    }
+
+    private string DocumentPreviewTextCleanup(string text)
+    {
+        text = Regex.Replace(text, "<.*?>", string.Empty);
+        text = Regex.Replace(text, @"[\r\n]+", "\n");
+
+        return text.Trim();
     }
 
     private string? DocumentHighlightedText(DocumentMetadata document)
@@ -252,21 +256,21 @@ else
         return text.PreWrap();
     }
 
-    private string[]? DocumentFooterValues(DocumentMetadata document)
+    private string[] DocumentFooterValues(DocumentMetadata document)
     {
         if (DocumentFooterFields == null || DocumentFooterFields.Length == 0)
         {
-            return null;   
+            return Array.Empty<string>();   
         }
 
         var values = new List<string>();
         foreach(var footerField in DocumentFooterFields)
         {
-            var fieldValue = document.GetValue(footerField, seperator: " · ");
+            var fieldValue = document.GetValue(footerField, seperator: ",");
 
             if(!string.IsNullOrWhiteSpace(fieldValue))
             {
-                values.Add(fieldValue);
+                values.AddRange(fieldValue.Split(","));
             }
         }
 

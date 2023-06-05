@@ -2,12 +2,15 @@
 
 @inject NavigationManager NavigationManager
 @inject IMediator Mediator
+@inject IStringLocalizer<SharedResources> Localizer
+@inject ILogger<Home> Logger
 
 @using KnowledgeMining.Application.Documents.Queries.GetAutocompleteSuggestions
 @using KnowledgeMining.Application.Documents.Queries.GetIndex
 @using KnowledgeMining.Domain.Entities
+@using KnowledgeMining.UI.Helpers
 
-<PageTitle>Home</PageTitle>
+<PageTitle>@Localizer["home"]</PageTitle>
 
 <style>
     .justify-title {
@@ -24,15 +27,15 @@
 <MudPaper Height="400px" Width="100%" Class="mud-theme-info d-flex align-center" Square="true" Elevation="0">
     <MudContainer MaxWidth="MaxWidth.Small">
         <div class="justify-title">
-            Document Cracker
+            @Localizer["DocCracker"]
         </div>
         @if(_indexItem != null) {
             <div style="width:100%">
-                <MudText Typo="Typo.h5" Align="Align.Right">@_indexItem.Name</MudText>
+                <MudText Typo="Typo.h5" Align="Align.Right">@GetCurrentLanguage.GetLocalizedText(_indexItem.Name)</MudText>
             </div>
         }
         <MudPaper Style="@($"background: {Theme.Palette.White}")" Elevation="1">
-            <MudAutocomplete T="string" Label="What are you searching for today?" @bind-Value="searchQuery" SearchFunc="@AutoComplete"
+            <MudAutocomplete T="string" Label=@Localizer["WhatSearch"] @bind-Value="searchQuery" SearchFunc="@AutoComplete"
                              ResetValueOnEmptyText="true"
                              CoerceText="true"
                              CoerceValue="true"
@@ -70,9 +73,9 @@
             throw new ArgumentNullException(nameof(Index));
         var indexResponse = await Mediator.Send(new GetIndexQuery(Index));
         _indexItem = indexResponse.IndexItem;
-        
-        if(!string.IsNullOrEmpty(_indexItem.Landing?.PagePath))
-            _landingPageContent = System.IO.File.ReadAllText($"/landings/{_indexItem.Landing.PagePath}");
+
+        if (!string.IsNullOrEmpty(_indexItem.Landing?.PagePath))
+            PullLandingPage();
     }
 
     private async Task<IEnumerable<string>?> AutoComplete(string value)
@@ -96,6 +99,22 @@
     private void GoToSearchPage()
     {
         NavigationManager.NavigateTo($"/search/{Index}?q={searchQuery ?? string.Empty}");
+    }
+
+    private void PullLandingPage()
+    {
+        if (_indexItem != null && !string.IsNullOrEmpty(_indexItem.Landing?.PagePath))
+        {
+            try {
+                _landingPageContent = System.IO.File.ReadAllText($"/landings/{_indexItem.Landing.PagePath}");
+            } 
+            catch(Exception ex)
+            {
+                Logger.LogError(ex, "Failed to load landing page when {Index} config has landing page present. {LandingPage}", 
+                    Index,
+                    _indexItem.Landing.PagePath);
+            }
+        }
     }
 }
 

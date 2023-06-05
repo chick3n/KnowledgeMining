@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.Json;
+using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
@@ -14,7 +16,7 @@ namespace KnowledgeMining.Domain.Entities
         [JsonPropertyName("index")]
         public string? IndexName { get; set; }
         [JsonPropertyName("name")]
-        public string? Name { get; set; }
+        public Localization? Name { get; set; }
         [JsonPropertyName("route")]
         public string? Route { get; set; }
         [JsonPropertyName("keyField")]
@@ -33,5 +35,9 @@ namespace KnowledgeMining.Domain.Entities
         public IndexItemConfiguration? Configuration { get; set; }
         [JsonPropertyName("landing")]
         public IndexItemLanding? Landing { get; set; }
+        [JsonPropertyName("errorHints")]
+        public JsonObject? ErrorHints { get; set; }
+
+        public Dictionary<string, Dictionary<string, Localization>>? DeserializedErrorHints { get; set; }
     }
 }

@@ -1,13 +1,14 @@
 ﻿@inject IMediator Mediator
+@inject IStringLocalizer<SharedResources> Localizer
 
 <MudDialog>
     <DialogContent>
-        <MudTextField Value="@Document.Name" Label="Document Name" ReadOnly="true"/>
+        <MudTextField Value="@Document.Name" Label=@Localizer["documentName"] ReadOnly="true" />
         <MudSimpleTable Style="overflow-x: auto;">
             <thead>
                 <tr>
-                    <th>Key</th>
-                    <th>Value</th>
+                    <th>@Localizer["key"]</th>
+                    <th>@Localizer["value"]</th>
                     <th></th>
                 </tr>
             </thead>
@@ -38,8 +39,8 @@
         </MudSimpleTable>
     </DialogContent>
     <DialogActions>
-        <MudButton OnClick="Cancel">Cancel</MudButton>
-        <MudButton Color="Color.Success" OnClick="SaveTags">Save</MudButton>
+        <MudButton OnClick="Cancel">@Localizer["cancel"]</MudButton>
+        <MudButton Color="Color.Success" OnClick="SaveTags">@Localizer["save"]</MudButton>
     </DialogActions>
 </MudDialog>
 

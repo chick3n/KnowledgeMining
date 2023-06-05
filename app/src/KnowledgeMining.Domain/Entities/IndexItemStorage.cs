@@ -13,6 +13,8 @@ namespace KnowledgeMining.Domain.Entities
         public string? Key { get; set; }
         [JsonPropertyName("container")]
         public string? Container { get; set; }
+        [JsonPropertyName("errorContainer")]
+        public string? ErrorContainer { get; set; }
         [JsonPropertyName("allowSync")]
         public bool AllowSync { get; set; } = false;
     }

@@ -31,7 +31,7 @@ namespace KnowledgeMining.Application.Documents.Queries.GetDocument
 
         public async Task<GetDocumentResponse> Handle(GetDocumentQuery request, CancellationToken cancellationToken)
         {
-            return await _storageService.GetDocument(request.Key, request.Container, request.Filename, request.downloadContent, cancellationToken);
+            return await _storageService.GetDocument(request.Key, request.Container, request.Filename, request.downloadContent, cancellationToken);   
         }
     }
 }

@@ -6,6 +6,7 @@ using KnowledgeMining.Application.Documents.Queries.GetDocumentMetadata;
 using KnowledgeMining.Domain.Entities;
 using KnowledgeMining.Infrastructure.Services.Storage;
 using KnowledgeMining.UI.Pages.Search.ViewModels;
+using KnowledgeMining.UI.Helpers;
 using KnowledgeMining.UI.Services.Metadata;
 using KnowledgeMining.UI.Services.State;
 using KnowledgeMining.UI.Wrappers;
@@ -74,6 +75,8 @@ namespace KnowledgeMining.UI.Pages.Search
         private MudTabPanel? _searchResultsPanel;
 
         private string _currentHash;
+
+        private string current_lang = @GetCurrentLanguage.GetLanguageCode();
 
         protected override async Task OnInitializedAsync()
         {
@@ -239,7 +242,11 @@ namespace KnowledgeMining.UI.Pages.Search
             _orderBy = DefaultSortByFilters();
             _timeSpanSelectedType = TimeSpanType.Any;
             _facetsFilterComponent?.ClearFacets();
-            _sortLabel = LABEL_ORDERBY_BEST_MATCH;
+
+            if (current_lang.Equals("en"))
+                _sortLabel = LABEL_ORDERBY_BEST_MATCH;
+            else
+                _sortLabel = "Meilleure Correspondance";
 
             UpdateTimeSpanMenu();
 
@@ -342,13 +349,21 @@ namespace KnowledgeMining.UI.Pages.Search
 
         private void UpdateSearchResultsLabelWithDocumentCount(long? documentsCount)
         {
-            if (documentsCount is null || documentsCount <= 0)
+            if ((documentsCount is null || documentsCount <= 0) && current_lang.Equals("en"))
             {
                 _searchResultsLabel = "Search Results";
             }
-            else
+            else if ((documentsCount is null || documentsCount <= 0) && current_lang.Equals("fr"))
+            {
+                _searchResultsLabel = "Résultats de recherche";
+            }
+            else if (current_lang.Equals("en"))
             {
                 _searchResultsLabel = $"Search Results ({documentsCount})";
+            }
+            else if (current_lang.Equals("fr"))
+            {
+                _searchResultsLabel = $"Résultats de recherche ({documentsCount})";
             }
         }
 
@@ -444,7 +459,10 @@ namespace KnowledgeMining.UI.Pages.Search
                     _timespanLabel = $"{start} - {end}";
                     break;
                 default:
-                    _timespanLabel = "Any";
+                    if (current_lang.Equals("en"))
+                        _timespanLabel = "Any";
+                    else
+                        _timespanLabel = "N'importe quel";
                     break;
             }
         }
