@@ -10,7 +10,7 @@
             <MudButton OnClick="OnClearClicked">Clear</MudButton>
         </ToolBarContent>
         <RowTemplate>
-            <MudTd><MudLink Href="@($"/record/{IndexName}/{@context.RecordId}")">@context.Title</MudLink></MudTd>
+            <MudTd><MudLink Href="@($"/{IndexName}/record/{@context.RecordId}")">@context.Title</MudLink></MudTd>
             <MudTd Style="width: 10%; text-align:right">
                 <MudIconButton Size="Size.Small"  Icon="@Icons.Filled.Remove" OnClick="(async () => await OnRemovedClicked(context))" Title="Remove" />
             </MudTd>

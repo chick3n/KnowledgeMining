@@ -22,6 +22,7 @@ using Microsoft.Identity.Web.UI;
 using KnowledgeMining.UI.Helpers;
 using KnowledgeMining.UI.Pages.Services;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Rewrite;
 
 namespace KnowledgeMining.UI
 {
@@ -39,6 +40,8 @@ namespace KnowledgeMining.UI
                     .EnableTokenAcquisitionToCallDownstreamApi(initialScopes)
                         .AddMicrosoftGraph(builder.Configuration.GetSection("MicrosoftGraph"))
                         .AddInMemoryTokenCaches();
+            builder.Services.AddControllersWithViews()
+                .AddMicrosoftIdentityUI();
 
             builder.Services.AddAuthorization(options =>
             {
@@ -57,7 +60,9 @@ namespace KnowledgeMining.UI
             builder.Services.AddApplicationInsightsTelemetry();
             builder.Services.AddMemoryCache();
             builder.Services.AddRazorPages();
-            builder.Services.AddServerSideBlazor();
+            /*builder.Services.AddServerSideBlazor();*/
+            builder.Services.AddServerSideBlazor()
+                .AddMicrosoftIdentityConsentHandler();
             builder.Services.AddMudServices(config =>
             {
                 config.SnackbarConfiguration.PreventDuplicates = false;
@@ -163,7 +168,7 @@ namespace KnowledgeMining.UI
                     CancellationToken cancellationToken) =>
                 await DownloadFileEndpoint.DownloadInlineFile(fileName, storageClient, cancellationToken))
                .WithName(DownloadFileEndpoint.EndpointName);
-
+            app.MapRazorPages();
             app.MapBlazorHub();
             app.MapFallbackToPage("/_Host");
 

@@ -20,7 +20,7 @@
             <AuthorizeView Roles="@AuthorizationRoles.Required(IndexName, Roles.Read)">
                 <NotAuthorized></NotAuthorized>
                 <Authorized>
-                    <MudButton Variant="Variant.Text" Href="@($"/search/{IndexName}/")" Target="_self">@Localizer["search"]</MudButton>
+                <MudButton Variant="Variant.Text" Href="@($"/{IndexName}/search/")" Target="_self">@Localizer["search"]</MudButton>
                     @*<MudButton Variant="Variant.Text" OnClick="@NavigateToDocumentsPage">Documents</MudButton>*@
 
                     @if(indexNavigationItems != null)
@@ -72,7 +72,7 @@
                             <MudMenuItem OnClick="toEnglish">@Localizer["English"]</MudMenuItem>
                         }
                     }
-                    <MudMenuItem Href="MicrosoftIdentity/Account/SignOut">@Localizer["Sign Out"]</MudMenuItem>
+                    <MudMenuItem Href="https://login.microsoftonline.com/common/oauth2/v2.0/logout">@Localizer["Sign Out"]</MudMenuItem>
                 </ChildContent>
             </MudMenu>
         </Authorized>
@@ -91,7 +91,6 @@
     private string? IndexName { get; set; }
     private MudTheme Theme = new MudTheme();
     private string? _logoPath = "images/gac-logo-en.svg";
-    private int? _cartCount;
 
     protected override async Task OnInitializedAsync()
     {
@@ -108,8 +107,6 @@
             if (!string.IsNullOrEmpty(response.IndexItem.Logo) &&
                 Uri.TryCreate(response.IndexItem.Logo, UriKind.Absolute, out _))
                 _logoPath = response.IndexItem.Logo;
-
-            CartService.OnCartChanged += CartChanged;
         }
 
         await base.OnInitializedAsync();
@@ -117,31 +114,7 @@
 
     protected override Task OnAfterRenderAsync(bool firstRender)
     {
-        if(firstRender)
-        {
-            Initialize().ConfigureAwait(false);
-        }
-
         return base.OnAfterRenderAsync(firstRender);
-    }
-
-    private async Task CartChanged(DocumentCartEvent documentCartEvent)
-    {
-        if (documentCartEvent?.Items?.Count != _cartCount)
-        {
-            _cartCount = documentCartEvent?.Items?.Count;
-            StateHasChanged();
-        }
-    }
-
-    private async Task Initialize()
-    {
-        var cartItems = await CartService.GetAll(IndexName);
-        if (cartItems?.Count != _cartCount)
-        {
-            _cartCount = cartItems?.Count;
-            StateHasChanged();
-        }
     }
 
     CultureInfo[] cultures = new[]

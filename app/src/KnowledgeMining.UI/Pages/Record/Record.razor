@@ -1,4 +1,4 @@
-﻿@page "/record/{Index}/{RecordId}"
+﻿@page "/{Index}/record/{RecordId}"
 @using KnowledgeMining.UI.Pages.Record.Components
 @using Microsoft.AspNetCore.Hosting
 @using Microsoft.Extensions.Hosting
@@ -167,7 +167,7 @@
                             <hr />
                             @foreach (var document in _moreLikeThis.Documents().DistinctBy(x => x.Id))
                             {
-                                <MudLink Typo="Typo.body2" Href="@($"/record/{Index}/{document.Id}")" style="display:block">
+                                <MudLink Typo="Typo.body2" Href="@($"/{Index}/record/{document.Id}")" style="display:block">
                                     @_moreLikeThis.GetTitle(document)
                                 </MudLink>
                             }

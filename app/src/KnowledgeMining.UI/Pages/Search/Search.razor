@@ -1,4 +1,4 @@
-﻿@page "/search/{Index}/{Hash?}"
+﻿@page "/{Index}/search/{Hash?}"
 
 @inject IStringLocalizer<SharedResources> Localizer
 
@@ -70,7 +70,7 @@
                             DocumentFooterFields="@_indexItem.Configuration?.Display?.Footer"
                             IsLoading="@_isSearching" TotalCount="@_searchState.TotalCount" TotalPages="@_searchState.TotalPages" 
                             IndexName="@Index"
-                            NavigateTo="@($"/record/{Index}/")" OnPageSelectedChanged="@SearchPageSelected" 
+                            NavigateTo="@($"/{Index}/record/")" OnPageSelectedChanged="@SearchPageSelected" 
                             PageSelected="@_selectedPage"></SearchResultsComponent>
                     </MudTabPanel>
                     <MudTabPanel Text=@Localizer["entityMap"]>
