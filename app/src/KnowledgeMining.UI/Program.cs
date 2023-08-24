@@ -42,17 +42,7 @@ namespace KnowledgeMining.UI
 
             builder.Services.AddAuthorization(options =>
             {
-                // By default, all incoming requests will be authorized according to the default policy.
                 options.FallbackPolicy = options.DefaultPolicy;
-                /*options.AddPolicy(Policies.CanRead, policy =>
-                {
-                    policy.Requirements.Add(new CanReadPolicyRequirement());
-                });
-                options.AddPolicy(Policies.CanEdit, policy =>
-                {
-                    policy.Requirements.Add(new CanContributePolicyRequirement());
-                });*/
-
             });
 
             builder.WebHost.CaptureStartupErrors(true);
@@ -82,10 +72,10 @@ namespace KnowledgeMining.UI
             builder.Services.AddHttpClient(Application.Common.Options.AssistantOptions.Name);
             builder.Services.AddBlazoredLocalStorage();
 
-            /*builder.Services.AddSignalR().AddAzureSignalR(options =>
+            builder.Services.AddSignalR().AddAzureSignalR(options =>
             {
                 options.ServerStickyMode = Microsoft.Azure.SignalR.ServerStickyMode.Required;
-            });*/
+            });
 
             builder.Services.AddResponseCompression(options =>
             {

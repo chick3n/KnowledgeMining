@@ -14,7 +14,7 @@
                 var roleName = role.ToString().ToLower();
                 requiredRoles.Add($"{lwrIndexName}.{roleName}");
             }
-            /*requiredRoles.Add($"{lwrIndexName}.globaladmin");*/
+            requiredRoles.Add($"globaladmin");
             return string.Join(",", requiredRoles);
         }
     }

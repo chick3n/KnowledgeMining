@@ -17,61 +17,69 @@
 <MudAppBar Style="@($"color: {Theme.Palette.Black};background: {Theme.Palette.White}")" Elevation="1">
     <MudStack Spacing="4" Row="true">
         <MudImage Src="@_logoPath" Height="25" Elevation="0" onclick="@(() => NavigateToHomePage())" />
-        <MudButton Variant="Variant.Text" Href="@($"/search/{IndexName}/")" Target="_self">@Localizer["search"]</MudButton>
-        @*<MudButton Variant="Variant.Text" OnClick="@NavigateToDocumentsPage">Documents</MudButton>*@
+            <AuthorizeView Roles="@AuthorizationRoles.Required(IndexName, Roles.Read)">
+                <NotAuthorized></NotAuthorized>
+                <Authorized>
+                    <MudButton Variant="Variant.Text" Href="@($"/search/{IndexName}/")" Target="_self">@Localizer["search"]</MudButton>
+                    @*<MudButton Variant="Variant.Text" OnClick="@NavigateToDocumentsPage">Documents</MudButton>*@
 
-        @if(indexNavigationItems != null)
-        {
-            foreach(var nav in indexNavigationItems)
-            {
-                @if(nav.Key.Equals("<unknown>"))
-                {
-                    foreach(var link in nav.Value)
+                    @if(indexNavigationItems != null)
                     {
-                        <MudButton 
-                            Variant="Variant.Text" Href="@link.Url" Target="_self">@GetCurrentLanguage.GetLocalizedText(link.Name)</MudButton>
-                    }
-                }
-                else
-                {    
-                    <MudMenu AnchorOrigin="Origin.BottomLeft"
-                 FullWidth="true" Label=@Localizer["dashboards"] EndIcon="@Icons.Outlined.ArrowDropDown"
-                 ButtonType="ButtonType.Button" Variant="Variant.Text">
-                        @foreach(var link in nav.Value)
+                        foreach(var nav in indexNavigationItems)
                         {
-                            <MudButton Variant="Variant.Text" Href="@link.Url" Target="_self">@GetCurrentLanguage.GetLocalizedText(@link.Name)</MudButton>
-                        }
-                    </MudMenu>
-                }
+                            @if(nav.Key.Equals("<unknown>"))
+                            {
+                                foreach(var link in nav.Value)
+                                {
+                                    <MudButton 
+                                        Variant="Variant.Text" Href="@link.Url" Target="_self">@GetCurrentLanguage.GetLocalizedText(link.Name)</MudButton>
+                                }
+                            }
+                            else
+                            {    
+                                <MudMenu AnchorOrigin="Origin.BottomLeft"
+                             FullWidth="true" Label=@Localizer["dashboards"] EndIcon="@Icons.Outlined.ArrowDropDown"
+                             ButtonType="ButtonType.Button" Variant="Variant.Text">
+                                    @foreach(var link in nav.Value)
+                                    {
+                                        <MudButton Variant="Variant.Text" Href="@link.Url" Target="_self">@GetCurrentLanguage.GetLocalizedText(@link.Name)</MudButton>
+                                    }
+                                </MudMenu>
+                            }
                 
-            }
-        }        
+                        }
+                    }
+                        </Authorized>
+        </AuthorizeView>
     </MudStack>
-    @if (!HostEnvironment.IsProduction())
-    {
-        <MudSpacer />
+    <MudSpacer />
 
-        var current_culture = System.Threading.Thread.CurrentThread.CurrentCulture.Name;
-
-
-         @if (current_culture.StartsWith("en", StringComparison.InvariantCultureIgnoreCase))
-         {
-            <Button @onclick="toFrench">@Localizer["Français"]</Button>
-         }
-         else
-         {
-            <Button @onclick="toEnglish">@Localizer["English"]</Button>
-         }
-
-
-        <MudBadge Content="@(_cartCount ?? 0)" Color="Color.Primary" Overlap="true" Bordered="true" Class="mx-6 my-4">
-            <MudButtonGroup Color="Color.Dark" Variant="Variant.Outlined">
-                <MudIconButton Icon="@Icons.Filled.List" Title="Jobs" Href="@($"/jobs/{IndexName}")" />
-                <MudButton StartIcon="@Icons.Filled.VerticalSplit" Href="@($"/services/{IndexName}")" Variant="Variant.Outlined"
-                    Color="Color.Default">Documents</MudButton>
-            </MudButtonGroup>
-        </MudBadge>
-    }
+    <AuthorizeView>
+        <Authorized>
+            <MudMenu FullWidth="true" AnchorOrigin="Origin.BottomRight" EndIcon="@Icons.Outlined.ArrowDropDown">
+                <ActivatorContent>
+                    <MudChip Variant="Variant.Outlined" Icon="@Icons.Material.Filled.Person">@context.User.Identity.Name</MudChip>
+                </ActivatorContent>
+                <ChildContent>
+                    @{
+                        var current_culture = System.Threading.Thread.CurrentThread.CurrentCulture.Name;
+                        @if (current_culture.StartsWith("en", StringComparison.InvariantCultureIgnoreCase))
+                        {
+                            <MudMenuItem OnClick="toFrench">@Localizer["Français"]</MudMenuItem>
+                        }
+                        else
+                        {
+                            <MudMenuItem OnClick="toEnglish">@Localizer["English"]</MudMenuItem>
+                        }
+                    }
+                    <MudMenuItem Href="MicrosoftIdentity/Account/SignOut">@Localizer["Sign Out"]</MudMenuItem>
+                </ChildContent>
+            </MudMenu>
+        </Authorized>
+        <NotAuthorized>
+            <a href="MicrosoftIdentity/Account/SignIn">@Localizer["Sign In"]</a>
+        </NotAuthorized>
+    </AuthorizeView>
 </MudAppBar>
 
 @code {
