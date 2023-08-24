@@ -10,9 +10,14 @@ using KnowledgeMining.UI.Services.State;
 using KnowledgeMining.UI.Models;
 using KnowledgeMining.UI.Helpers;
 using Microsoft.Extensions.Localization;
+using Microsoft.AspNetCore.Authorization;
+using System;
+using Microsoft.AspNetCore.Components.Authorization;
+using Microsoft.CodeAnalysis.FlowAnalysis.DataFlow;
 
 namespace KnowledgeMining.UI.Pages.Admin
 {
+    [Authorize]
     public partial class Admin
     {
         [Inject] public ISnackbar Snackbar { get; set; }
@@ -20,7 +25,7 @@ namespace KnowledgeMining.UI.Pages.Admin
         [Inject] public IJSRuntime jsRuntime { get; set; }
         [Inject] public DocumentCartService CartService { get; set; }
         [Inject] public IStringLocalizer<SharedResources> Localizer { get; set; }
-
+        
         [Parameter] public string Index { get; set; } = default!;
 
 

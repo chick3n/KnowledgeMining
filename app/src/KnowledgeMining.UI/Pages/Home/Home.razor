@@ -24,37 +24,44 @@
     }
 </style>
 
-<MudPaper Height="400px" Width="100%" Class="mud-theme-info d-flex align-center" Square="true" Elevation="0">
-    <MudContainer MaxWidth="MaxWidth.Small">
-        <div class="justify-title">
-            @Localizer["DocCracker"]
-        </div>
-        @if(_indexItem != null) {
-            <div style="width:100%">
-                <MudText Typo="Typo.h5" Align="Align.Right">@GetCurrentLanguage.GetLocalizedText(_indexItem.Name)</MudText>
-            </div>
-        }
-        <MudPaper Style="@($"background: {Theme.Palette.White}")" Elevation="1">
-            <MudAutocomplete T="string" Label=@Localizer["WhatSearch"] @bind-Value="searchQuery" SearchFunc="@AutoComplete"
-                             ResetValueOnEmptyText="true"
-                             CoerceText="true"
-                             CoerceValue="true"
-                             Immediate="true"
-                             AdornmentIcon="@Icons.Material.Filled.Search"
-                             AdornmentColor="Color.Primary"
-                             OnAdornmentClick="@GoToSearchPage"
-                             OnKeyUp="GoToSearchPageWhenEnterPressed"
-                             Variant="Variant.Outlined"
-                             Margin="Margin.None" />
+<AuthorizeView Roles="@AuthorizationRoles.Required(Index, Roles.Read, Roles.Contribute)">
+    <NotAuthorized>
+        <h2 class="mt-5">You are not authorized to view this page</h2>
+    </NotAuthorized>
+    <Authorized>
+        <MudPaper Height="400px" Width="100%" Class="mud-theme-info d-flex align-center" Square="true" Elevation="0">
+            <MudContainer MaxWidth="MaxWidth.Small">
+                <div class="justify-title">
+                    @Localizer["DocCracker"]
+                </div>
+                @if(_indexItem != null) {
+                    <div style="width:100%">
+                        <MudText Typo="Typo.h5" Align="Align.Right">@GetCurrentLanguage.GetLocalizedText(_indexItem.Name)</MudText>
+                    </div>
+                }
+                <MudPaper Style="@($"background: {Theme.Palette.White}")" Elevation="1">
+                    <MudAutocomplete T="string" Label=@Localizer["WhatSearch"] @bind-Value="searchQuery" SearchFunc="@AutoComplete"
+                                     ResetValueOnEmptyText="true"
+                                     CoerceText="true"
+                                     CoerceValue="true"
+                                     Immediate="true"
+                                     AdornmentIcon="@Icons.Material.Filled.Search"
+                                     AdornmentColor="Color.Primary"
+                                     OnAdornmentClick="@GoToSearchPage"
+                                     OnKeyUp="GoToSearchPageWhenEnterPressed"
+                                     Variant="Variant.Outlined"
+                                     Margin="Margin.None" />
+                </MudPaper>
+            </MudContainer>
         </MudPaper>
-    </MudContainer>
-</MudPaper>
-<MudPaper Width="100%" Class="" Square="true" Elevation="0">
-    @if (!string.IsNullOrEmpty(_landingPageContent))
-    {
-        @((MarkupString)_landingPageContent)
-    }
-</MudPaper>
+        <MudPaper Width="100%" Class="" Square="true" Elevation="0">
+            @if (!string.IsNullOrEmpty(_landingPageContent))
+            {
+                @((MarkupString)_landingPageContent)
+            }
+        </MudPaper>
+    </Authorized>
+</AuthorizeView>
 
 
 @code {

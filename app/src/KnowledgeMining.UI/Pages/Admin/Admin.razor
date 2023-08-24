@@ -44,34 +44,41 @@
     }
 </style>
 
-<PageTitle>@Localizer["ingestionErrorDocsHeader"]</PageTitle>
-<MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="mt-4">
-   <h1 class="header">@Localizer["ingestionErrorDocsHeader"]</h1>
-   <p class="subheader-text">@Localizer["ingestionErrorDocsSubHeader"]</p>
-   @if (_documentListIsLoading)
-    {
-        <div class="record_divider">
-            <MudSkeleton Animation="Animation.Wave" SkeletonType="SkeletonType.Rectangle" Height="100p" />
-        </div>
-    }
-    else
-    {
-        <MudSimpleTable Class="mud-table">
-            <thead>
-                <tr>
-                    <th class="date-col" title="@Localizer["dateFormat"]">@Localizer["lastModifiedOn"]</th>
-                    <th class="doc-name-col">@Localizer["documentName"]</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach (var doc in _errorDocuments)
-                {
-                    <tr>
-                        <td class="date-col" title="@Localizer["dateFormat"]">@GetLastModifiedDate(doc.LastModifiedOn)</td>
-                        <td class="doc-name-col"><a href="@($"/{Index}/admin/{NavigateTo}{ToBase64(doc.Name)}")">@doc.Name</a></td>
-                    </tr>
-                }
-            </tbody>
-        </MudSimpleTable>
-    }
-</MudContainer>
+<AuthorizeView Roles="@AuthorizationRoles.Required(Index, Roles.Contribute)">
+    <NotAuthorized>
+        <h2 class="mt-5">You are not authorized to view this page</h2>
+    </NotAuthorized>
+    <Authorized>
+        <PageTitle>@Localizer["ingestionErrorDocsHeader"]</PageTitle>
+        <MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="mt-4">
+           <h1 class="header">@Localizer["ingestionErrorDocsHeader"]</h1>
+           <p class="subheader-text">@Localizer["ingestionErrorDocsSubHeader"]</p>
+           @if (_documentListIsLoading)
+            {
+                <div class="record_divider">
+                    <MudSkeleton Animation="Animation.Wave" SkeletonType="SkeletonType.Rectangle" Height="100p" />
+                </div>
+            }
+            else
+            {
+                <MudSimpleTable Class="mud-table">
+                    <thead>
+                        <tr>
+                            <th class="date-col" title="@Localizer["dateFormat"]">@Localizer["lastModifiedOn"]</th>
+                            <th class="doc-name-col">@Localizer["documentName"]</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var doc in _errorDocuments)
+                        {
+                            <tr>
+                                <td class="date-col" title="@Localizer["dateFormat"]">@GetLastModifiedDate(doc.LastModifiedOn)</td>
+                                <td class="doc-name-col"><a href="@($"/{Index}/admin/{NavigateTo}{ToBase64(doc.Name)}")">@doc.Name</a></td>
+                            </tr>
+                        }
+                    </tbody>
+                </MudSimpleTable>
+            }
+        </MudContainer>
+    </Authorized>
+</AuthorizeView>

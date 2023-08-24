@@ -16,6 +16,12 @@ using Microsoft.AspNetCore.Localization;
 using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Options;
 using System.Globalization;
+using Microsoft.AspNetCore.Authentication.OpenIdConnect;
+using Microsoft.Identity.Web;
+using Microsoft.Identity.Web.UI;
+using KnowledgeMining.UI.Helpers;
+using KnowledgeMining.UI.Pages.Services;
+using Microsoft.AspNetCore.Authorization;
 
 namespace KnowledgeMining.UI
 {
@@ -24,6 +30,30 @@ namespace KnowledgeMining.UI
         public static void Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
+
+            var initialScopes = builder.Configuration["DownstreamApi:Scopes"]?.Split(' ') ?? builder.Configuration["MicrosoftGraph:Scopes"]?.Split(' ');
+
+            // Add services to the container.
+            builder.Services.AddAuthentication(OpenIdConnectDefaults.AuthenticationScheme)
+                .AddMicrosoftIdentityWebApp(builder.Configuration.GetSection("AzureAd"))
+                    .EnableTokenAcquisitionToCallDownstreamApi(initialScopes)
+                        .AddMicrosoftGraph(builder.Configuration.GetSection("MicrosoftGraph"))
+                        .AddInMemoryTokenCaches();
+
+            builder.Services.AddAuthorization(options =>
+            {
+                // By default, all incoming requests will be authorized according to the default policy.
+                options.FallbackPolicy = options.DefaultPolicy;
+                /*options.AddPolicy(Policies.CanRead, policy =>
+                {
+                    policy.Requirements.Add(new CanReadPolicyRequirement());
+                });
+                options.AddPolicy(Policies.CanEdit, policy =>
+                {
+                    policy.Requirements.Add(new CanContributePolicyRequirement());
+                });*/
+
+            });
 
             builder.WebHost.CaptureStartupErrors(true);
 
@@ -52,10 +82,10 @@ namespace KnowledgeMining.UI
             builder.Services.AddHttpClient(Application.Common.Options.AssistantOptions.Name);
             builder.Services.AddBlazoredLocalStorage();
 
-            builder.Services.AddSignalR().AddAzureSignalR(options =>
+            /*builder.Services.AddSignalR().AddAzureSignalR(options =>
             {
                 options.ServerStickyMode = Microsoft.Azure.SignalR.ServerStickyMode.Required;
-            });
+            });*/
 
             builder.Services.AddResponseCompression(options =>
             {
@@ -90,6 +120,7 @@ namespace KnowledgeMining.UI
             builder.Services.AddApplicationServices(builder.Configuration);
             builder.Services.AddInfrastructureServices(builder.Configuration);
 
+            /*builder.Services.AddSingleton<IAuthorizationHandler, AuthorizationHandler>();*/
             builder.Services.AddScoped<StateService>();
             builder.Services.AddScoped<ILinkGenerator, DocumentPreviewLinkGenerator>();
             builder.Services.AddScoped<DocumentCartService>();
@@ -118,6 +149,8 @@ namespace KnowledgeMining.UI
             app.UseRouting();
 
             app.UseCookiePolicy();
+            app.UseAuthentication();
+            app.UseAuthorization();
 
             app.MapControllers();
             app.MapGet(PreviewFileEndpoint.Route, 
