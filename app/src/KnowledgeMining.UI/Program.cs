@@ -1,4 +1,3 @@
-using Blazored.LocalStorage;
 using KnowledgeMining.Application.Common.Interfaces;
 using KnowledgeMining.UI.Api;
 using KnowledgeMining.UI.Extensions;
@@ -20,7 +19,6 @@ using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.Identity.Web;
 using Microsoft.Identity.Web.UI;
 using KnowledgeMining.UI.Helpers;
-using KnowledgeMining.UI.Pages.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Rewrite;
 
@@ -75,7 +73,6 @@ namespace KnowledgeMining.UI
             });
             builder.Services.AddHttpClient(PreviewFileEndpoint.EndpointName);
             builder.Services.AddHttpClient(Application.Common.Options.AssistantOptions.Name);
-            builder.Services.AddBlazoredLocalStorage();
 
             builder.Services.AddSignalR().AddAzureSignalR(options =>
             {
@@ -118,7 +115,6 @@ namespace KnowledgeMining.UI
             /*builder.Services.AddSingleton<IAuthorizationHandler, AuthorizationHandler>();*/
             builder.Services.AddScoped<StateService>();
             builder.Services.AddScoped<ILinkGenerator, DocumentPreviewLinkGenerator>();
-            builder.Services.AddScoped<DocumentCartService>();
             builder.Services.AddScoped<DocumentAssistantService>();
 
             builder.Services.AddApplicationInsightsTelemetry();

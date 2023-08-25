@@ -23,7 +23,6 @@ namespace KnowledgeMining.UI.Pages.Admin
         [Inject] public ISnackbar Snackbar { get; set; }
         [Inject] public IMediator Mediator { get; set; }
         [Inject] public IJSRuntime jsRuntime { get; set; }
-        [Inject] public DocumentCartService CartService { get; set; }
         [Inject] public IStringLocalizer<SharedResources> Localizer { get; set; }
         
         [Parameter] public string Index { get; set; } = default!;
