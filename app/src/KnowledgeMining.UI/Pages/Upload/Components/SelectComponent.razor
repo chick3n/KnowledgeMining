@@ -1,5 +1,26 @@
-﻿
+﻿@using KnowledgeMining.Domain.Entities;
+@using KnowledgeMining.UI.Helpers;
 
-@code {
+@if(!IsLoading && Metadata != null)
+{
+    <select>
+        @if(!Metadata.Required)
+        {
+            <option value=""></option>
+        }
 
+        @foreach(var val in Metadata.Values ?? Enumerable.Empty<IndexItemUploadMetadataValues>())
+        {
+            <option value="@val.Value">@GetCurrentLanguage.GetLocalizedText(val.Label)</option>
+        }
+    </select>
+}
+
+@code 
+{
+    [Parameter]
+    public bool IsLoading { get; set; }
+
+    [Parameter]
+    public IndexItemUploadMetadata? Metadata  { get; set; }
 }

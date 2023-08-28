@@ -1,6 +1,7 @@
 ﻿@page "/{Index}/upload"
 @using KnowledgeMining.Application.Documents.Queries.GetIndex;
 @using KnowledgeMining.Domain.Entities;
+@using KnowledgeMining.UI.Pages.Upload.Components
 @inject IStringLocalizer<SharedResources> Localizer
 
 <PageTitle>@Localizer["Upload"]</PageTitle>
@@ -8,7 +9,10 @@
 <MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="mt-4">
     @foreach(var metadata in _indexItem?.Upload?.Metadata)
     {
-        if(metadata.Type.Equals())
+        if(metadata.Type.Equals("select"))
+        {
+            <SelectComponent IsLoading="false" Metadata="metadata" />
+        }
     }
 </MudContainer>
 
