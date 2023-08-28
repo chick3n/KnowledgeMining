@@ -20,7 +20,16 @@
                 <NotAuthorized></NotAuthorized>
                 <Authorized>
                 <MudButton Variant="Variant.Text" Href="@($"/{IndexName}/search/")" Target="_self">@Localizer["search"]</MudButton>
-                    @*<MudButton Variant="Variant.Text" OnClick="@NavigateToDocumentsPage">Documents</MudButton>*@
+                    
+                @if (_indexUpload?.Disabled == false)
+                {
+                    <AuthorizeView Roles="@AuthorizationRoles.Required(IndexName, Roles.Contribute)">
+                        <NotAuthorized Context="can_upload"></NotAuthorized>
+                        <Authorized Context="can_upload">
+                            <MudButton Variant="Variant.Text" Href="@($"/{IndexName}/upload/")" Target="_self">@Localizer["Upload"]</MudButton>
+                        </Authorized>
+                    </AuthorizeView>
+                }
 
                     @if(indexNavigationItems != null)
                     {
@@ -82,10 +91,11 @@
 </MudAppBar>
 
 @code {
-        [CascadingParameter]
-        public RouteData? RouteData { get; set; }
+    [CascadingParameter]
+    public RouteData? RouteData { get; set; }
 
 
+    private IndexItemUpload? _indexUpload;
     private Dictionary<string, List<IndexNavigationItem>>? indexNavigationItems;
     private string? IndexName { get; set; }
     private MudTheme Theme = new MudTheme();
@@ -98,6 +108,7 @@
             IndexName = RouteData?.RouteValues["Index"]?.ToString();
 
             var response = await Mediator.Send(new GetIndexQuery(IndexName));
+            _indexUpload = response.IndexItem.Upload;
             indexNavigationItems = response.IndexItem.NavigationItems?
                 .GroupBy(x => x.Group ?? "<unknown>")
                 .OrderBy(x => x.Key)

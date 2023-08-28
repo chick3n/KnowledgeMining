@@ -1,0 +1,28 @@
+﻿@page "/{Index}/upload"
+@using KnowledgeMining.Application.Documents.Queries.GetIndex;
+@using KnowledgeMining.Domain.Entities;
+@inject IStringLocalizer<SharedResources> Localizer
+
+<PageTitle>@Localizer["Upload"]</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="mt-4">
+    @foreach(var metadata in _indexItem?.Upload?.Metadata)
+    {
+        if(metadata.Type.Equals())
+    }
+</MudContainer>
+
+@code {
+    [Inject] public IMediator? Mediator { get; set; }
+    [Inject] public ILogger<Upload>? Logger { get; set; }
+    
+    [Parameter] public string? Index { get; set; }
+
+    private IndexItem? _indexItem;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var indexResponse = await Mediator.Send(new GetIndexQuery(Index));
+        _indexItem = indexResponse.IndexItem;
+    }
+}
