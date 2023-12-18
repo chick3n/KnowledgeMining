@@ -174,7 +174,7 @@
                                     <hr />
                                     @foreach (var document in _moreLikeThis.Documents().DistinctBy(x => x.Id))
                                     {
-                                        <MudLink Typo="Typo.body2" Href="@($"/record/{Index}/{document.Id}")" style="display:block">
+                                        <MudLink Typo="Typo.body2" Href="@($"/{Index}/record/{document.Id}")" style="display:block">
                                             @_moreLikeThis.GetTitle(document)
                                         </MudLink>
                                     }
@@ -282,13 +282,13 @@
                                     <MudTh>@Localizer["property"]</MudTh>
                                     <MudTh>@Localizer["value"]</MudTh>
                                 </HeaderContent>
-                                <RowTemplate>
-                                    <MudTd DataLabel=@Localizer["property"] Style="vertical-align:top;">@context.Key</MudTd>
+                                <RowTemplate Context="metadata">
+                                    <MudTd DataLabel=@Localizer["property"] Style="vertical-align:top;">@metadata.Key</MudTd>
                                     <MudTd DataLabel=@Localizer["value"]>
-                                        @if (context.Value != null && _documentMetadata.IsMetadataValueAnArray(context.Value))
+                                        @if (metadata.Value != null && _documentMetadata.IsMetadataValueAnArray(metadata.Value))
                                         {
                                             <ul>
-                                            @foreach(var item in ((IEnumerable<string>)context.Value))
+                                            @foreach(var item in ((IEnumerable<string>)metadata.Value))
                                             {
                                                 <li style="list-style-type: circle">@item</li>
                                             }
@@ -296,7 +296,7 @@
                                         }
                                         else
                                         {
-                                            @_documentMetadata.ConvertMetadataValueToString(context.Value)
+                                            @_documentMetadata.ConvertMetadataValueToString(metadata.Value)
                                         }
                                     </MudTd>
                                 </RowTemplate>

@@ -1,4 +1,4 @@
-﻿@page "/search/{Index}/{Hash?}"
+﻿@page "/{Index}/search/{Hash?}"
 @using KnowledgeMining.UI.Helpers
 
 @inject IStringLocalizer<SharedResources> Localizer
@@ -75,8 +75,8 @@
                                     DocumentFooterFields="@_indexItem.Configuration?.Display?.Footer"
                                     IsLoading="@_isSearching" TotalCount="@_searchState.TotalCount" TotalPages="@_searchState.TotalPages" 
                                     IndexName="@Index"
-                                    NavigateTo="@($"/record/{Index}/")" OnPageSelectedChanged="@SearchPageSelected" 
-                                    PageSelected="@_selectedPage"></SearchResultsComponent>
+                                                        NavigateTo="@($"/{Index}/record/")" OnPageSelectedChanged="@SearchPageSelected"
+                                                        PageSelected="@_selectedPage"></SearchResultsComponent>
                             </MudTabPanel>
                             <MudTabPanel Text=@Localizer["entityMap"]>
                                 <EntityMapComponent FacetableFields="@_searchState.FacetableFields" IndexName="@_indexItem.IndexName" SearchText="@SearchText" />
@@ -85,7 +85,7 @@
                     </MudTabs>
                 </MudItem>
                 <MudItem xs="12" md="12" hidden="@(!_showDocumentDetails)">
-                    <DocumentDetailsComponentTest ReturnTo="@($"/search/{Index}/")"
+                    <DocumentDetailsComponentTest ReturnTo="@($"/{Index}/search/")"
                         Document="_documentMetadata"></DocumentDetailsComponentTest>
                 </MudItem>
             </MudGrid>
