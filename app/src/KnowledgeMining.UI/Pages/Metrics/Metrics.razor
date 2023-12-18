@@ -1,129 +1,138 @@
 ﻿@page "/metrics/{Index}"
+@using KnowledgeMining.UI.Helpers
+
 @inject IStringLocalizer<SharedResources> Localizer
 
 <PageTitle>@Localizer["metrics"]</PageTitle>
 
-<MudContainer MaxWidth="MaxWidth.Large" Class="mt-4">
-    @if(TotalWords != null || TotalWordsExclude != null || TotalDocuments != null || IndexSize != null) 
-    {
-        <div class="metric-divider">
-            <MudText Typo="Typo.h4">@_indexItem.Name</MudText>
-            <hr/>
-            <MudStack Row="true" Justify="Justify.SpaceBetween" Spacing="5" AlignItems="AlignItems.Center">
-                @if (TotalWords != null)
-                {
-                    <MudPaper Elevation="1" Class="pa-3" MinHeight="120px">
-                        <MudStack Row="true" Spacing="1">
-                            <MudIcon Icon="@Icons.Filled.Grid4x4" Style="@("font-size: 4rem; color: " + GetColorAsHex())" />
-                            <MudStack Row="false"  Spacing="0">
-                                <MudText Typo="Typo.h4">@TotalWords</MudText>
-                                <MudText Typo="Typo.h5" Align="Align.Right">@Localizer["totalWords"]</MudText>
-                            </MudStack>
-                        </MudStack>
-                    </MudPaper>
-                }
-
-                @if (TotalWordsExclude != null)
-                {
-                    <MudPaper Elevation="1" Class="pa-3" MinHeight="120px">
-                        <MudStack Row="true" Spacing="1">
-                            <MudIcon Icon="@Icons.Filled.Grid3x3"  Style="@("font-size: 4rem; color: " + GetColorAsHex())" />
-                            <MudStack Row="false" Spacing="0">
-                                <MudText Typo="Typo.h4">@TotalWordsExclude</MudText>
-                                <MudText Typo="Typo.h5" Align="Align.Right">@Localizer["totalWords"]</MudText>
-                                <MudText Typo="Typo.caption" Align="Align.Right">@Localizer["exTotalWords"]</MudText>
-                            </MudStack>
-                        </MudStack>
-                    </MudPaper>
-                }
-
-                @if (TotalDocuments != null)
-                {
-                    <MudPaper Elevation="1" Class="pa-3" MinHeight="120px">
-                        <MudStack Row="true" Spacing="1">
-                            <MudIcon Icon="@Icons.Outlined.InsertDriveFile"  Style="@("font-size: 4rem; color: " + GetColorAsHex())" />
-                            <MudStack Row="false" Spacing="0">
-                                <MudText Typo="Typo.h4">@TotalDocuments</MudText>
-                                <MudText Typo="Typo.h5" Align="Align.Right">@Localizer["documents"]</MudText>
-                            </MudStack>
-                        </MudStack>
-                    </MudPaper>
-                }
-
-                @if (IndexSize != null)
-                {
-                    <MudPaper Elevation="1" Class="pa-3" MinHeight="120px">
-                        <MudStack Row="true" Spacing="1">
-                            <MudIcon Icon="@Icons.Filled.Storage"  Style="@("font-size: 4rem; color: " + GetColorAsHex())" />
-                            <MudStack Row="false" Spacing="0">
-                                <MudText Typo="Typo.h4">@IndexSize</MudText>
-                                <MudText Typo="Typo.h5" Align="Align.Right">@Localizer["indexSize"]</MudText>
-                            </MudStack>
-                        </MudStack>
-                    </MudPaper>
-                }
-            </MudStack>
-        </div>
-    }
-
-    @if(FileTypes != null)
-    {
-        <div class="metric-divider">
-            <MudText Typo="Typo.h5">Source(s)</MudText>
-            <hr/>
-            @for(var x=0; x<FileTypes.Count; x+=8)
+<AuthorizeView Roles="@AuthorizationRoles.Required(Index, Roles.Read, Roles.Contribute)">
+    <NotAuthorized>
+        <h2 class="mt-5">You are not authorized to view this page</h2>
+    </NotAuthorized>
+    <Authorized>
+        <MudContainer MaxWidth="MaxWidth.Large" Class="mt-4">
+            @if(TotalWords != null || TotalWordsExclude != null || TotalDocuments != null || IndexSize != null) 
             {
-                var items = FileTypes.Skip(x).Take(8).ToList();
-                <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.FlexStart">
-                @foreach(var filetype in items)
-                {
-                    <MudPaper Elevation="1" Class="pa-3">
-                        <MudStack Row="true" Spacing="1">
-                            <MudIcon Icon="@GetFileTypeIcon(filetype.Key)"  Style="@("font-size: 2rem; color: " + GetColorAsHex())" />
-                            <MudStack Row="false" Spacing="0">
-                                <MudText Typo="Typo.body1">@filetype.Value.ToString("N0")</MudText>
-                                <MudText Typo="Typo.caption" Align="Align.Right">@filetype.Key</MudText>
-                            </MudStack>
-                        </MudStack>
-                    </MudPaper>
-                }
-                </MudStack>
-            }
-        </div>
-    }
-
-    @if(TopWordsExclude != null || TopWords != null) 
-    {
-        <MudText Typo="Typo.h5">@Localizer["TopWords"]</MudText>
-        <hr/>
-        <MudGrid>
-            @if (TopWordsExclude != null)
-            {
-                <MudItem xs="12" sm="12">
-                    <ol>
-                        @foreach(var topWordKvp in TopWordsExclude.OrderByDescending(x => x.Value))
+                <div class="metric-divider">
+                    <MudText Typo="Typo.h4">@_indexItem.Name</MudText>
+                    <hr/>
+                    <MudStack Row="true" Justify="Justify.SpaceBetween" Spacing="5" AlignItems="AlignItems.Center">
+                        @if (TotalWords != null)
                         {
-                            <li>@topWordKvp.Key @topWordKvp.Value</li>
+                            <MudPaper Elevation="1" Class="pa-3" MinHeight="120px">
+                                <MudStack Row="true" Spacing="1">
+                                    <MudIcon Icon="@Icons.Filled.Grid4x4" Style="@("font-size: 4rem; color: " + GetColorAsHex())" />
+                                    <MudStack Row="false"  Spacing="0">
+                                        <MudText Typo="Typo.h4">@TotalWords</MudText>
+                                        <MudText Typo="Typo.h5" Align="Align.Right">@Localizer["totalWords"]</MudText>
+                                    </MudStack>
+                                </MudStack>
+                            </MudPaper>
                         }
-                    </ol>
-                </MudItem>
-            }
-            else if (TopWords != null)
-            {
-                <MudItem xs="12" sm="12">
-                    <ol>
-                        @foreach(var topWordKvp in TopWords.OrderByDescending(x => x.Value))
+
+                        @if (TotalWordsExclude != null)
                         {
-                            <li>@topWordKvp.Key @topWordKvp.Value</li>
+                            <MudPaper Elevation="1" Class="pa-3" MinHeight="120px">
+                                <MudStack Row="true" Spacing="1">
+                                    <MudIcon Icon="@Icons.Filled.Grid3x3"  Style="@("font-size: 4rem; color: " + GetColorAsHex())" />
+                                    <MudStack Row="false" Spacing="0">
+                                        <MudText Typo="Typo.h4">@TotalWordsExclude</MudText>
+                                        <MudText Typo="Typo.h5" Align="Align.Right">@Localizer["totalWords"]</MudText>
+                                        <MudText Typo="Typo.caption" Align="Align.Right">@Localizer["exTotalWords"]</MudText>
+                                    </MudStack>
+                                </MudStack>
+                            </MudPaper>
                         }
-                    </ol>
-                </MudItem>
+
+                        @if (TotalDocuments != null)
+                        {
+                            <MudPaper Elevation="1" Class="pa-3" MinHeight="120px">
+                                <MudStack Row="true" Spacing="1">
+                                    <MudIcon Icon="@Icons.Outlined.InsertDriveFile"  Style="@("font-size: 4rem; color: " + GetColorAsHex())" />
+                                    <MudStack Row="false" Spacing="0">
+                                        <MudText Typo="Typo.h4">@TotalDocuments</MudText>
+                                        <MudText Typo="Typo.h5" Align="Align.Right">@Localizer["documents"]</MudText>
+                                    </MudStack>
+                                </MudStack>
+                            </MudPaper>
+                        }
+
+                        @if (IndexSize != null)
+                        {
+                            <MudPaper Elevation="1" Class="pa-3" MinHeight="120px">
+                                <MudStack Row="true" Spacing="1">
+                                    <MudIcon Icon="@Icons.Filled.Storage"  Style="@("font-size: 4rem; color: " + GetColorAsHex())" />
+                                    <MudStack Row="false" Spacing="0">
+                                        <MudText Typo="Typo.h4">@IndexSize</MudText>
+                                        <MudText Typo="Typo.h5" Align="Align.Right">@Localizer["indexSize"]</MudText>
+                                    </MudStack>
+                                </MudStack>
+                            </MudPaper>
+                        }
+                    </MudStack>
+                </div>
             }
+
+            @if(FileTypes != null)
+            {
+                <div class="metric-divider">
+                    <MudText Typo="Typo.h5">Source(s)</MudText>
+                    <hr/>
+                    @for(var x=0; x<FileTypes.Count; x+=8)
+                    {
+                        var items = FileTypes.Skip(x).Take(8).ToList();
+                        <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.FlexStart">
+                        @foreach(var filetype in items)
+                        {
+                            <MudPaper Elevation="1" Class="pa-3">
+                                <MudStack Row="true" Spacing="1">
+                                    <MudIcon Icon="@GetFileTypeIcon(filetype.Key)"  Style="@("font-size: 2rem; color: " + GetColorAsHex())" />
+                                    <MudStack Row="false" Spacing="0">
+                                        <MudText Typo="Typo.body1">@filetype.Value.ToString("N0")</MudText>
+                                        <MudText Typo="Typo.caption" Align="Align.Right">@filetype.Key</MudText>
+                                    </MudStack>
+                                </MudStack>
+                            </MudPaper>
+                        }
+                        </MudStack>
+                    }
+                </div>
+            }
+
+            @if(TopWordsExclude != null || TopWords != null) 
+            {
+                <MudText Typo="Typo.h5">@Localizer["TopWords"]</MudText>
+                <hr/>
+                <MudGrid>
+                    @if (TopWordsExclude != null)
+                    {
+                        <MudItem xs="12" sm="12">
+                            <ol>
+                                @foreach(var topWordKvp in TopWordsExclude.OrderByDescending(x => x.Value))
+                                {
+                                    <li>@topWordKvp.Key @topWordKvp.Value</li>
+                                }
+                            </ol>
+                        </MudItem>
+                    }
+                    else if (TopWords != null)
+                    {
+                        <MudItem xs="12" sm="12">
+                            <ol>
+                                @foreach(var topWordKvp in TopWords.OrderByDescending(x => x.Value))
+                                {
+                                    <li>@topWordKvp.Key @topWordKvp.Value</li>
+                                }
+                            </ol>
+                        </MudItem>
+                    }
         
-        </MudGrid>
-    }
+                </MudGrid>
+            }
     
 
     
 
-</MudContainer>
+        </MudContainer>
+    </Authorized>
+</AuthorizeView>

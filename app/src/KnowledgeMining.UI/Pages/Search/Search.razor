@@ -1,4 +1,5 @@
 ﻿@page "/search/{Index}/{Hash?}"
+@using KnowledgeMining.UI.Helpers
 
 @inject IStringLocalizer<SharedResources> Localizer
 
@@ -9,86 +10,91 @@
 </style>
 
 <PageTitle>@Localizer["search"]</PageTitle>
+<AuthorizeView Roles="@AuthorizationRoles.Required(Index, Roles.Read, Roles.Contribute)">
+    <NotAuthorized>
+        <h2 class="mt-5">You are not authorized to view this page</h2>
+    </NotAuthorized>
+    <Authorized>
+        <MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="mt-4">
+            <MudGrid>
+                <MudItem xs="12" md="12">
+                    <MudTextField   @bind-Value="SearchText" 
+                                    Label="Search" 
+                                    Clearable="true"
+                                    Immediate="false"
+                                    Adornment="Adornment.End" 
+                                    AdornmentIcon="@Icons.Filled.Search"
+                                    AdornmentColor="Color.Primary"
+                                    OnClearButtonClick="@SearchIfClearClicked"
+                                    OnKeyUp="@SearchIfEnterPressed"
+                                    OnAdornmentClick="@SearchIfButtonClicked" 
+                                    Variant="Variant.Outlined" 
+                                    Margin="Margin.None"
+                                    />
+                </MudItem>
+                <MudItem xs="12" md="12">
+                    <MudToolBar Style="height: 20px">
+                        <MudText><MudIcon Icon="@Icons.Filled.CalendarMonth" Color="Color.Primary" Title="Time Span"></MudIcon> @Localizer["timeSpan"]</MudText>
+                        <MudMenu EndIcon="@Icons.Filled.ArrowDropDown" Label="@_timespanLabel">
+                            <MudMenuItem OnClick="@TimeSpanAnyOnClick">@Localizer["any"]</MudMenuItem>
+                            <MudMenuItem OnClick="@TimeSpanTodayOnClick">@Localizer["today"]</MudMenuItem>
+                            <MudMenuItem OnClick="@TimeSpanThisWeekOnClick">@Localizer["week"]</MudMenuItem>
+                            <MudMenuItem OnClick="@TimeSpanThisMonthOnClick">@Localizer["month"]</MudMenuItem>
+                            <MudMenuItem OnClick="@TimeSpanCustomOnClick">@Localizer["custom"]</MudMenuItem>
+                        </MudMenu>
+                        <MudText Class="pl-6"><MudIcon Icon="@Icons.Filled.Sort" Color="Color.Primary" Title="Sort By"></MudIcon> @Localizer["sortBy"]</MudText>
+                        <MudMenu EndIcon="@Icons.Filled.ArrowDropDown" Label="@_sortLabel" Disabled="@(_searchState?.TotalCount == 0)">
+                            <MudMenuItem OnClick="@SortBestMatchClicked">@Localizer["bestMatch"]</MudMenuItem>
+                            <MudMenuItem OnClick="@SortDateClicked">@Localizer["date"]</MudMenuItem>
+                        </MudMenu>
 
-<MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="mt-4">
-    <MudGrid>
-        <MudItem xs="12" md="12">
-            <MudTextField   @bind-Value="SearchText" 
-                            Label="Search" 
-                            Clearable="true"
-                            Immediate="false"
-                            Adornment="Adornment.End" 
-                            AdornmentIcon="@Icons.Filled.Search"
-                            AdornmentColor="Color.Primary"
-                            OnClearButtonClick="@SearchIfClearClicked"
-                            OnKeyUp="@SearchIfEnterPressed"
-                            OnAdornmentClick="@SearchIfButtonClicked" 
-                            Variant="Variant.Outlined" 
-                            Margin="Margin.None"
-                            />
-        </MudItem>
-        <MudItem xs="12" md="12">
-            <MudToolBar Style="height: 20px">
-                <MudText><MudIcon Icon="@Icons.Filled.CalendarMonth" Color="Color.Primary" Title="Time Span"></MudIcon> @Localizer["timeSpan"]</MudText>
-                <MudMenu EndIcon="@Icons.Filled.ArrowDropDown" Label="@_timespanLabel">
-                    <MudMenuItem OnClick="@TimeSpanAnyOnClick">@Localizer["any"]</MudMenuItem>
-                    <MudMenuItem OnClick="@TimeSpanTodayOnClick">@Localizer["today"]</MudMenuItem>
-                    <MudMenuItem OnClick="@TimeSpanThisWeekOnClick">@Localizer["week"]</MudMenuItem>
-                    <MudMenuItem OnClick="@TimeSpanThisMonthOnClick">@Localizer["month"]</MudMenuItem>
-                    <MudMenuItem OnClick="@TimeSpanCustomOnClick">@Localizer["custom"]</MudMenuItem>
-                </MudMenu>
-                <MudText Class="pl-6"><MudIcon Icon="@Icons.Filled.Sort" Color="Color.Primary" Title="Sort By"></MudIcon> @Localizer["sortBy"]</MudText>
-                <MudMenu EndIcon="@Icons.Filled.ArrowDropDown" Label="@_sortLabel" Disabled="@(_searchState?.TotalCount == 0)">
-                    <MudMenuItem OnClick="@SortBestMatchClicked">@Localizer["bestMatch"]</MudMenuItem>
-                    <MudMenuItem OnClick="@SortDateClicked">@Localizer["date"]</MudMenuItem>
-                </MudMenu>
-
-                <MudSpacer />
-                <MudButton Disabled="@DisableClearFilter()"
-                    StartIcon="@Icons.Filled.Clear"
-                    Color="Color.Error"
-                           OnClick="ClearSearch">@Localizer["clear"]</MudButton>
-            </MudToolBar>
-        </MudItem>
-        <MudItem xs="12">
-        <MudDivider Light="true" />
-        </MudItem>
-        <MudItem xs="12" md="2">
-            <FacetsFilterComponent 
-                @ref="_facetsFilterComponent"
-                Facets="@_searchState.Facets"
-                IsLoading="@_isSearching"
-                OnFacetSelectedChanged="UpdateSearchFacetsAndSearch"
-                IndexItem="_indexItem"></FacetsFilterComponent>
-        </MudItem>
-        <MudItem xs="12" md="10" hidden="@_showDocumentDetails">
-            <MudTabs @ref="_mainBodyTabs" Elevation="0" Outlined="true" Rounded="true" ApplyEffectsToContainer="true" PanelClass="pa-6" Class="">
-                <div class="d-flex flex-column">
-                    <MudTabPanel @ref="_searchResultsPanel" Text="@_searchResultsLabel">
-                        <SearchResultsComponent @ref="_searchResultsComponent"
-                            DocumentWrapper="@GetDocumentMetadataWrapper()"
-                            DocumentFooterFields="@_indexItem.Configuration?.Display?.Footer"
-                            IsLoading="@_isSearching" TotalCount="@_searchState.TotalCount" TotalPages="@_searchState.TotalPages" 
-                            IndexName="@Index"
-                            NavigateTo="@($"/record/{Index}/")" OnPageSelectedChanged="@SearchPageSelected" 
-                            PageSelected="@_selectedPage"></SearchResultsComponent>
-                    </MudTabPanel>
-                    <MudTabPanel Text=@Localizer["entityMap"]>
-                        <EntityMapComponent FacetableFields="@_searchState.FacetableFields" IndexName="@_indexItem.IndexName" SearchText="@SearchText" />
-                    </MudTabPanel>
-                </div>
-            </MudTabs>
-        </MudItem>
-        <MudItem xs="12" md="12" hidden="@(!_showDocumentDetails)">
-            <DocumentDetailsComponentTest ReturnTo="@($"/search/{Index}/")"
-                Document="_documentMetadata"></DocumentDetailsComponentTest>
-        </MudItem>
-    </MudGrid>
-    <MudDateRangePicker @ref="_timespanPicker" class="hide-input"
-                    PickerVariant="PickerVariant.Dialog" 
-                    Label="Time span" 
-                    MinDate="_minDate"
-                    MaxDate="_maxDate"
-                    DateRangeChanged="@TimeSpanCustomRangeChanged" />
-</MudContainer>
-
+                        <MudSpacer />
+                        <MudButton Disabled="@DisableClearFilter()"
+                            StartIcon="@Icons.Filled.Clear"
+                            Color="Color.Error"
+                                   OnClick="ClearSearch">@Localizer["clear"]</MudButton>
+                    </MudToolBar>
+                </MudItem>
+                <MudItem xs="12">
+                <MudDivider Light="true" />
+                </MudItem>
+                <MudItem xs="12" md="2">
+                    <FacetsFilterComponent 
+                        @ref="_facetsFilterComponent"
+                        Facets="@_searchState.Facets"
+                        IsLoading="@_isSearching"
+                        OnFacetSelectedChanged="UpdateSearchFacetsAndSearch"
+                        IndexItem="_indexItem"></FacetsFilterComponent>
+                </MudItem>
+                <MudItem xs="12" md="10" hidden="@_showDocumentDetails">
+                    <MudTabs @ref="_mainBodyTabs" Elevation="0" Outlined="true" Rounded="true" ApplyEffectsToContainer="true" PanelClass="pa-6" Class="">
+                        <div class="d-flex flex-column">
+                            <MudTabPanel @ref="_searchResultsPanel" Text="@_searchResultsLabel">
+                                <SearchResultsComponent @ref="_searchResultsComponent"
+                                    DocumentWrapper="@GetDocumentMetadataWrapper()"
+                                    DocumentFooterFields="@_indexItem.Configuration?.Display?.Footer"
+                                    IsLoading="@_isSearching" TotalCount="@_searchState.TotalCount" TotalPages="@_searchState.TotalPages" 
+                                    IndexName="@Index"
+                                    NavigateTo="@($"/record/{Index}/")" OnPageSelectedChanged="@SearchPageSelected" 
+                                    PageSelected="@_selectedPage"></SearchResultsComponent>
+                            </MudTabPanel>
+                            <MudTabPanel Text=@Localizer["entityMap"]>
+                                <EntityMapComponent FacetableFields="@_searchState.FacetableFields" IndexName="@_indexItem.IndexName" SearchText="@SearchText" />
+                            </MudTabPanel>
+                        </div>
+                    </MudTabs>
+                </MudItem>
+                <MudItem xs="12" md="12" hidden="@(!_showDocumentDetails)">
+                    <DocumentDetailsComponentTest ReturnTo="@($"/search/{Index}/")"
+                        Document="_documentMetadata"></DocumentDetailsComponentTest>
+                </MudItem>
+            </MudGrid>
+            <MudDateRangePicker @ref="_timespanPicker" class="hide-input"
+                            PickerVariant="PickerVariant.Dialog" 
+                            Label="Time span" 
+                            MinDate="_minDate"
+                            MaxDate="_maxDate"
+                            DateRangeChanged="@TimeSpanCustomRangeChanged" />
+        </MudContainer>
+    </Authorized>
+</AuthorizeView>

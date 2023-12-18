@@ -3,6 +3,7 @@
 @using Microsoft.AspNetCore.Hosting
 @using Microsoft.Extensions.Hosting
 @using KnowledgeMining.UI.Services.Links
+@using KnowledgeMining.UI.Helpers
 
 @inject IStringLocalizer<SharedResources> Localizer
 @inject ILinkGenerator LinkGenerator;
@@ -30,272 +31,280 @@
 </style>
 
 <PageTitle>@Localizer["record"]</PageTitle>
-<MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="mt-4">
-    <MudGrid>
-        <MudItem xs="12" sm="2">
-            <MudButton Disabled="@(!_canNavigateBack)" StartIcon="@Icons.Material.Filled.ArrowBack" Title="@Localizer["back"]" Color="Color.Inherit" OnClick="GoBack">@Localizer["back"]</MudButton>
-        </MudItem>
-        <MudItem xs="0" sm="10">
-            @if(!_documentMetadataIsLoading)
-            {
-                @if(!string.IsNullOrEmpty(_title) || !string.IsNullOrEmpty(_documentMetadata?.SourcePath))
-                {
-                    <MudStack Row="true">
-                        @if(string.IsNullOrWhiteSpace(_documentMetadata.IconUrl)) 
-                        {
-                            <MudAvatar Color="Color.Dark"><MudIcon Icon="@Icons.Custom.FileFormats.FileDocument"></MudIcon></MudAvatar>
-                        } 
-                        else
-                        {
-                            <img src="@_documentMetadata.IconUrl" class="document-icon" />
-                        }                            
-                        <MudText Typo="Typo.h6" Class="document-title-overflow">@_title</MudText>
-                    </MudStack>
-                }
-            }
-            else 
-            {
-                <MudStack Row="true">
-                    <MudSkeleton Animation="Animation.Wave" SkeletonType="SkeletonType.Circle" Width="42px" Height="42px" />
-                    <MudSkeleton Animation="Animation.Wave" Height="42px" Width="100%" />
-                </MudStack>
-            }
-        </MudItem>
-    </MudGrid>
-    <MudGrid>
-        <MudItem xs="2">    
-            @if (!_documentMetadataIsLoading)
-            {
-                <MudPaper>
-                    <MudList Clickable="true" @bind-SelectedItem="_selectedItem" @bind-SelectedValue="_selectedValue">
-                        <MudListItem Text="Record" Value="@LIST_ITEM_VALUE_RECORD" />
-                        @*@if (!string.IsNullOrEmpty(_documentMetadata?.SourcePath))
-                        {
-                            @if (IsUrlPath())
-                            {
-                                if (IsPreviewType())
-                                {
-                                    <MudListItem Text="Preview" Value="@LIST_ITEM_VALUE_SOURCE"/>
-                                }
-                            }
-                        }*@
-                        <MudListItem Text="Metadata" Value="@LIST_ITEM_VALUE_METADATA" />
-                    </MudList>                    
-                </MudPaper>
-                @if(!string.IsNullOrEmpty(_documentMetadata?.SourcePath))
-                {
-                    <MudPaper Elevation="0" Style="margin-top: 20px">
-                        <MudButton Variant="Variant.Filled" 
-                            Class="mudbutton-text-left mud-typography-body1"
-                            StartIcon="@Icons.Outlined.Link" 
-                            Color="Color.Dark" 
-                            FullWidth="true"
-                            DisableElevation="false"
-                            Href="@_documentMetadata?.SourcePath" 
-                            Size="Size.Large">Visit Source</MudButton>
-                    </MudPaper>
-                }
 
-                @if(ShowDownloadLink())
-                {
-                    <MudPaper Elevation="0" Style="margin-top: 20px">
-                        <MudButton Variant="Variant.Filled" 
-                            Class="mudbutton-text-left mud-typography-body1"
-                            StartIcon="@Icons.Material.Filled.Save" 
-                            Color="Color.Info" 
-                            FullWidth="true"
-                            Href="@LinkGenerator.GenerateAzureBlobUrl(_documentMetadata, _azureBlobConnector)" 
-                            Size="Size.Large">Save @GetSourceFileExtension()</MudButton>
-                    </MudPaper>
-                }
-            }
-            else
-            {
-                <MudPaper Elevation="0">
-                    <MudSkeleton SkeletonType="SkeletonType.Rectangle" Animation="Animation.Wave" Height="160px" />
-                    <br />
-                    <MudSkeleton SkeletonType="SkeletonType.Rectangle" Animation="Animation.Wave" Height="36px" />
-                </MudPaper>
-            }
-        </MudItem>
-        <MudItem xs="10">
-            @if((int)_selectedValue == LIST_ITEM_VALUE_RECORD)
-            {
-                @if(_documentMetadataIsLoading)
-                {
-                    <div class="record_divider">
-                    <MudSkeleton Animation="Animation.Wave" SkeletonType="SkeletonType.Rectangle" Height="110px" />
-                    </div>
-                }
-                else
-                {
-                    @if(!string.IsNullOrEmpty(_title) || !string.IsNullOrEmpty(_documentMetadata?.SourcePath))
+<AuthorizeView Roles="@AuthorizationRoles.Required(Index, Roles.Read, Roles.Contribute)">
+    <NotAuthorized>
+        <h2 class="mt-5">You are not authorized to view this page</h2>
+    </NotAuthorized>
+    <Authorized>
+        <MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="mt-4">
+            <MudGrid>
+                <MudItem xs="12" sm="2">
+                    <MudButton Disabled="@(!_canNavigateBack)" StartIcon="@Icons.Material.Filled.ArrowBack" Title="@Localizer["back"]" Color="Color.Inherit" OnClick="GoBack">@Localizer["back"]</MudButton>
+                </MudItem>
+                <MudItem xs="0" sm="10">
+                    @if(!_documentMetadataIsLoading)
                     {
-                        <div class="record_divider">
-                            <MudText Typo="Typo.h6">@Localizer["details"]</MudText>
-                            <hr />
-                            <MudStack Row="false" Spacing="1">
-                                @if(_documentMetadata?.DateTime != null)
+                        @if(!string.IsNullOrEmpty(_title) || !string.IsNullOrEmpty(_documentMetadata?.SourcePath))
+                        {
+                            <MudStack Row="true">
+                                @if(string.IsNullOrWhiteSpace(_documentMetadata.IconUrl)) 
                                 {
-                                    <MudText Typo="Typo.body2" Class="document-title-overflow">
-                                        @_documentMetadata?.DateTime?.ToString("yyyy-MM-dd")
-                                    </MudText>
-                                }
-                                @if (!string.IsNullOrEmpty(_documentMetadata?.SourcePath))
+                                    <MudAvatar Color="Color.Dark"><MudIcon Icon="@Icons.Custom.FileFormats.FileDocument"></MudIcon></MudAvatar>
+                                } 
+                                else
                                 {
-                                    <MudText Typo="Typo.body2" Class="document-title-overflow">
-                                        <a href="@UriEncodedSourcePath()">@_documentMetadata.SourcePath</a>
-                                    </MudText>
-                                }
+                                    <img src="@_documentMetadata.IconUrl" class="document-icon" />
+                                }                            
+                                <MudText Typo="Typo.h6" Class="document-title-overflow">@_title</MudText>
                             </MudStack>
-                        </div>
+                        }
                     }
-                }
-
-                @if(_documentMetadataIsLoading || _relatedDocumentMetadataIsLoading)
-                {
-                    <div class="record_divider">
-                    <MudSkeleton Animation="Animation.Wave" SkeletonType="SkeletonType.Rectangle" Height="85px" />
-                    </div>
-                }
-                else 
-                {
-                    @if (_moreLikeThis != null && _moreLikeThis.HasDocuments)
+                    else 
                     {
-                        <div class="record_divider">
-                            <MudText Typo="Typo.h6">@Localizer["relatedDocs"]</MudText>
-                            <hr />
-                            @foreach (var document in _moreLikeThis.Documents().DistinctBy(x => x.Id))
-                            {
-                                <MudLink Typo="Typo.body2" Href="@($"/record/{Index}/{document.Id}")" style="display:block">
-                                    @_moreLikeThis.GetTitle(document)
-                                </MudLink>
-                            }
-                        </div>
+                        <MudStack Row="true">
+                            <MudSkeleton Animation="Animation.Wave" SkeletonType="SkeletonType.Circle" Width="42px" Height="42px" />
+                            <MudSkeleton Animation="Animation.Wave" Height="42px" Width="100%" />
+                        </MudStack>
                     }
-                }
-
-
-                @if (_documentMetadataIsLoading)
-                {
-                    <MudSkeleton Animation="Animation.Wave" SkeletonType="SkeletonType.Rectangle" Height="400px" />
-                }
-                else
-                {
-                    @if (!string.IsNullOrWhiteSpace(_documentMetadata?.Summary))
+                </MudItem>
+            </MudGrid>
+            <MudGrid>
+                <MudItem xs="2">    
+                    @if (!_documentMetadataIsLoading)
                     {
-                        <div class="record_divider">
-                            <MudText Typo="Typo.h6">@Localizer["summary"]</MudText>
-                            <hr />
-                            <MudPaper Class="p-2" Elevation="0">
-                                <pre style="overflow-x: auto; overflow-y: scroll; white-space: pre-wrap; word-wrap: break-word; ">
-                                    @_documentMetadata!.Summary.PreWrap()
-                                </pre>
+                        <MudPaper>
+                            <MudList Clickable="true" @bind-SelectedItem="_selectedItem" @bind-SelectedValue="_selectedValue">
+                                <MudListItem Text="Record" Value="@LIST_ITEM_VALUE_RECORD" />
+                                @*@if (!string.IsNullOrEmpty(_documentMetadata?.SourcePath))
+                                {
+                                    @if (IsUrlPath())
+                                    {
+                                        if (IsPreviewType())
+                                        {
+                                            <MudListItem Text="Preview" Value="@LIST_ITEM_VALUE_SOURCE"/>
+                                        }
+                                    }
+                                }*@
+                                <MudListItem Text="Metadata" Value="@LIST_ITEM_VALUE_METADATA" />
+                            </MudList>                    
+                        </MudPaper>
+                        @if(!string.IsNullOrEmpty(_documentMetadata?.SourcePath))
+                        {
+                            <MudPaper Elevation="0" Style="margin-top: 20px">
+                                <MudButton Variant="Variant.Filled" 
+                                    Class="mudbutton-text-left mud-typography-body1"
+                                    StartIcon="@Icons.Outlined.Link" 
+                                    Color="Color.Dark" 
+                                    FullWidth="true"
+                                    DisableElevation="false"
+                                    Href="@_documentMetadata?.SourcePath" 
+                                    Size="Size.Large">Visit Source</MudButton>
                             </MudPaper>
-                        </div>
-                    }
+                        }
 
-                    @if (IsInlineContentType())
-                    {
-                        <div class="record_divider">
-                            <MudText Typo="Typo.h6">@Localizer["source"]</MudText>
-                            <hr />
-                            <MudGrid>
-                                <MudItem xs="12" sm="12">
-                                    <MudPaper Class="p-2" Elevation="0">
-                                        <DocumentViewerComponent Document="_documentMetadata" AzureBlobConnector="_azureBlobConnector"></DocumentViewerComponent>
-                                    </MudPaper>
-                                </MudItem>
-                            </MudGrid>
-                        </div>
+                        @if(ShowDownloadLink())
+                        {
+                            <MudPaper Elevation="0" Style="margin-top: 20px">
+                                <MudButton Variant="Variant.Filled" 
+                                    Class="mudbutton-text-left mud-typography-body1"
+                                    StartIcon="@Icons.Material.Filled.Save" 
+                                    Color="Color.Info" 
+                                    FullWidth="true"
+                                    Href="@LinkGenerator.GenerateAzureBlobUrl(_documentMetadata, _azureBlobConnector)" 
+                                    Size="Size.Large">Save @GetSourceFileExtension()</MudButton>
+                            </MudPaper>
+                        }
                     }
                     else
                     {
-                        <div class="record_divider">
-                            <MudText Typo="Typo.h6">@Localizer["transcript"]</MudText>
-                            <hr />
-                            <MudGrid>
-                                <MudItem xs="12" sm="8">
-                                    <MudPaper Class="p-2" Elevation="0" Style="border-right: 1px solid #eee; border-radius: 0;">
-                                        <pre style="overflow-x: auto; overflow-y: scroll; white-space: pre-wrap; word-wrap: break-word; " class="record-content">
-                                            @if(ShowMarkupContent())
-                                            {
-                                                @((MarkupString)_documentMetadata!.Content!)
-                                            }
-                                            else 
-                                            {
-                                                <MudHighlighter Text="@_documentMetadata!.Content" HighlightedText="@_textToHighlight" 
-                                                    Style="background-color: darkblue; font-weight:bold; color: white"></MudHighlighter>
-                                            }
+                        <MudPaper Elevation="0">
+                            <MudSkeleton SkeletonType="SkeletonType.Rectangle" Animation="Animation.Wave" Height="160px" />
+                            <br />
+                            <MudSkeleton SkeletonType="SkeletonType.Rectangle" Animation="Animation.Wave" Height="36px" />
+                        </MudPaper>
+                    }
+                </MudItem>
+                <MudItem xs="10">
+                    @if((int)_selectedValue == LIST_ITEM_VALUE_RECORD)
+                    {
+                        @if(_documentMetadataIsLoading)
+                        {
+                            <div class="record_divider">
+                            <MudSkeleton Animation="Animation.Wave" SkeletonType="SkeletonType.Rectangle" Height="110px" />
+                            </div>
+                        }
+                        else
+                        {
+                            @if(!string.IsNullOrEmpty(_title) || !string.IsNullOrEmpty(_documentMetadata?.SourcePath))
+                            {
+                                <div class="record_divider">
+                                    <MudText Typo="Typo.h6">@Localizer["details"]</MudText>
+                                    <hr />
+                                    <MudStack Row="false" Spacing="1">
+                                        @if(_documentMetadata?.DateTime != null)
+                                        {
+                                            <MudText Typo="Typo.body2" Class="document-title-overflow">
+                                                @_documentMetadata?.DateTime?.ToString("yyyy-MM-dd")
+                                            </MudText>
+                                        }
+                                        @if (!string.IsNullOrEmpty(_documentMetadata?.SourcePath))
+                                        {
+                                            <MudText Typo="Typo.body2" Class="document-title-overflow">
+                                                <a href="@UriEncodedSourcePath()">@_documentMetadata.SourcePath</a>
+                                            </MudText>
+                                        }
+                                    </MudStack>
+                                </div>
+                            }
+                        }
+
+                        @if(_documentMetadataIsLoading || _relatedDocumentMetadataIsLoading)
+                        {
+                            <div class="record_divider">
+                            <MudSkeleton Animation="Animation.Wave" SkeletonType="SkeletonType.Rectangle" Height="85px" />
+                            </div>
+                        }
+                        else 
+                        {
+                            @if (_moreLikeThis != null && _moreLikeThis.HasDocuments)
+                            {
+                                <div class="record_divider">
+                                    <MudText Typo="Typo.h6">@Localizer["relatedDocs"]</MudText>
+                                    <hr />
+                                    @foreach (var document in _moreLikeThis.Documents().DistinctBy(x => x.Id))
+                                    {
+                                        <MudLink Typo="Typo.body2" Href="@($"/record/{Index}/{document.Id}")" style="display:block">
+                                            @_moreLikeThis.GetTitle(document)
+                                        </MudLink>
+                                    }
+                                </div>
+                            }
+                        }
+
+
+                        @if (_documentMetadataIsLoading)
+                        {
+                            <MudSkeleton Animation="Animation.Wave" SkeletonType="SkeletonType.Rectangle" Height="400px" />
+                        }
+                        else
+                        {
+                            @if (!string.IsNullOrWhiteSpace(_documentMetadata?.Summary))
+                            {
+                                <div class="record_divider">
+                                    <MudText Typo="Typo.h6">@Localizer["summary"]</MudText>
+                                    <hr />
+                                    <MudPaper Class="p-2" Elevation="0">
+                                        <pre style="overflow-x: auto; overflow-y: scroll; white-space: pre-wrap; word-wrap: break-word; ">
+                                            @_documentMetadata!.Summary.PreWrap()
                                         </pre>
                                     </MudPaper>
-                                </MudItem>
-                                <MudItem xs="12" sm="4">
-                                    <div class="d-flex flex-column flex-shrink-1" style="position:sticky; top: 70px;">
-                                        <DocumentAssistantComponent Document="_documentMetadata"></DocumentAssistantComponent>
-                                        @if(!ShowMarkupContent())
-                                        {
-                                            <MudTextField T="string" Immediate="true" Placeholder="@Localizer["searchTranscript"]" 
-                                                ValueChanged="UpdateTextToHighlight" Variant="Variant.Outlined"></MudTextField>
-                                        }
-                                        <MudChipSet SelectedChipChanged="UpdateTextToHighlight" Filter="true" Class="d-flex flex-wrap">
-                                            @if (_documentMetadata.KeyPhrases != null)
-                                            {
-                                                @foreach (var keyPhrase in _documentMetadata!.KeyPhrases!.Take(5))
+                                </div>
+                            }
+
+                            @if (IsInlineContentType())
+                            {
+                                <div class="record_divider">
+                                    <MudText Typo="Typo.h6">@Localizer["source"]</MudText>
+                                    <hr />
+                                    <MudGrid>
+                                        <MudItem xs="12" sm="12">
+                                            <MudPaper Class="p-2" Elevation="0">
+                                                <DocumentViewerComponent Document="_documentMetadata" AzureBlobConnector="_azureBlobConnector"></DocumentViewerComponent>
+                                            </MudPaper>
+                                        </MudItem>
+                                    </MudGrid>
+                                </div>
+                            }
+                            else
+                            {
+                                <div class="record_divider">
+                                    <MudText Typo="Typo.h6">@Localizer["transcript"]</MudText>
+                                    <hr />
+                                    <MudGrid>
+                                        <MudItem xs="12" sm="8">
+                                            <MudPaper Class="p-2" Elevation="0" Style="border-right: 1px solid #eee; border-radius: 0;">
+                                                <pre style="overflow-x: auto; overflow-y: scroll; white-space: pre-wrap; word-wrap: break-word; " class="record-content">
+                                                    @if(ShowMarkupContent())
+                                                    {
+                                                        @((MarkupString)_documentMetadata!.Content!)
+                                                    }
+                                                    else 
+                                                    {
+                                                        <MudHighlighter Text="@_documentMetadata!.Content" HighlightedText="@_textToHighlight" 
+                                                            Style="background-color: darkblue; font-weight:bold; color: white"></MudHighlighter>
+                                                    }
+                                                </pre>
+                                            </MudPaper>
+                                        </MudItem>
+                                        <MudItem xs="12" sm="4">
+                                            <div class="d-flex flex-column flex-shrink-1" style="position:sticky; top: 70px;">
+                                                <DocumentAssistantComponent Document="_documentMetadata"></DocumentAssistantComponent>
+                                                @if(!ShowMarkupContent())
                                                 {
-                                                    <MudChip Text="@keyPhrase" Disabled="@ShowMarkupContent()"></MudChip>
+                                                    <MudTextField T="string" Immediate="true" Placeholder="@Localizer["searchTranscript"]" 
+                                                        ValueChanged="UpdateTextToHighlight" Variant="Variant.Outlined"></MudTextField>
                                                 }
-                                            }
-                                        </MudChipSet>
-                                    </div>
-                                </MudItem>
-                            </MudGrid>
-                        </div>
+                                                <MudChipSet SelectedChipChanged="UpdateTextToHighlight" Filter="true" Class="d-flex flex-wrap">
+                                                    @if (_documentMetadata.KeyPhrases != null)
+                                                    {
+                                                        @foreach (var keyPhrase in _documentMetadata!.KeyPhrases!.Take(5))
+                                                        {
+                                                            <MudChip Text="@keyPhrase" Disabled="@ShowMarkupContent()"></MudChip>
+                                                        }
+                                                    }
+                                                </MudChipSet>
+                                            </div>
+                                        </MudItem>
+                                    </MudGrid>
+                                </div>
+                            }
+                        }
                     }
-                }
-            }
-            else if((int)_selectedValue == LIST_ITEM_VALUE_SOURCE)
-            {
-                <MudPaper Class="p-2" Elevation="0">
-                    <DocumentViewerComponent Document="_documentMetadata"></DocumentViewerComponent>
-                </MudPaper>
-            }
-            else if((int)_selectedValue == LIST_ITEM_VALUE_METADATA)
-            {
-                @if(_documentMetadataIsLoading)
-                {
-                    <MudSkeleton Animation="Animation.Wave" />
-                    <MudSkeleton Animation="Animation.Wave" SkeletonType="SkeletonType.Rectangle" Height="500" />
-                }
-                else 
-                {
-                    <MudTable Items="@_documentMetadata!.ToDictionary()" Hover="true"  Elevation="0"
-                    Breakpoint="Breakpoint.Sm" HorizontalScrollbar="true" Virtualize="true" FixedHeader="true">
-                        <HeaderContent>
-                            <MudTh>@Localizer["property"]</MudTh>
-                            <MudTh>@Localizer["value"]</MudTh>
-                        </HeaderContent>
-                        <RowTemplate>
-                            <MudTd DataLabel=@Localizer["property"] Style="vertical-align:top;">@context.Key</MudTd>
-                            <MudTd DataLabel=@Localizer["value"]>
-                                @if (context.Value != null && _documentMetadata.IsMetadataValueAnArray(context.Value))
-                                {
-                                    <ul>
-                                    @foreach(var item in ((IEnumerable<string>)context.Value))
-                                    {
-                                        <li style="list-style-type: circle">@item</li>
-                                    }
-                                    </ul>
-                                }
-                                else
-                                {
-                                    @_documentMetadata.ConvertMetadataValueToString(context.Value)
-                                }
-                            </MudTd>
-                        </RowTemplate>
-                    </MudTable>
-                }
-            }
-        </MudItem>
-    </MudGrid>
-</MudContainer>
+                    else if((int)_selectedValue == LIST_ITEM_VALUE_SOURCE)
+                    {
+                        <MudPaper Class="p-2" Elevation="0">
+                            <DocumentViewerComponent Document="_documentMetadata"></DocumentViewerComponent>
+                        </MudPaper>
+                    }
+                    else if((int)_selectedValue == LIST_ITEM_VALUE_METADATA)
+                    {
+                        @if(_documentMetadataIsLoading)
+                        {
+                            <MudSkeleton Animation="Animation.Wave" />
+                            <MudSkeleton Animation="Animation.Wave" SkeletonType="SkeletonType.Rectangle" Height="500" />
+                        }
+                        else 
+                        {
+                            <MudTable Items="@_documentMetadata!.ToDictionary()" Hover="true"  Elevation="0"
+                            Breakpoint="Breakpoint.Sm" HorizontalScrollbar="true" Virtualize="true" FixedHeader="true">
+                                <HeaderContent>
+                                    <MudTh>@Localizer["property"]</MudTh>
+                                    <MudTh>@Localizer["value"]</MudTh>
+                                </HeaderContent>
+                                <RowTemplate>
+                                    <MudTd DataLabel=@Localizer["property"] Style="vertical-align:top;">@context.Key</MudTd>
+                                    <MudTd DataLabel=@Localizer["value"]>
+                                        @if (context.Value != null && _documentMetadata.IsMetadataValueAnArray(context.Value))
+                                        {
+                                            <ul>
+                                            @foreach(var item in ((IEnumerable<string>)context.Value))
+                                            {
+                                                <li style="list-style-type: circle">@item</li>
+                                            }
+                                            </ul>
+                                        }
+                                        else
+                                        {
+                                            @_documentMetadata.ConvertMetadataValueToString(context.Value)
+                                        }
+                                    </MudTd>
+                                </RowTemplate>
+                            </MudTable>
+                        }
+                    }
+                </MudItem>
+            </MudGrid>
+        </MudContainer>
+    </Authorized>
+</AuthorizeView>
