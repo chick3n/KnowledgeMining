@@ -21,7 +21,7 @@
                 <Authorized>
                 <MudButton Variant="Variant.Text" Href="@($"/{IndexName}/search/")" Target="_self">@Localizer["search"]</MudButton>
                     
-                @if (_indexUpload?.Disabled == false)
+@*                 @if (_indexUpload?.Disabled == false)
                 {
                     <AuthorizeView Roles="@AuthorizationRoles.Required(IndexName, Roles.Contribute)">
                         <NotAuthorized Context="can_upload"></NotAuthorized>
@@ -29,7 +29,7 @@
                             <MudButton Variant="Variant.Text" Href="@($"/{IndexName}/upload/")" Target="_self">@Localizer["Upload"]</MudButton>
                         </Authorized>
                     </AuthorizeView>
-                }
+                } *@
 
                     @if(indexNavigationItems != null)
                     {

@@ -26,7 +26,8 @@
 
 <AuthorizeView Roles="@AuthorizationRoles.Required(Index, Roles.Read, Roles.Contribute)">
     <NotAuthorized>
-        <h2 class="mt-5">You are not authorized to view this page</h2>
+        <h2 class="mt-5">You are not authorized to view this page @context.User.Identity?.Name</h2>
+        <a href="MicrosoftIdentity/Account/SignOut">Log out</a>
     </NotAuthorized>
     <Authorized>
         <MudPaper Height="400px" Width="100%" Class="mud-theme-info d-flex align-center" Square="true" Elevation="0">
