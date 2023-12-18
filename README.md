@@ -1,4 +1,4 @@
-# Introduction
+# Introduction 
 
 The implementation in this repository is based [Knowledge Mining Solution Accelerator](https://docs.microsoft.com/en-us/samples/azure-samples/azure-search-knowledge-mining/azure-search-knowledge-mining/).
 
