@@ -1,4 +1,3 @@
-using Blazored.LocalStorage;
 using KnowledgeMining.Application.Common.Interfaces;
 using KnowledgeMining.UI.Api;
 using KnowledgeMining.UI.Extensions;
@@ -20,8 +19,8 @@ using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.Identity.Web;
 using Microsoft.Identity.Web.UI;
 using KnowledgeMining.UI.Helpers;
-using KnowledgeMining.UI.Pages.Services;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Rewrite;
 
 namespace KnowledgeMining.UI
 {
@@ -39,20 +38,12 @@ namespace KnowledgeMining.UI
                     .EnableTokenAcquisitionToCallDownstreamApi(initialScopes)
                         .AddMicrosoftGraph(builder.Configuration.GetSection("MicrosoftGraph"))
                         .AddInMemoryTokenCaches();
+            builder.Services.AddControllersWithViews()
+                .AddMicrosoftIdentityUI();
 
             builder.Services.AddAuthorization(options =>
             {
-                // By default, all incoming requests will be authorized according to the default policy.
                 options.FallbackPolicy = options.DefaultPolicy;
-                /*options.AddPolicy(Policies.CanRead, policy =>
-                {
-                    policy.Requirements.Add(new CanReadPolicyRequirement());
-                });
-                options.AddPolicy(Policies.CanEdit, policy =>
-                {
-                    policy.Requirements.Add(new CanContributePolicyRequirement());
-                });*/
-
             });
 
             builder.WebHost.CaptureStartupErrors(true);
@@ -67,7 +58,9 @@ namespace KnowledgeMining.UI
             builder.Services.AddApplicationInsightsTelemetry();
             builder.Services.AddMemoryCache();
             builder.Services.AddRazorPages();
-            builder.Services.AddServerSideBlazor();
+            /*builder.Services.AddServerSideBlazor();*/
+            builder.Services.AddServerSideBlazor()
+                .AddMicrosoftIdentityConsentHandler();
             builder.Services.AddMudServices(config =>
             {
                 config.SnackbarConfiguration.PreventDuplicates = false;
@@ -80,12 +73,11 @@ namespace KnowledgeMining.UI
             });
             builder.Services.AddHttpClient(PreviewFileEndpoint.EndpointName);
             builder.Services.AddHttpClient(Application.Common.Options.AssistantOptions.Name);
-            builder.Services.AddBlazoredLocalStorage();
 
-            /*builder.Services.AddSignalR().AddAzureSignalR(options =>
+            builder.Services.AddSignalR().AddAzureSignalR(options =>
             {
                 options.ServerStickyMode = Microsoft.Azure.SignalR.ServerStickyMode.Required;
-            });*/
+            });
 
             builder.Services.AddResponseCompression(options =>
             {
@@ -123,7 +115,6 @@ namespace KnowledgeMining.UI
             /*builder.Services.AddSingleton<IAuthorizationHandler, AuthorizationHandler>();*/
             builder.Services.AddScoped<StateService>();
             builder.Services.AddScoped<ILinkGenerator, DocumentPreviewLinkGenerator>();
-            builder.Services.AddScoped<DocumentCartService>();
             builder.Services.AddScoped<DocumentAssistantService>();
 
             builder.Services.AddApplicationInsightsTelemetry();
@@ -173,7 +164,7 @@ namespace KnowledgeMining.UI
                     CancellationToken cancellationToken) =>
                 await DownloadFileEndpoint.DownloadInlineFile(fileName, storageClient, cancellationToken))
                .WithName(DownloadFileEndpoint.EndpointName);
-
+            app.MapRazorPages();
             app.MapBlazorHub();
             app.MapFallbackToPage("/_Host");
 

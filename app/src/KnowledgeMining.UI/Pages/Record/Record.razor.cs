@@ -21,7 +21,6 @@ namespace KnowledgeMining.UI.Pages.Record
         [Inject] public ISnackbar Snackbar { get; set; }
         [Inject] public IMediator Mediator { get; set; }
         [Inject] public IJSRuntime jsRuntime { get; set; }
-        [Inject] public DocumentCartService CartService { get; set; }
 
         [Parameter] public string Index { get; set; } = default!;
         [Parameter] public string RecordId { get; set; } = null!;
@@ -347,13 +346,5 @@ namespace KnowledgeMining.UI.Pages.Record
             return extension.TrimStart('.');
         }
 
-        private async Task AddToCart(string title, string recordId)
-        {
-            var result = await CartService.Add(Index, title, recordId);
-            if (result)
-            {
-                Snackbar.Add("Added to cart!", Severity.Success);
-            }
-        }
     }
 }

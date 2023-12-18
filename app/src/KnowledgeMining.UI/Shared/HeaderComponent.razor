@@ -10,80 +10,96 @@
 @inject IJSRuntime JSRuntime
 @inject NavigationManager NavigationManager;
 @inject IMediator Mediator;
-@inject DocumentCartService CartService;
 @inject IWebHostEnvironment HostEnvironment;
 @inject IStringLocalizer<SharedResources> Localizer
 
 <MudAppBar Style="@($"color: {Theme.Palette.Black};background: {Theme.Palette.White}")" Elevation="1">
     <MudStack Spacing="4" Row="true">
         <MudImage Src="@_logoPath" Height="25" Elevation="0" onclick="@(() => NavigateToHomePage())" />
-        <MudButton Variant="Variant.Text" Href="@($"/search/{IndexName}/")" Target="_self">@Localizer["search"]</MudButton>
-        @*<MudButton Variant="Variant.Text" OnClick="@NavigateToDocumentsPage">Documents</MudButton>*@
-
-        @if(indexNavigationItems != null)
-        {
-            foreach(var nav in indexNavigationItems)
-            {
-                @if(nav.Key.Equals("<unknown>"))
+            <AuthorizeView Roles="@AuthorizationRoles.Required(IndexName, Roles.Read)">
+                <NotAuthorized></NotAuthorized>
+                <Authorized>
+                <MudButton Variant="Variant.Text" Href="@($"/{IndexName}/search/")" Target="_self">@Localizer["search"]</MudButton>
+                    
+                @if (_indexUpload?.Disabled == false)
                 {
-                    foreach(var link in nav.Value)
+                    <AuthorizeView Roles="@AuthorizationRoles.Required(IndexName, Roles.Contribute)">
+                        <NotAuthorized Context="can_upload"></NotAuthorized>
+                        <Authorized Context="can_upload">
+                            <MudButton Variant="Variant.Text" Href="@($"/{IndexName}/upload/")" Target="_self">@Localizer["Upload"]</MudButton>
+                        </Authorized>
+                    </AuthorizeView>
+                }
+
+                    @if(indexNavigationItems != null)
                     {
-                        <MudButton 
-                            Variant="Variant.Text" Href="@link.Url" Target="_self">@GetCurrentLanguage.GetLocalizedText(link.Name)</MudButton>
-                    }
-                }
-                else
-                {    
-                    <MudMenu AnchorOrigin="Origin.BottomLeft"
-                 FullWidth="true" Label=@Localizer["dashboards"] EndIcon="@Icons.Outlined.ArrowDropDown"
-                 ButtonType="ButtonType.Button" Variant="Variant.Text">
-                        @foreach(var link in nav.Value)
+                        foreach(var nav in indexNavigationItems)
                         {
-                            <MudButton Variant="Variant.Text" Href="@link.Url" Target="_self">@GetCurrentLanguage.GetLocalizedText(@link.Name)</MudButton>
-                        }
-                    </MudMenu>
-                }
+                            @if(nav.Key.Equals("<unknown>"))
+                            {
+                                foreach(var link in nav.Value)
+                                {
+                                    <MudButton 
+                                        Variant="Variant.Text" Href="@link.Url" Target="_self">@GetCurrentLanguage.GetLocalizedText(link.Name)</MudButton>
+                                }
+                            }
+                            else
+                            {    
+                                <MudMenu AnchorOrigin="Origin.BottomLeft"
+                             FullWidth="true" Label=@Localizer["dashboards"] EndIcon="@Icons.Outlined.ArrowDropDown"
+                             ButtonType="ButtonType.Button" Variant="Variant.Text">
+                                    @foreach(var link in nav.Value)
+                                    {
+                                        <MudButton Variant="Variant.Text" Href="@link.Url" Target="_self">@GetCurrentLanguage.GetLocalizedText(@link.Name)</MudButton>
+                                    }
+                                </MudMenu>
+                            }
                 
-            }
-        }        
+                        }
+                    }
+                        </Authorized>
+        </AuthorizeView>
     </MudStack>
-    @if (!HostEnvironment.IsProduction())
-    {
-        <MudSpacer />
+    <MudSpacer />
 
-        var current_culture = System.Threading.Thread.CurrentThread.CurrentCulture.Name;
-
-
-         @if (current_culture.StartsWith("en", StringComparison.InvariantCultureIgnoreCase))
-         {
-            <Button @onclick="toFrench">@Localizer["Français"]</Button>
-         }
-         else
-         {
-            <Button @onclick="toEnglish">@Localizer["English"]</Button>
-         }
-
-
-        <MudBadge Content="@(_cartCount ?? 0)" Color="Color.Primary" Overlap="true" Bordered="true" Class="mx-6 my-4">
-            <MudButtonGroup Color="Color.Dark" Variant="Variant.Outlined">
-                <MudIconButton Icon="@Icons.Filled.List" Title="Jobs" Href="@($"/jobs/{IndexName}")" />
-                <MudButton StartIcon="@Icons.Filled.VerticalSplit" Href="@($"/services/{IndexName}")" Variant="Variant.Outlined"
-                    Color="Color.Default">Documents</MudButton>
-            </MudButtonGroup>
-        </MudBadge>
-    }
+    <AuthorizeView>
+        <Authorized>
+            <MudMenu FullWidth="true" AnchorOrigin="Origin.BottomRight" EndIcon="@Icons.Outlined.ArrowDropDown">
+                <ActivatorContent>
+                    <MudChip Variant="Variant.Outlined" Icon="@Icons.Material.Filled.Person">@context.User.Identity.Name</MudChip>
+                </ActivatorContent>
+                <ChildContent>
+                    @{
+                        var current_culture = System.Threading.Thread.CurrentThread.CurrentCulture.Name;
+                        @if (current_culture.StartsWith("en", StringComparison.InvariantCultureIgnoreCase))
+                        {
+                            <MudMenuItem OnClick="toFrench">@Localizer["Français"]</MudMenuItem>
+                        }
+                        else
+                        {
+                            <MudMenuItem OnClick="toEnglish">@Localizer["English"]</MudMenuItem>
+                        }
+                    }
+                    <MudMenuItem Href="https://login.microsoftonline.com/common/oauth2/v2.0/logout">@Localizer["Sign Out"]</MudMenuItem>
+                </ChildContent>
+            </MudMenu>
+        </Authorized>
+        <NotAuthorized>
+            <a href="MicrosoftIdentity/Account/SignIn">@Localizer["Sign In"]</a>
+        </NotAuthorized>
+    </AuthorizeView>
 </MudAppBar>
 
 @code {
-        [CascadingParameter]
-        public RouteData? RouteData { get; set; }
+    [CascadingParameter]
+    public RouteData? RouteData { get; set; }
 
 
+    private IndexItemUpload? _indexUpload;
     private Dictionary<string, List<IndexNavigationItem>>? indexNavigationItems;
     private string? IndexName { get; set; }
     private MudTheme Theme = new MudTheme();
     private string? _logoPath = "images/gac-logo-en.svg";
-    private int? _cartCount;
 
     protected override async Task OnInitializedAsync()
     {
@@ -92,6 +108,7 @@
             IndexName = RouteData?.RouteValues["Index"]?.ToString();
 
             var response = await Mediator.Send(new GetIndexQuery(IndexName));
+            _indexUpload = response.IndexItem.Upload;
             indexNavigationItems = response.IndexItem.NavigationItems?
                 .GroupBy(x => x.Group ?? "<unknown>")
                 .OrderBy(x => x.Key)
@@ -100,8 +117,6 @@
             if (!string.IsNullOrEmpty(response.IndexItem.Logo) &&
                 Uri.TryCreate(response.IndexItem.Logo, UriKind.Absolute, out _))
                 _logoPath = response.IndexItem.Logo;
-
-            CartService.OnCartChanged += CartChanged;
         }
 
         await base.OnInitializedAsync();
@@ -109,31 +124,7 @@
 
     protected override Task OnAfterRenderAsync(bool firstRender)
     {
-        if(firstRender)
-        {
-            Initialize().ConfigureAwait(false);
-        }
-
         return base.OnAfterRenderAsync(firstRender);
-    }
-
-    private async Task CartChanged(DocumentCartEvent documentCartEvent)
-    {
-        if (documentCartEvent?.Items?.Count != _cartCount)
-        {
-            _cartCount = documentCartEvent?.Items?.Count;
-            StateHasChanged();
-        }
-    }
-
-    private async Task Initialize()
-    {
-        var cartItems = await CartService.GetAll(IndexName);
-        if (cartItems?.Count != _cartCount)
-        {
-            _cartCount = cartItems?.Count;
-            StateHasChanged();
-        }
     }
 
     CultureInfo[] cultures = new[]

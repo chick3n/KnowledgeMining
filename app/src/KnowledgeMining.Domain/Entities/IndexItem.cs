@@ -23,6 +23,8 @@ namespace KnowledgeMining.Domain.Entities
         public string? KeyField { get; set; }
         [JsonPropertyName("storage")]
         public IndexItemStorage? Storage { get; set; }
+        [JsonPropertyName("upload")]
+        public IndexItemUpload? Upload { get; set; }
         [JsonPropertyName("logo")]
         public string? Logo { get; set; }
         [JsonPropertyName("navigation")]

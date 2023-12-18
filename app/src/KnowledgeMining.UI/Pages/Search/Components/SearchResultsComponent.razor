@@ -8,7 +8,6 @@
 
 @inject NavigationManager NavManager
 @inject StateService StateService
-@inject DocumentCartService CartService
 @inject ISnackbar Snackbar
 @inject IWebHostEnvironment HostEnvironment
 
@@ -64,14 +63,6 @@ else
                                     <MudLink Href="@($"{NavigateTo}{document.Id}")" Underline="Underline.None" Typo="Typo.body1" Style="display:block; width:100%">@((MarkupString)DocumentHeader(document))</MudLink>
                                     <MudLink Href="@($"{NavigateTo}{document.Id}")" Underline="Underline.None" Typo="Typo.body2" Style="display:block; width:100%">@DocumentSubHeader(document)</MudLink>
                                 </CardHeaderContent>
-                                <CardHeaderActions>
-                                    @if(!HostEnvironment.IsProduction()) 
-                                    {
-                                        <MudIconButton Icon="@Icons.Filled.PlaylistAdd" Title="Add to queue"
-                                            OnClick="@(() => AddToCart(DocumentWrapper.GetTitle(document), document.Id))"
-                                            Color="Color.Default" />
-                                    }
-                                </CardHeaderActions>
                             </MudCardHeader>
                             <MudCardContent>
                                 <div class="d-flex flex-row gap-10">
@@ -278,14 +269,6 @@ else
 
     }
 
-    private async Task AddToCart(string title, string recordId)
-    {
-        var result = await CartService.Add(IndexName, title, recordId);
-        if(result)
-        {
-            Snackbar.Add("Added to cart!", Severity.Success);
-        }
-    }
 
     
 }
