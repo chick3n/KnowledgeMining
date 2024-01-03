@@ -9,7 +9,7 @@ namespace KnowledgeMining.UI.Api
 {
     public static class AzureBlobEndpoint
     {
-        public const string Route = "/inline/{index}/{container}/{filename}";
+        public const string Route = "/inline/{index}/{container}/{*filename}";
         public const string EndpointName = "inline";
 
         public static async Task<IResult> DownloadInlineFile(
