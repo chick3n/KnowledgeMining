@@ -46,12 +46,6 @@ namespace KnowledgeMining.UI.Services.Links
             var relativePath = _linker.GetPathByName(AzureBlobEndpoint.EndpointName,
                 values: new { index = azureBlobConnector.Index, container = azureBlobConnector.Container, filename = azureBlobConnector.Filename });
 
-            if (document?.ExtensionData?.ContainsKey("containerPath") ?? false)
-            {
-                var containerPath = document.ExtensionData["containerPath"];
-                relativePath = $"/{AzureBlobEndpoint.EndpointName}/{azureBlobConnector.Index}/{containerPath}";
-            }
-
             if (_azureSignalROptions.Enabled)
             {
                 return relativePath!;

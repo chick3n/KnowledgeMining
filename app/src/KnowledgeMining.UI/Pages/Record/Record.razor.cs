@@ -204,7 +204,7 @@ namespace KnowledgeMining.UI.Pages.Record
         {
             if (!string.IsNullOrWhiteSpace(path))
             {
-                var chunks = path.Split('/');
+                var chunks = path.Split('/', StringSplitOptions.RemoveEmptyEntries);
                 if (chunks.Length >= 3)
                 {
                     var filePathChunks = Enumerable.Range(3, chunks.Length - 3).Select(x => chunks[x]).ToArray();
