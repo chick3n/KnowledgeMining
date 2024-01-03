@@ -178,7 +178,7 @@ namespace KnowledgeMining.UI.Pages.Record
         }
 
         /// <summary>
-        /// Given a URL Azure Blob Resource get the container, folders not supported yet
+        /// Given a URL Azure Blob Resource get the container, assumes array index 0 = protocol, 1 = host, 2 = container
         /// </summary>
         /// <param name="path"></param>
         /// <returns></returns>
@@ -186,16 +186,16 @@ namespace KnowledgeMining.UI.Pages.Record
         {
             if (!string.IsNullOrWhiteSpace(path))
             {
-                var chunks = path.Split('/');
-                if (chunks.Length > 2)
-                    return chunks[chunks.Length - 2];
+                var chunks = path.Split('/', StringSplitOptions.RemoveEmptyEntries);
+                if (chunks.Length >= 2)
+                    return chunks[2];
             }
 
             throw new ArgumentException($"Source Path missing container. {path}");
         }
 
         /// <summary>
-        /// Given a URL Azure Blob Resource get the file name
+        /// Given a URL Azure Blob Resource get the file name, assumes array index 0 = protocol, 1 = host, 2 = container, 3* = file path
         /// </summary>
         /// <param name="path"></param>
         /// <returns></returns>
@@ -205,8 +205,11 @@ namespace KnowledgeMining.UI.Pages.Record
             if (!string.IsNullOrWhiteSpace(path))
             {
                 var chunks = path.Split('/');
-                if (chunks.Length > 0)
-                    return chunks[chunks.Length - 1];
+                if (chunks.Length >= 3)
+                {
+                    var filePathChunks = Enumerable.Range(3, chunks.Length - 3).Select(x => chunks[x]).ToArray();
+                    return string.Join('/', filePathChunks);
+                }
             }
 
             throw new ArgumentException($"Source Path missing filename. {path}");
