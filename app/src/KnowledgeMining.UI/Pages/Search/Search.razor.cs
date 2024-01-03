@@ -221,7 +221,7 @@ namespace KnowledgeMining.UI.Pages.Search
         {
             SwitchToSearchResultsTab();
             var hash = StateService.GenerateHash(SearchQueryStateModel.Hash(request));
-            NavManager.NavigateTo($"/search/{Index}/{hash}", forceLoad: false);
+            NavManager.NavigateTo($"/{Index}/search/{hash}", forceLoad: false);
         }
 
 
@@ -532,7 +532,7 @@ namespace KnowledgeMining.UI.Pages.Search
 
         private async Task ClearSearch(MouseEventArgs args)
         {
-            NavManager.NavigateTo($"/search/{Index}", forceLoad: false);
+            NavManager.NavigateTo($"/{Index}/search", forceLoad: false);
         }
 
         private async Task OrderByCallback(FacetFilter? facet)
